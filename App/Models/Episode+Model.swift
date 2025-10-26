@@ -75,7 +75,7 @@ final class EpisodeV2: Linkable {
   }
 
   var aired: Bool {
-    return air < Date() && air.timeIntervalSince1970 != 0
+    return air < Date()
   }
 
   var waitDesc: String {
