@@ -6,6 +6,7 @@ struct ChiiProgressView: View {
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
   @AppStorage("collectionsUpdatedAt") var collectionsUpdatedAt: Int = 0
   @AppStorage("progressViewMode") var progressViewMode: ProgressViewMode = .tile
+  @AppStorage("progressTab") var progressTab: SubjectType = .none
 
   @Environment(\.modelContext) var modelContext
 
@@ -14,7 +15,6 @@ struct ChiiProgressView: View {
 
   @FocusState private var searching: Bool
   @State private var search: String = ""
-  @State private var subjectType: SubjectType = .none
   @State private var counts: [SubjectType: Int] = [:]
 
   func loadCounts() async {
@@ -118,7 +118,7 @@ struct ChiiProgressView: View {
                 }.frame(height: 40)
               }
             }
-            Picker("SubjectType", selection: $subjectType) {
+            Picker("SubjectType", selection: $progressTab) {
               ForEach(SubjectType.progressTypes) { type in
                 Text("\(type.description)(\(counts[type, default: 0]))").tag(type)
               }
@@ -137,7 +137,7 @@ struct ChiiProgressView: View {
                 await loadCounts()
               }
             }
-            .onChange(of: subjectType) {
+            .onChange(of: progressTab) {
               Task {
                 await loadCounts()
               }
@@ -145,10 +145,10 @@ struct ChiiProgressView: View {
             if collectionsUpdatedAt > 0 {
               switch progressViewMode {
               case .list:
-                ProgressListView(subjectType: subjectType, search: search)
+                ProgressListView(subjectType: progressTab, search: search)
               case .tile:
                 ProgressTileView(
-                  subjectType: subjectType, search: search, width: geometry.size.width)
+                  subjectType: progressTab, search: search, width: geometry.size.width)
               }
             } else {
               if refreshing {
@@ -172,7 +172,7 @@ struct ChiiProgressView: View {
             placement: .navigationBarDrawer(displayMode: .always),
             prompt: "搜索正在观看的条目"
           )
-          .animation(.default, value: subjectType)
+          .animation(.default, value: progressTab)
           .animation(.default, value: counts)
           .refreshable {
             if refreshing {
