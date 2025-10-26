@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ChiiRakuenView: View {
-  @AppStorage("rakuenDefaultMode") var rakuenDefaultMode: GroupTopicFilterMode = .joined
+  @AppStorage("rakuenListMode") var rakuenListMode: GroupTopicFilterMode = .joined
 
   @State private var reloader = false
 
@@ -11,25 +11,23 @@ struct ChiiRakuenView: View {
         JoinedGroupsView()
         VStack(alignment: .leading, spacing: 5) {
           HStack {
-            Text(rakuenDefaultMode.description)
-              .font(.title3)
-            Spacer()
-            Menu {
-              ForEach(GroupTopicFilterMode.allCases, id: \.self) { mode in
-                NavigationLink(value: NavDestination.rakuenGroupTopics(mode)) {
-                  Text(mode.description)
+            HStack(spacing: 2) {
+              Picker(selection: $rakuenListMode, label: Text("话题列表")) {
+                ForEach(GroupTopicFilterMode.allCases, id: \.self) { mode in
+                  Text(mode.description).tag(mode)
                 }
               }
-            } label: {
-              Text("更多 »")
-                .font(.footnote)
-            }.buttonStyle(.navigation)
+            }
+            Spacer()
           }.padding(.top, 8)
-          RakuenGroupTopicListView(mode: rakuenDefaultMode, reloader: $reloader)
+          RakuenGroupTopicListView(mode: rakuenListMode, reloader: $reloader)
         }
       }.padding(.horizontal, 8)
     }
     .refreshable {
+      reloader.toggle()
+    }
+    .onChange(of: rakuenListMode) {
       reloader.toggle()
     }
     .navigationTitle("超展开")
