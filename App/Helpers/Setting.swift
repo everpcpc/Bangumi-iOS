@@ -223,8 +223,4 @@ enum ChiiViewTab: String {
       "gear"
     }
   }
-
-  static var defaultTabs: [Self] {
-    return [.timeline, .progress, .discover, .rakuen]
-  }
 }

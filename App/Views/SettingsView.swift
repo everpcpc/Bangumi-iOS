@@ -6,7 +6,6 @@ struct SettingsView: View {
   @AppStorage("appearance") var appearance: AppearanceType = .system
   @AppStorage("shareDomain") var shareDomain: ShareDomain = .chii
   @AppStorage("authDomain") var authDomain: AuthDomain = .next
-  @AppStorage("defaultTab") var defaultTab: ChiiViewTab = .timeline
   @AppStorage("timelineViewMode") var timelineViewMode: TimelineViewMode = .friends
   @AppStorage("progressViewMode") var progressViewMode: ProgressViewMode = .tile
   @AppStorage("progressLimit") var progressLimit: Int = 50
@@ -83,11 +82,6 @@ struct SettingsView: View {
         Picker(selection: $appearance, label: Text("主题")) {
           ForEach(AppearanceType.allCases, id: \.self) { appearance in
             Text(appearance.desc).tag(appearance)
-          }
-        }
-        Picker(selection: $defaultTab, label: Text("默认页面")) {
-          ForEach(ChiiViewTab.defaultTabs, id: \.self) { tab in
-            Text(tab.title).tag(tab)
           }
         }
         Picker(selection: $timelineViewMode, label: Text("默认时间线")) {
