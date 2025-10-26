@@ -6,7 +6,6 @@ struct SettingsView: View {
   @AppStorage("appearance") var appearance: AppearanceType = .system
   @AppStorage("shareDomain") var shareDomain: ShareDomain = .chii
   @AppStorage("authDomain") var authDomain: AuthDomain = .next
-  @AppStorage("timelineViewMode") var timelineViewMode: TimelineViewMode = .friends
   @AppStorage("progressViewMode") var progressViewMode: ProgressViewMode = .tile
   @AppStorage("progressLimit") var progressLimit: Int = 50
   @AppStorage("progressSortMode") var progressSortMode: ProgressSortMode = .collectedAt
@@ -82,11 +81,6 @@ struct SettingsView: View {
         Picker(selection: $appearance, label: Text("主题")) {
           ForEach(AppearanceType.allCases, id: \.self) { appearance in
             Text(appearance.desc).tag(appearance)
-          }
-        }
-        Picker(selection: $timelineViewMode, label: Text("默认时间线")) {
-          ForEach(TimelineViewMode.allCases, id: \.self) { mode in
-            Text(mode.desc).tag(mode)
           }
         }
         Picker(selection: $progressViewMode, label: Text("进度管理模式")) {
