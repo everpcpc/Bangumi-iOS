@@ -352,10 +352,6 @@ struct SubjectCommentDTO: Codable, Identifiable, Hashable {
   var id: Int {
     user.id
   }
-
-  func header(_ stype: SubjectType) -> Text {
-    Text("\(type.description(stype)) @ ") + updatedAt.relativeText
-  }
 }
 
 struct SlimSubjectInterestDTO: Codable, Hashable {

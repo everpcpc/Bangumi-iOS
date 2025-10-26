@@ -31,10 +31,13 @@ struct SubjectCommentItemView: View {
               if comment.rate > 0 {
                 StarsView(score: Float(comment.rate), size: 10)
               }
-              comment.header(subjectType)
-                .lineLimit(1)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+              HStack(spacing: 2) {
+                Text("\(comment.type.description(subjectType))")
+                Text("@")
+                comment.updatedAt.relativeText.lineLimit(1)
+              }
+              .font(.caption)
+              .foregroundStyle(.secondary)
               Spacer()
               ReactionButton(type: .subjectCollect(comment.id), reactions: $reactions)
                 .font(.footnote)
