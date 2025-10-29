@@ -9,17 +9,39 @@
     "details": [
       {
         "appID": "M777UHWZA4.com.everpcpc.chobits",
-        "paths": [
-          "/subject/*",
-          "/person/*",
-          "/character/*",
-          "/group/*",
-          "/user/*",
-          "/blog/*",
-          "/index/*",
-          "/ep/*",
-          "/subject/topic/*",
-          "/group/topic/*"
+        "components": [
+          {
+            "/": "/subject/\\d+",
+            "comment": "条目页面"
+          },
+          {
+            "/": "/person/\\d+",
+            "comment": "人物页面"
+          },
+          {
+            "/": "/character/\\d+",
+            "comment": "角色页面"
+          },
+          {
+            "/": "/blog/\\d+",
+            "comment": "日志页面"
+          },
+          {
+            "/": "/index/\\d+",
+            "comment": "目录页面"
+          },
+          {
+            "/": "/ep/\\d+",
+            "comment": "章节页面"
+          },
+          {
+            "/": "/subject/topic/\\d+",
+            "comment": "条目讨论页面"
+          },
+          {
+            "/": "/group/topic/\\d+",
+            "comment": "小组讨论页面"
+          }
         ]
       }
     ]
