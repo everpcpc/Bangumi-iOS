@@ -71,11 +71,5 @@ struct SearchView: View {
     .animation(.default, value: searchType)
     .animation(.default, value: subjectType)
     .animation(.default, value: text)
-    .onChange(of: searchType) {
-      remote = false
-    }
-    .onChange(of: subjectType) {
-      remote = false
-    }
   }
 }
