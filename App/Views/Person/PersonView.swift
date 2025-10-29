@@ -135,6 +135,7 @@ struct PersonView: View {
         }
       }
     }
+    .handoff(url: shareLink, title: title)
   }
 }
 

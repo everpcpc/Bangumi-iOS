@@ -24,6 +24,7 @@
 	<key>NSUserActivityTypes</key>
 	<array>
 		<string>com.everpcpc.chobits</string>
+		<string>com.everpcpc.chobits.viewPage</string>
 	</array>
 </dict>
 </plist>

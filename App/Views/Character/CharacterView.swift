@@ -135,6 +135,7 @@ struct CharacterView: View {
         }
       }
     }
+    .handoff(url: shareLink, title: title)
   }
 }
 

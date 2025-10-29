@@ -130,6 +130,7 @@ struct EpisodeView: View {
       )
       .presentationDetents([.medium, .large])
     }
+    .handoff(url: shareLink, title: "章节详情")
   }
 }
 

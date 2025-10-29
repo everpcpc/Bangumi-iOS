@@ -190,6 +190,7 @@ struct GroupDetailView: View {
         }
       }
     }
+    .handoff(url: shareLink, title: group.title)
   }
 }
 

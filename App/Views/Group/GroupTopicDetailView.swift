@@ -153,5 +153,6 @@ struct GroupTopicDetailView: View {
         await refresh()
       }
     }
+    .handoff(url: shareLink, title: title)
   }
 }

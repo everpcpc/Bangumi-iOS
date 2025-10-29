@@ -159,6 +159,7 @@ struct BlogView: View {
       }
     }
     .task(load)
+    .handoff(url: shareLink, title: title)
   }
 }
 

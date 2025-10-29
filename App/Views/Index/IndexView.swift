@@ -340,6 +340,7 @@ struct IndexView: View {
         ReportView(reportType: .index, itemId: indexId, itemTitle: index.title, user: index.user)
       }
     }
+    .handoff(url: shareLink, title: index?.title ?? "目录")
   }
 }
 

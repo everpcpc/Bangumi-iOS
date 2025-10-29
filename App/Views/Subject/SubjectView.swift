@@ -162,6 +162,7 @@ struct SubjectDetailView: View {
         }
       }
     }
+    .handoff(url: shareLink, title: subject.name)
   }
 }
 

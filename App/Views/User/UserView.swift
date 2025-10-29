@@ -195,6 +195,7 @@ struct UserView: View {
         await refresh()
       }
     }
+    .handoff(url: shareLink, title: title)
   }
 }
 

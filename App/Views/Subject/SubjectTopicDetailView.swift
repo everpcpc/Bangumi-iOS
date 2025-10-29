@@ -154,5 +154,6 @@ struct SubjectTopicDetailView: View {
         await refresh()
       }
     }
+    .handoff(url: shareLink, title: title)
   }
 }
