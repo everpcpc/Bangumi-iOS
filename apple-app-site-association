@@ -1,0 +1,27 @@
+{
+  "activitycontinuation": {
+    "apps": [
+      "com.everpcpc.chobits"
+    ]
+  },
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "M777UHWZA4.com.everpcpc.chobits",
+        "paths": [
+          "/subject/*",
+          "/person/*",
+          "/character/*",
+          "/group/*",
+          "/user/*",
+          "/blog/*",
+          "/index/*",
+          "/ep/*",
+          "/subject/topic/*",
+          "/group/topic/*"
+        ]
+      }
+    ]
+  }
+}
