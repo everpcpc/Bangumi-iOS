@@ -6,6 +6,8 @@ struct SearchSubjectView: View {
   let text: String
   let subjectType: SubjectType
 
+  @State private var reloader = false
+
   func fetch(limit: Int, offset: Int) async -> PagedDTO<SlimSubjectDTO>? {
     do {
       guard let db = await Chii.shared.db else {
@@ -25,8 +27,11 @@ struct SearchSubjectView: View {
   }
 
   var body: some View {
-    PageView<SlimSubjectDTO, _>(nextPageFunc: fetch) { item in
+    PageView<SlimSubjectDTO, _>(reloader: reloader, nextPageFunc: fetch) { item in
       SubjectItemView(subjectId: item.id)
+    }
+    .onChange(of: subjectType) { _, _ in
+      reloader.toggle()
     }
   }
 }
