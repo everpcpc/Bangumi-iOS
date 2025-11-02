@@ -8,7 +8,7 @@ struct ChiiRakuenView: View {
   var body: some View {
     ScrollView {
       VStack {
-        JoinedGroupsView()
+        HotGroupsView()
         VStack(alignment: .leading, spacing: 5) {
           HStack {
             HStack(spacing: 2) {

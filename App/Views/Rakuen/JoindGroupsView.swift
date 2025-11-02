@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct JoinedGroupsView: View {
+struct HotGroupsView: View {
   @State private var groups: [SlimGroupDTO] = []
   @State private var loading = false
 
@@ -19,19 +19,8 @@ struct JoinedGroupsView: View {
   var body: some View {
     VStack(alignment: .leading) {
       HStack {
-        Text("热门小组")
-          .font(.title3)
+        Text("热门小组").font(.title3)
         Spacer()
-        Menu {
-          ForEach(GroupFilterMode.allCases, id: \.self) { mode in
-            NavigationLink(value: NavDestination.groupList(mode)) {
-              Text(mode.description)
-            }
-          }
-        } label: {
-          Text("更多 »")
-            .font(.footnote)
-        }.buttonStyle(.navigation)
       }.padding(.top, 8)
       ScrollView(.horizontal, showsIndicators: false) {
         LazyHStack {
