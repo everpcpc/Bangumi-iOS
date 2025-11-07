@@ -115,7 +115,7 @@ struct SettingsView: View {
           Spacer()
           Text(Chii.shared.version).foregroundStyle(.secondary)
         }
-        Link(destination: URL(string: "https://www.everpcpc.com/privacy-policy/chobits/")!) {
+        Link(destination: URL(string: "https://bangumi.github.io/Bangumi-iOS/privacy-policy/")!) {
           Text("隐私政策")
         }
         Link(destination: URL(string: "https://discord.gg/nZPTwzXxAX")!) {
