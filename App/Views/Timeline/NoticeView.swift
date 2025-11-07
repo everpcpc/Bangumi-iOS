@@ -15,12 +15,14 @@ struct NoticeView: View {
   }
 
   func refreshNotice() async {
+    updating = true
     do {
       try await loadNotice()
     } catch {
       Notifier.shared.alert(error: error)
     }
     fetched = true
+    updating = false
   }
 
   func clearNotice() {
@@ -41,47 +43,66 @@ struct NoticeView: View {
     }
   }
 
+  func markAsRead(id: Int) {
+    updating = true
+    Task {
+      do {
+        try await Chii.shared.clearNotice(ids: [id])
+        if let index = notices.firstIndex(where: { $0.id == id }) {
+          notices[index].unread = false
+          unreadCount = notices.count(where: { $0.unread })
+        }
+      } catch {
+        Notifier.shared.alert(error: error)
+      }
+    }
+    updating = false
+  }
+
   var body: some View {
     if isAuthenticated {
-      Section {
+      List {
         if !fetched {
-          ProgressView()
-        } else {
-          ScrollView {
-            HStack {
-              Text("全部提醒").font(.title3)
-              Spacer()
-              if updating {
-                ZStack {
-                  Button("全部已读", action: {})
-                    .font(.footnote)
-                    .adaptiveButtonStyle(.borderedProminent)
-                    .disabled(true)
-                    .hidden()
-                  ProgressView()
-                }
-              } else {
-                Button("全部已读", action: clearNotice)
-                  .font(.footnote)
-                  .adaptiveButtonStyle(.borderedProminent)
-                  .disabled(unreadCount == 0)
-              }
-            }.padding(.horizontal, 8)
-            LazyVStack(alignment: .leading, spacing: 10) {
-              ForEach($notices) { notice in
-                NoticeRowView(notice: notice)
-              }
-            }.padding(.horizontal, 8)
+          HStack {
+            Spacer()
+            ProgressView()
+            Spacer()
           }
-          .animation(.default, value: notices)
-          .refreshable {
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-            await refreshNotice()
+        } else {
+          ForEach(notices.indices, id: \.self) { index in
+            NoticeRowView(notice: $notices[index])
+              .listRowInsets(.init(top: 8, leading: 8, bottom: 8, trailing: 8))
+              .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                if notices[index].unread {
+                  Button {
+                    markAsRead(id: notices[index].id)
+                  } label: {
+                    Label("已读", systemImage: "checkmark")
+                  }
+                  .tint(.blue)
+                }
+              }
           }
         }
       }
+      .animation(.default, value: notices)
+      .refreshable {
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        await refreshNotice()
+      }
       .navigationTitle(unreadCount > 0 ? "电波提醒 (\(unreadCount))" : "电波提醒")
       .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .topBarTrailing) {
+          Button {
+            clearNotice()
+          } label: {
+            Label("全部已读", systemImage: "checkmark.rectangle.stack")
+              .adaptiveButtonStyle(.borderedProminent)
+          }
+          .disabled(unreadCount == 0 || updating)
+        }
+      }
       .task {
         await refreshNotice()
       }
