@@ -65,7 +65,7 @@ actor Chii {
     guard let build = plist["CFBundleVersion"] as? String else {
       fatalError("Could not find CFBundleVersion in Info.plist")
     }
-    self.version = "v\(version)(\(build))"
+    self.version = "v\(version)b\(build)"
     self.userAgent = "everpcpc/Bangumi/\(self.version) (iOS)"
     self.appInfo = AppInfo(
       clientId: clientId,
