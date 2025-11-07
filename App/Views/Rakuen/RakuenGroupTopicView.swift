@@ -10,7 +10,7 @@ struct RakuenGroupTopicView: View {
       RakuenGroupTopicListView(mode: mode, reloader: $reloader)
         .padding(.horizontal, 8)
     }
-    .navigationTitle(mode.description)
+    .navigationTitle(mode.title)
     .navigationBarTitleDisplayMode(.inline)
     .refreshable {
       reloader.toggle()

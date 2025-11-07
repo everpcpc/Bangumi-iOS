@@ -49,7 +49,7 @@ struct GroupListView: View {
         }
       }.padding(.horizontal, 8)
     }
-    .navigationTitle(mode.description)
+    .navigationTitle(mode.title)
     .toolbar {
       ToolbarItem(placement: .navigationBarTrailing) {
         Menu {

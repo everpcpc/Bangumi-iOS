@@ -1051,6 +1051,17 @@ enum GroupFilterMode: String, Codable, CaseIterable {
       return "我管理的"
     }
   }
+
+  var title: String {
+    switch self {
+    case .all:
+      return "所有小组"
+    case .joined:
+      return "我参加的小组"
+    case .managed:
+      return "我管理的小组"
+    }
+  }
 }
 
 enum GroupTopicFilterMode: String, Codable, CaseIterable {
@@ -1071,6 +1082,19 @@ enum GroupTopicFilterMode: String, Codable, CaseIterable {
       return "我回复的"
     }
   }
+
+  var title: String {
+    switch self {
+    case .all:
+      return "所有小组话题"
+    case .joined:
+      return "我参加的小组话题"
+    case .created:
+      return "我发表的小组话题"
+    case .replied:
+      return "我回复的小组话题"
+    }
+  }
 }
 
 enum SubjectTopicFilterMode: String, Codable, CaseIterable {
@@ -1083,6 +1107,15 @@ enum SubjectTopicFilterMode: String, Codable, CaseIterable {
       return "热门"
     case .latest:
       return "最新"
+    }
+  }
+
+  var title: String {
+    switch self {
+    case .trending:
+      return "热门条目讨论"
+    case .latest:
+      return "最新条目讨论"
     }
   }
 }
