@@ -71,7 +71,7 @@ struct NoticeView: View {
         } else {
           ForEach(notices.indices, id: \.self) { index in
             NoticeRowView(notice: $notices[index])
-              .listRowInsets(.init(top: 8, leading: 8, bottom: 8, trailing: 8))
+              .listRowInsets(.init(top: 12, leading: 16, bottom: 12, trailing: 16))
               .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                 if notices[index].unread {
                   Button {
@@ -85,6 +85,7 @@ struct NoticeView: View {
           }
         }
       }
+      .listStyle(.plain)
       .animation(.default, value: notices)
       .refreshable {
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
