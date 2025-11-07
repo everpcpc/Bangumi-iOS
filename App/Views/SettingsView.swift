@@ -3,17 +3,18 @@ import SwiftData
 import SwiftUI
 
 struct SettingsView: View {
+  @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
   @AppStorage("appearance") var appearance: AppearanceType = .system
   @AppStorage("shareDomain") var shareDomain: ShareDomain = .chii
   @AppStorage("authDomain") var authDomain: AuthDomain = .next
   @AppStorage("progressSortMode") var progressSortMode: ProgressSortMode = .collectedAt
-  @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
+  @AppStorage("subjectImageQuality") var subjectImageQuality: ImageQuality = .high
   @AppStorage("isolationMode") var isolationMode: Bool = false
   @AppStorage("showNSFWBadge") var showNSFWBadge: Bool = true
   @AppStorage("showEpisodeTrends") var showEpisodeTrends: Bool = true
   @AppStorage("hideBlocklist") var hideBlocklist: Bool = false
   @AppStorage("autoCompleteProgress") var autoCompleteProgress: Bool = false
-  @AppStorage("subjectImageQuality") var subjectImageQuality: ImageQuality = .high
+  @AppStorage("enableReactions") var enableReactions: Bool = true
 
   @Environment(\.modelContext) var modelContext
 
@@ -93,7 +94,7 @@ struct SettingsView: View {
 
       Section(header: Text("超合金")) {
         Toggle(isOn: $isolationMode) {
-          Text("社恐模式")
+          Text("单机模式")
         }
         Toggle(isOn: $hideBlocklist) {
           Text("屏蔽绝交用户言论")
@@ -106,6 +107,9 @@ struct SettingsView: View {
         }
         Toggle(isOn: $autoCompleteProgress) {
           Text("标记看过时自动完成所有进度")
+        }
+        Toggle(isOn: $enableReactions) {
+          Text("启用贴贴")
         }
       }
 

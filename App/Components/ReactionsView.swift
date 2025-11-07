@@ -2,6 +2,8 @@ import Flow
 import SwiftUI
 
 struct ReactionsView: View {
+  @AppStorage("enableReactions") var enableReactions: Bool = true
+
   let type: ReactionType
   @Binding var reactions: [ReactionDTO]
 
@@ -71,39 +73,45 @@ struct ReactionsView: View {
   }
 
   var body: some View {
-    HFlow {
-      ForEach(reactions, id: \.value) { reaction in
-        Button {
-          onClick(reaction)
-        } label: {
-          CardView(padding: 2, cornerRadius: 10, shadow: shadowColor(reaction)) {
-            HStack(alignment: .center, spacing: 4) {
-              Image(reaction.icon)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 16, height: 16)
-              Text("\(reaction.users.count)")
-                .font(.callout)
-                .monospacedDigit()
-                .foregroundStyle(textColor(reaction))
-            }.padding(.horizontal, 4)
+    if enableReactions {
+      HFlow {
+        ForEach(reactions, id: \.value) { reaction in
+          Button {
+            onClick(reaction)
+          } label: {
+            CardView(padding: 2, cornerRadius: 10, shadow: shadowColor(reaction)) {
+              HStack(alignment: .center, spacing: 4) {
+                Image(reaction.icon)
+                  .resizable()
+                  .aspectRatio(contentMode: .fit)
+                  .frame(width: 16, height: 16)
+                Text("\(reaction.users.count)")
+                  .font(.callout)
+                  .monospacedDigit()
+                  .foregroundStyle(textColor(reaction))
+              }.padding(.horizontal, 4)
+            }
+          }
+          .buttonStyle(.plain)
+          .disabled(!isAuthenticated || updating)
+          .contextMenu {
+            ForEach(reaction.users, id: \.id) { user in
+              NavigationLink(value: NavDestination.user(user.username)) {
+                Text(user.nickname)
+              }.buttonStyle(.scale)
+            }
           }
         }
-        .buttonStyle(.plain)
-        .disabled(!isAuthenticated || updating)
-        .contextMenu {
-          ForEach(reaction.users, id: \.id) { user in
-            NavigationLink(value: NavDestination.user(user.username)) {
-              Text(user.nickname)
-            }.buttonStyle(.scale)
-          }
-        }
-      }
-    }.animation(.default, value: reactions)
+      }.animation(.default, value: reactions)
+    } else {
+      EmptyView()
+    }
   }
 }
 
 struct ReactionButton: View {
+  @AppStorage("enableReactions") var enableReactions: Bool = true
+
   let type: ReactionType
   @Binding var reactions: [ReactionDTO]
 
@@ -151,29 +159,33 @@ struct ReactionButton: View {
   }
 
   var body: some View {
-    Button {
-      showPopover = true
-    } label: {
-      Image(systemName: "heart")
-    }
-    .disabled(!isAuthenticated || updating)
-    .buttonStyle(.explode)
-    .popover(isPresented: $showPopover) {
-      LazyVGrid(columns: columns) {
-        ForEach(type.available, id: \.self) { value in
-          Button {
-            onClick(value)
-          } label: {
-            Image(REACTIONS[value] ?? "bgm125")
-              .resizable()
-              .aspectRatio(contentMode: .fit)
-              .frame(width: 24, height: 24)
-          }.buttonStyle(.explode)
-        }
+    if enableReactions {
+      Button {
+        showPopover = true
+      } label: {
+        Image(systemName: "heart")
       }
       .disabled(!isAuthenticated || updating)
-      .padding()
-      .presentationCompactAdaptation(.popover)
+      .buttonStyle(.explode)
+      .popover(isPresented: $showPopover) {
+        LazyVGrid(columns: columns) {
+          ForEach(type.available, id: \.self) { value in
+            Button {
+              onClick(value)
+            } label: {
+              Image(REACTIONS[value] ?? "bgm125")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 24, height: 24)
+            }.buttonStyle(.explode)
+          }
+        }
+        .disabled(!isAuthenticated || updating)
+        .padding()
+        .presentationCompactAdaptation(.popover)
+      }
+    } else {
+      EmptyView()
     }
   }
 }
