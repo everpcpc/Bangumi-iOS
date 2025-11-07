@@ -129,7 +129,7 @@ struct SubjectBrowsingView: View {
       }
     }
     .toolbar {
-      ToolbarItem(placement: .navigationBarTrailing) {
+      ToolbarItem(placement: .topBarTrailing) {
         HStack {
           Button {
             showFilter = true
@@ -435,7 +435,7 @@ struct SubjectBrowsingFilterView: View {
       .navigationTitle("筛选")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
-        ToolbarItem(placement: .navigationBarTrailing) {
+        ToolbarItem(placement: .topBarTrailing) {
           Button {
             dismiss()
           } label: {

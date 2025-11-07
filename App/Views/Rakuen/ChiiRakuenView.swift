@@ -33,7 +33,7 @@ struct ChiiRakuenView: View {
     .navigationTitle("超展开")
     .toolbarTitleDisplayMode(.inline)
     .toolbar {
-      ToolbarItem(placement: .navigationBarTrailing) {
+      ToolbarItem(placement: .topBarTrailing) {
         Menu {
           Section {
             ForEach(SubjectTopicFilterMode.allCases, id: \.self) { mode in
@@ -45,6 +45,7 @@ struct ChiiRakuenView: View {
             Text("条目讨论")
           }
           Divider()
+
           Section {
             ForEach(GroupTopicFilterMode.allCases, id: \.self) { mode in
               NavigationLink(value: NavDestination.rakuenGroupTopics(mode)) {
@@ -55,6 +56,7 @@ struct ChiiRakuenView: View {
             Text("小组话题")
           }
           Divider()
+
           Section {
             ForEach(GroupFilterMode.allCases, id: \.self) { mode in
               NavigationLink(value: NavDestination.groupList(mode)) {

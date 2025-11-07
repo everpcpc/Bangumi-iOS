@@ -6,8 +6,6 @@ struct SettingsView: View {
   @AppStorage("appearance") var appearance: AppearanceType = .system
   @AppStorage("shareDomain") var shareDomain: ShareDomain = .chii
   @AppStorage("authDomain") var authDomain: AuthDomain = .next
-  @AppStorage("progressViewMode") var progressViewMode: ProgressViewMode = .tile
-  @AppStorage("progressLimit") var progressLimit: Int = 50
   @AppStorage("progressSortMode") var progressSortMode: ProgressSortMode = .collectedAt
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
   @AppStorage("isolationMode") var isolationMode: Bool = false
@@ -81,16 +79,6 @@ struct SettingsView: View {
           ForEach(AppearanceType.allCases, id: \.self) { appearance in
             Text(appearance.desc).tag(appearance)
           }
-        }
-        Picker(selection: $progressViewMode, label: Text("进度管理模式")) {
-          ForEach(ProgressViewMode.allCases, id: \.self) { mode in
-            Text(mode.desc).tag(mode)
-          }
-        }
-        Picker(selection: $progressLimit, label: Text("进度管理数量")) {
-          Text("50").tag(50)
-          Text("100").tag(100)
-          Text("无限制").tag(0)
         }
         Picker(selection: $progressSortMode, label: Text("进度管理排序")) {
           ForEach(ProgressSortMode.allCases, id: \.self) { mode in

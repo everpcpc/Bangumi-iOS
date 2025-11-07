@@ -126,6 +126,15 @@ enum ProgressViewMode: String, CaseIterable {
     }
   }
 
+  var icon: String {
+    switch self {
+    case .list:
+      "list.bullet"
+    case .tile:
+      "square.grid.2x2"
+    }
+  }
+
   var desc: String {
     switch self {
     case .list:

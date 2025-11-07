@@ -6,6 +6,7 @@ struct ChiiProgressView: View {
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
   @AppStorage("collectionsUpdatedAt") var collectionsUpdatedAt: Int = 0
   @AppStorage("progressViewMode") var progressViewMode: ProgressViewMode = .tile
+  @AppStorage("progressLimit") var progressLimit: Int = 50
   @AppStorage("progressTab") var progressTab: SubjectType = .none
 
   @Environment(\.modelContext) var modelContext
@@ -16,6 +17,17 @@ struct ChiiProgressView: View {
   @FocusState private var searching: Bool
   @State private var search: String = ""
   @State private var counts: [SubjectType: Int] = [:]
+
+  var progressLimitIcon: String {
+    switch progressLimit {
+    case 0:
+      return "infinity.circle"
+    case 50:
+      return "50.circle"
+    default:
+      return "number.circle"
+    }
+  }
 
   func loadCounts() async {
     let doingType = CollectionType.doing.rawValue
@@ -174,6 +186,8 @@ struct ChiiProgressView: View {
           )
           .animation(.default, value: progressTab)
           .animation(.default, value: counts)
+          .animation(.default, value: progressLimit)
+          .animation(.default, value: progressViewMode)
           .refreshable {
             if refreshing {
               return
@@ -187,6 +201,25 @@ struct ChiiProgressView: View {
           .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
               Menu {
+                Picker(selection: $progressViewMode) {
+                  ForEach(ProgressViewMode.allCases, id: \.self) { mode in
+                    Label(mode.desc, systemImage: mode.icon).tag(mode)
+                  }
+                } label: {
+                  Label("显示模式", systemImage: progressViewMode.icon)
+                }
+                .pickerStyle(.menu)
+                Divider()
+
+                Picker(selection: $progressLimit) {
+                  Text("50").tag(50)
+                  Text("无限制").tag(0)
+                } label: {
+                  Label("显示数量", systemImage: progressLimitIcon)
+                }
+                .pickerStyle(.menu)
+                Divider()
+
                 Button("刷新所有收藏", role: .destructive) {
                   Task {
                     refreshing = true
