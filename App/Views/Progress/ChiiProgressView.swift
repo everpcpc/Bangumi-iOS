@@ -13,6 +13,7 @@ struct ChiiProgressView: View {
 
   @State private var refreshing: Bool = false
   @State private var refreshProgress: CGFloat = 0
+  @State private var showRefreshAll: Bool = false
 
   @FocusState private var searching: Bool
   @State private var search: String = ""
@@ -55,6 +56,8 @@ struct ChiiProgressView: View {
       let count = try await refreshCollections(since: collectionsUpdatedAt)
       if count > 0 {
         Notifier.shared.notify(message: "更新了 \(count) 条收藏")
+      } else {
+        Notifier.shared.notify(message: "没有收藏更新")
       }
     } catch {
       Notifier.shared.alert(error: error)
@@ -221,17 +224,25 @@ struct ChiiProgressView: View {
                 Divider()
 
                 Button("刷新所有收藏", role: .destructive) {
-                  Task {
-                    refreshing = true
-                    await refresh(force: true)
-                    refreshing = false
-                    await loadCounts()
-                  }
+                  showRefreshAll = true
                 }
               } label: {
                 Image(systemName: "ellipsis.circle")
               }
             }
+          }
+          .alert("刷新所有收藏", isPresented: $showRefreshAll) {
+            Button("取消", role: .cancel) {}
+            Button("确定", role: .destructive) {
+              Task {
+                refreshing = true
+                await refresh(force: true)
+                refreshing = false
+                await loadCounts()
+              }
+            }
+          } message: {
+            Text("将从服务器重新下载所有收藏数据，可能需要较长时间")
           }
         }
       } else {
