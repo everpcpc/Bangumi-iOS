@@ -1,8 +1,12 @@
 import SwiftUI
 
 struct SubjectCollectsView: View {
-  @Environment(Subject.self) var subject
+  @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
   @AppStorage("subjectCollectsFilterMode") var subjectCollectsFilterMode: FilterMode = .all
+
+  @Environment(Subject.self) var subject
+
+  @State private var isLoading: Bool = false
 
   var title: String {
     switch subject.typeEnum {
@@ -43,56 +47,100 @@ struct SubjectCollectsView: View {
     }
   }
 
-  var body: some View {
-    VStack(spacing: 2) {
-      HStack(alignment: .bottom) {
-        Text(title)
-          .foregroundStyle(subject.collects.count > 0 ? .primary : .secondary)
-          .font(.title3)
-        Spacer()
-        if subject.collects.count > 0 {
-          NavigationLink(value: NavDestination.subjectCollectsList(subject.subjectId)) {
-            Text(moreText).font(.caption)
-          }.buttonStyle(.navigation)
-        }
-      }
-      Divider()
-    }.padding(.top, 5)
+  func updateCollects() {
+    guard !isLoading else { return }
+    isLoading = true
 
-    if subject.collects.isEmpty {
-      HStack {
-        Spacer()
-        Text(emptyText)
-          .font(.caption)
-          .foregroundStyle(.secondary)
-        Spacer()
-      }.padding(.bottom, 5)
-    } else {
-      ScrollView(.horizontal, showsIndicators: false) {
-        LazyHStack(alignment: .top, spacing: 8) {
-          ForEach(subject.collects.prefix(10)) { collect in
-            VStack(spacing: 4) {
-              ImageView(img: collect.user.avatar?.large)
-                .imageStyle(width: 60, height: 60)
-                .imageType(.avatar)
-                .contextMenu {
-                  NavigationLink(value: NavDestination.user(collect.user.username)) {
-                    Label("查看用户主页", systemImage: "person.circle")
-                  }
-                } preview: {
-                  SubjectCollectRowView(collect: collect, subjectType: subject.typeEnum)
-                    .padding()
-                    .frame(idealWidth: 360)
-                }
-              Text(collect.user.nickname)
-                .font(.caption2)
-                .lineLimit(1)
-                .frame(width: 60)
-              StarsView(score: Float(collect.interest.rate), size: 8)
+    Task {
+      do {
+        let resp = try await Chii.shared.getSubjectCollects(
+          subject.subjectId,
+          mode: subjectCollectsFilterMode,
+          limit: 10
+        )
+        subject.collects = resp.data
+        isLoading = false
+      } catch {
+        Notifier.shared.alert(error: error)
+        isLoading = false
+      }
+    }
+  }
+
+  var body: some View {
+    VStack(alignment: .leading) {
+      VStack(spacing: 2) {
+        HStack(alignment: .bottom) {
+          Text(title)
+            .foregroundStyle(subject.collects.count > 0 ? .primary : .secondary)
+            .font(.title3)
+          if isAuthenticated {
+            Picker("", selection: $subjectCollectsFilterMode) {
+              ForEach(FilterMode.allCases, id: \.self) { mode in
+                Text(mode.description).tag(mode)
+              }
             }
+            .disabled(isLoading)
+            .pickerStyle(.segmented)
+            .frame(width: 80)
+            .scaleEffect(0.8)
           }
-        }.padding(.horizontal, 2)
-      }.animation(.default, value: subject.collects)
+          Spacer()
+          if subject.collects.count > 0 {
+            NavigationLink(value: NavDestination.subjectCollectsList(subject.subjectId)) {
+              Text(moreText).font(.caption)
+            }.buttonStyle(.navigation)
+          }
+        }
+        Divider()
+      }.padding(.top, 5)
+
+      if subject.collects.isEmpty {
+        HStack {
+          Spacer()
+          Text(emptyText)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+          Spacer()
+        }.padding(.bottom, 5)
+      } else {
+        ScrollView(.horizontal, showsIndicators: false) {
+          LazyHStack(alignment: .top, spacing: 8) {
+            ForEach(subject.collects.prefix(10)) { collect in
+              VStack(spacing: 4) {
+                ImageView(img: collect.user.avatar?.large)
+                  .imageStyle(width: 60, height: 60)
+                  .imageType(.avatar)
+                  .contextMenu {
+                    NavigationLink(value: NavDestination.user(collect.user.username)) {
+                      Label("查看用户主页", systemImage: "person.circle")
+                    }
+                  } preview: {
+                    SubjectCollectRowView(collect: collect, subjectType: subject.typeEnum)
+                      .padding()
+                      .frame(idealWidth: 360)
+                  }
+                Text(collect.user.nickname)
+                  .font(.caption2)
+                  .lineLimit(1)
+                  .frame(width: 60)
+                Text(collect.interest.type.description(subject.typeEnum))
+                  .font(.caption)
+                  .foregroundStyle(.secondary)
+                  .lineLimit(1)
+                  .frame(width: 60)
+                StarsView(score: Float(collect.interest.rate), size: 8)
+              }
+            }
+          }.padding(.horizontal, 2)
+        }
+
+      }
+    }
+    .animation(.default, value: subject.collects)
+    .animation(.default, value: subjectCollectsFilterMode)
+    .onChange(of: subjectCollectsFilterMode) { _, _ in
+      updateCollects()
     }
   }
 }

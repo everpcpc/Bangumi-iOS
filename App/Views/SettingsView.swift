@@ -14,7 +14,6 @@ struct SettingsView: View {
   @AppStorage("hideBlocklist") var hideBlocklist: Bool = false
   @AppStorage("autoCompleteProgress") var autoCompleteProgress: Bool = false
   @AppStorage("subjectImageQuality") var subjectImageQuality: ImageQuality = .high
-  @AppStorage("subjectCollectsFilterMode") var subjectCollectsFilterMode: FilterMode = .all
 
   @Environment(\.modelContext) var modelContext
 
@@ -88,11 +87,6 @@ struct SettingsView: View {
         Picker(selection: $subjectImageQuality, label: Text("条目封面图片质量")) {
           ForEach(ImageQuality.allCases, id: \.self) { quality in
             Text(quality.desc).tag(quality)
-          }
-        }
-        Picker(selection: $subjectCollectsFilterMode, label: Text("条目收藏用户默认显示")) {
-          ForEach(FilterMode.allCases, id: \.self) { mode in
-            Text(mode.description).tag(mode)
           }
         }
       }
