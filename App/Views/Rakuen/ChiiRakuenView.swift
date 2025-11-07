@@ -35,36 +35,35 @@ struct ChiiRakuenView: View {
     .toolbar {
       ToolbarItem(placement: .topBarTrailing) {
         Menu {
-          Section {
+          Menu {
             ForEach(SubjectTopicFilterMode.allCases, id: \.self) { mode in
               NavigationLink(value: NavDestination.rakuenSubjectTopics(mode)) {
                 Text(mode.description)
               }
             }
-          } header: {
+          } label: {
             Text("条目讨论")
           }
-          Divider()
 
-          Section {
+          Menu {
             ForEach(GroupTopicFilterMode.allCases, id: \.self) { mode in
               NavigationLink(value: NavDestination.rakuenGroupTopics(mode)) {
                 Text(mode.description)
               }
             }
-          } header: {
+          } label: {
             Text("小组话题")
           }
           Divider()
 
-          Section {
+          Menu {
             ForEach(GroupFilterMode.allCases, id: \.self) { mode in
               NavigationLink(value: NavDestination.groupList(mode)) {
                 Text(mode.description)
               }
             }
-          } header: {
-            Text("小组")
+          } label: {
+            Text("浏览小组")
           }
         } label: {
           Image(systemName: "ellipsis.circle")
