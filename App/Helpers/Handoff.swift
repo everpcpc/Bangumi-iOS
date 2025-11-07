@@ -4,7 +4,9 @@ import SwiftUI
 let HANDOFF_ACTIVITY_TYPE = "com.everpcpc.chobits.viewPage"
 
 extension View {
-  func handoff(activityType: String = HANDOFF_ACTIVITY_TYPE, url: URL, title: String? = nil) -> some View {
+  func handoff(activityType: String = HANDOFF_ACTIVITY_TYPE, url: URL, title: String? = nil)
+    -> some View
+  {
     modifier(HandoffModifier(activityType: activityType, url: url, title: title))
   }
 }

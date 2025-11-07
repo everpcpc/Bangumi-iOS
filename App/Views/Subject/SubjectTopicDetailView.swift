@@ -97,8 +97,10 @@ struct SubjectTopicDetailView: View {
           .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showReportView) {
-          ReportView(reportType: .subjectTopic, itemId: topicId, itemTitle: title, user: topic.creator)
-            .presentationDetents([.medium, .large])
+          ReportView(
+            reportType: .subjectTopic, itemId: topicId, itemTitle: title, user: topic.creator
+          )
+          .presentationDetents([.medium, .large])
         }
       } else if refreshed {
         NotFoundView()

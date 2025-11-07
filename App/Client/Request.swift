@@ -65,12 +65,13 @@ extension Chii {
     _ = try await self.request(url: url, method: "DELETE", body: body, auth: .required)
   }
 
-  func createReport(type: ReportType, id: Int, reason: ReportReason, comment: String?) async throws {
+  func createReport(type: ReportType, id: Int, reason: ReportReason, comment: String?) async throws
+  {
     let url = BangumiAPI.priv.build("p1/report")
     var body: [String: Any] = [
       "type": type.rawValue,
       "id": id,
-      "value": reason.rawValue
+      "value": reason.rawValue,
     ]
     if let comment = comment, !comment.isEmpty {
       body["comment"] = comment

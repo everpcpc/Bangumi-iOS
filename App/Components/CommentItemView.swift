@@ -215,23 +215,39 @@ struct CommentItemNormalView: View {
     .sheet(isPresented: $showReportView) {
       switch type {
       case .episode:
-        ReportView(reportType: .episodeReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)", user: comment.user)
-          .presentationDetents([.medium, .large])
+        ReportView(
+          reportType: .episodeReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)",
+          user: comment.user
+        )
+        .presentationDetents([.medium, .large])
       case .character:
-        ReportView(reportType: .characterReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)", user: comment.user)
-          .presentationDetents([.medium, .large])
+        ReportView(
+          reportType: .characterReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)",
+          user: comment.user
+        )
+        .presentationDetents([.medium, .large])
       case .person:
-        ReportView(reportType: .personReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)", user: comment.user)
-          .presentationDetents([.medium, .large])
+        ReportView(
+          reportType: .personReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)",
+          user: comment.user
+        )
+        .presentationDetents([.medium, .large])
       case .blog:
-        ReportView(reportType: .blogReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)", user: comment.user)
-          .presentationDetents([.medium, .large])
+        ReportView(
+          reportType: .blogReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)", user: comment.user
+        )
+        .presentationDetents([.medium, .large])
       case .timeline:
-        ReportView(reportType: .timelineReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)", user: comment.user)
-          .presentationDetents([.medium, .large])
+        ReportView(
+          reportType: .timelineReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)",
+          user: comment.user
+        )
+        .presentationDetents([.medium, .large])
       case .index:
-        ReportView(reportType: .indexReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)", user: comment.user)
-          .presentationDetents([.medium, .large])
+        ReportView(
+          reportType: .indexReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)", user: comment.user
+        )
+        .presentationDetents([.medium, .large])
       }
     }
     .alert("确认删除", isPresented: $showDeleteConfirm) {
@@ -368,23 +384,41 @@ struct CommentSubReplyNormalView: View {
     .sheet(isPresented: $showReportView) {
       switch type {
       case .episode:
-        ReportView(reportType: .episodeReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)", user: reply.user)
-          .presentationDetents([.medium, .large])
+        ReportView(
+          reportType: .episodeReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
+          user: reply.user
+        )
+        .presentationDetents([.medium, .large])
       case .character:
-        ReportView(reportType: .characterReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)", user: reply.user)
-          .presentationDetents([.medium, .large])
+        ReportView(
+          reportType: .characterReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
+          user: reply.user
+        )
+        .presentationDetents([.medium, .large])
       case .person:
-        ReportView(reportType: .personReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)", user: reply.user)
-          .presentationDetents([.medium, .large])
+        ReportView(
+          reportType: .personReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
+          user: reply.user
+        )
+        .presentationDetents([.medium, .large])
       case .blog:
-        ReportView(reportType: .blogReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)", user: reply.user)
-          .presentationDetents([.medium, .large])
+        ReportView(
+          reportType: .blogReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
+          user: reply.user
+        )
+        .presentationDetents([.medium, .large])
       case .timeline:
-        ReportView(reportType: .timelineReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)", user: reply.user)
-          .presentationDetents([.medium, .large])
+        ReportView(
+          reportType: .timelineReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
+          user: reply.user
+        )
+        .presentationDetents([.medium, .large])
       case .index:
-        ReportView(reportType: .indexReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)", user: reply.user)
-          .presentationDetents([.medium, .large])
+        ReportView(
+          reportType: .indexReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
+          user: reply.user
+        )
+        .presentationDetents([.medium, .large])
       }
     }
     .alert("确认删除", isPresented: $showDeleteConfirm) {

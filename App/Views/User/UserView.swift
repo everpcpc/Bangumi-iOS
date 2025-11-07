@@ -117,8 +117,10 @@ struct UserView: View {
     .navigationBarTitleDisplayMode(.inline)
     .sheet(isPresented: $showReportView) {
       if let user = user {
-        ReportView(reportType: .user, itemId: user.userId, itemTitle: user.nickname, user: user.slim)
-          .presentationDetents([.medium, .large])
+        ReportView(
+          reportType: .user, itemId: user.userId, itemTitle: user.nickname, user: user.slim
+        )
+        .presentationDetents([.medium, .large])
       }
     }
     .toolbar {

@@ -1,6 +1,6 @@
+import BBCode
 import SwiftData
 import SwiftUI
-import BBCode
 
 @main
 struct MainApp: App {

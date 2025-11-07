@@ -91,8 +91,7 @@ struct EULAView: View {
         ToolbarItem(placement: .navigationBarLeading) {
           Button {
             isPresented = false
-          }
-          label: {
+          } label: {
             Label("取消", systemImage: "xmark")
           }
         }

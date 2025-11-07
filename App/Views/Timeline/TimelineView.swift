@@ -93,7 +93,8 @@ struct TimelineView: View {
         .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showReportView) {
-      ReportView(reportType: .timeline, itemId: item.id, itemTitle: "吐槽 #\(item.id)", user: item.user)
+      ReportView(
+        reportType: .timeline, itemId: item.id, itemTitle: "吐槽 #\(item.id)", user: item.user)
     }
   }
 }

@@ -220,11 +220,17 @@ struct ReplyItemNormalView: View {
       .sheet(isPresented: $showReportView) {
         switch type {
         case .group:
-          ReportView(reportType: .groupReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)", user: reply.creator)
-            .presentationDetents([.medium, .large])
+          ReportView(
+            reportType: .groupReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)",
+            user: reply.creator
+          )
+          .presentationDetents([.medium, .large])
         case .subject:
-          ReportView(reportType: .subjectReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)", user: reply.creator)
-            .presentationDetents([.medium, .large])
+          ReportView(
+            reportType: .subjectReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)",
+            user: reply.creator
+          )
+          .presentationDetents([.medium, .large])
         }
       }
       .alert("确认删除", isPresented: $showDeleteConfirm) {
@@ -380,11 +386,17 @@ struct SubReplyNormalView: View {
     .sheet(isPresented: $showReportView) {
       switch type {
       case .group:
-        ReportView(reportType: .groupReply, itemId: subreply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)", user: subreply.creator)
-          .presentationDetents([.medium, .large])
+        ReportView(
+          reportType: .groupReply, itemId: subreply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
+          user: subreply.creator
+        )
+        .presentationDetents([.medium, .large])
       case .subject:
-        ReportView(reportType: .subjectReply, itemId: subreply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)", user: subreply.creator)
-          .presentationDetents([.medium, .large])
+        ReportView(
+          reportType: .subjectReply, itemId: subreply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
+          user: subreply.creator
+        )
+        .presentationDetents([.medium, .large])
       }
     }
     .alert("确认删除", isPresented: $showDeleteConfirm) {
