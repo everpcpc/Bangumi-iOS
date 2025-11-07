@@ -11,6 +11,7 @@ struct HotGroupsView: View {
     do {
       let resp = try await Chii.shared.getGroups(mode: .all, sort: .members, limit: 10)
       groups = resp.data
+      groups.shuffle()
     } catch {
       Notifier.shared.alert(error: error)
     }
@@ -42,9 +43,12 @@ struct HotGroupsView: View {
         }
       }.frame(height: 120)
     }
+    .animation(.default, value: groups)
     .onAppear {
-      Task {
-        await load()
+      if groups.isEmpty {
+        Task {
+          await load()
+        }
       }
     }
   }
