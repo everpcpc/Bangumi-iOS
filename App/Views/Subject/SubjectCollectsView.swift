@@ -120,16 +120,19 @@ struct SubjectCollectsView: View {
                       .padding()
                       .frame(idealWidth: 360)
                   }
-                Text(collect.user.nickname)
-                  .font(.caption2)
-                  .lineLimit(1)
-                  .frame(width: 60)
-                Text(collect.interest.type.description(subject.typeEnum))
-                  .font(.caption)
+                VStack(spacing: 2) {
+                  Text(collect.user.nickname)
+                    .lineLimit(1)
+                  StarsView(score: Float(collect.interest.rate), size: 8)
+                  Label(
+                    collect.interest.type.description(subject.typeEnum),
+                    systemImage: collect.interest.type.icon
+                  )
+                  .labelStyle(.compact)
                   .foregroundStyle(.secondary)
-                  .lineLimit(1)
-                  .frame(width: 60)
-                StarsView(score: Float(collect.interest.rate), size: 8)
+                }
+                .font(.caption)
+                .frame(width: 60)
               }
             }
           }.padding(.horizontal, 2)
