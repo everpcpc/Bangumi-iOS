@@ -34,10 +34,7 @@ struct SubjectReviewsView: View {
     VStack {
       ForEach(reviews) { review in
         if !hideBlocklist || !blocklist.contains(review.user.id) {
-          VStack {
-            SubjectReviewItemView(item: review)
-            Divider()
-          }.padding(.top, 2)
+          SubjectReviewItemView(item: review)
         }
       }
     }

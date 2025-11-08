@@ -31,10 +31,7 @@ struct UserIndexesView: View {
       }
 
       ForEach(indexes) { index in
-        VStack {
-          IndexItemView(index: index)
-          Divider()
-        }
+        IndexItemView(index: index)
       }
     }.animation(.default, value: indexes)
   }

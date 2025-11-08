@@ -19,9 +19,7 @@ struct SubjectIndexListView: View {
   var body: some View {
     ScrollView {
       PageView<SlimIndexDTO, _>(reloader: reloader, nextPageFunc: load) { item in
-        CardView {
-          IndexItemView(index: item)
-        }
+        IndexItemView(index: item)
       }.padding(8)
     }
     .navigationTitle("相关目录")

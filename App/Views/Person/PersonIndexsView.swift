@@ -48,9 +48,7 @@ struct PersonIndexsView: View {
     } else {
       VStack(spacing: 8) {
         ForEach(indexes) { index in
-          CardView {
-            IndexItemView(index: index)
-          }
+          IndexItemView(index: index)
         }
       }.animation(.default, value: indexes)
     }

@@ -32,9 +32,7 @@ struct CharacterCastListView: View {
     }
     ScrollView {
       PageView<CharacterCastDTO, _>(reloader: reloader, nextPageFunc: load) { item in
-        CardView {
-          CharacterCastItemView(item: item)
-        }
+        CharacterCastItemView(item: item)
       }
       .padding(8)
     }

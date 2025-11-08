@@ -6,9 +6,6 @@ struct SubjectCommentItemView: View {
 
   @State private var reactions: [ReactionDTO]
 
-  @AppStorage("hideBlocklist") var hideBlocklist: Bool = false
-  @AppStorage("blocklist") var blocklist: [Int] = []
-
   init(subjectType: SubjectType, comment: SubjectCommentDTO) {
     self.subjectType = subjectType
     self.comment = comment
@@ -16,43 +13,42 @@ struct SubjectCommentItemView: View {
   }
 
   var body: some View {
-    if !hideBlocklist || !blocklist.contains(comment.user.id) {
-      CardView {
-        HStack(alignment: .top) {
-          ImageView(img: comment.user.avatar?.large)
-            .imageStyle(width: 32, height: 32)
-            .imageType(.avatar)
-            .imageLink(comment.user.link)
-          VStack(alignment: .leading) {
-            HStack {
-              Text(comment.user.nickname.withLink(comment.user.link))
-                .font(.footnote)
-                .lineLimit(1)
-              if comment.rate > 0 {
-                StarsView(score: Float(comment.rate), size: 10)
-              }
-              HStack(spacing: 2) {
-                Text("\(comment.type.description(subjectType))")
-                Text("@")
-                comment.updatedAt.relativeText.lineLimit(1)
-              }
-              .font(.caption)
-              .foregroundStyle(.secondary)
-              Spacer()
-              ReactionButton(type: .subjectCollect(comment.id), reactions: $reactions)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-            }
-            Text(comment.comment)
+    CardView {
+      HStack(alignment: .top) {
+        ImageView(img: comment.user.avatar?.large)
+          .imageStyle(width: 32, height: 32)
+          .imageType(.avatar)
+          .imageLink(comment.user.link)
+        VStack(alignment: .leading) {
+          HStack {
+            Text(comment.user.nickname.withLink(comment.user.link))
               .font(.footnote)
-              .textSelection(.enabled)
-            if !reactions.isEmpty {
-              ReactionsView(type: .subjectCollect(comment.id), reactions: $reactions)
+              .lineLimit(1)
+            if comment.rate > 0 {
+              StarsView(score: Float(comment.rate), size: 10)
             }
+            HStack(spacing: 2) {
+              Text("\(comment.type.description(subjectType))")
+              Text("@")
+              comment.updatedAt.relativeText.lineLimit(1)
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            Spacer()
+            ReactionButton(type: .subjectCollect(comment.id), reactions: $reactions)
+              .font(.footnote)
+              .foregroundStyle(.secondary)
           }
-          Spacer()
+          Text(comment.comment)
+            .font(.footnote)
+            .textSelection(.enabled)
+          if !reactions.isEmpty {
+            ReactionsView(type: .subjectCollect(comment.id), reactions: $reactions)
+          }
         }
+        Spacer()
       }
     }
+    .blocklistFilter(comment.user.id, placeholder: false)
   }
 }

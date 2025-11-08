@@ -52,7 +52,6 @@ struct CharacterCard: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 2) {
-      // Character Image
       ImageView(img: item.character.images?.medium)
         .imageStyle(width: 72, height: 108, alignment: .top)
         .imageType(.person)
@@ -60,28 +59,23 @@ struct CharacterCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .shadow(radius: 2)
 
-      // Character Name
       Text(item.character.name.withLink(item.character.link))
         .font(.footnote)
         .fontWeight(.medium)
         .lineLimit(2)
         .multilineTextAlignment(.leading)
 
-      // Role and Comment
-      HStack {
-        BorderView(padding: 2) {
-          Text(item.type.description)
-            .foregroundStyle(.secondary)
+      HStack(spacing: 2) {
+        BorderView(color: .secondary.opacity(0.3), padding: 2, cornerRadius: 8) {
+          Text(item.type.description).foregroundStyle(.secondary)
         }
         if let comment = item.character.comment, comment > 0, !isolationMode {
           Text("(+\(comment))")
             .lineLimit(1)
             .foregroundStyle(.accent)
         }
-        Spacer(minLength: 0)
       }.font(.caption)
 
-      // CV Information
       if let actor = item.actors.first {
         Text("CV \(actor.name.withLink(actor.link))")
           .font(.caption)

@@ -22,9 +22,7 @@ struct PersonCastsView: View {
     }.padding(.top, 5)
     VStack {
       ForEach(casts) { item in
-        CardView {
-          PersonCastItemView(item: item)
-        }
+        PersonCastItemView(item: item)
       }
     }
     .padding(.bottom, 8)

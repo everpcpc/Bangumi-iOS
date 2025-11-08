@@ -91,31 +91,3 @@ struct PostAdminOffTopicStateView: View {
     }
   }
 }
-
-struct FilterBlocklist: ViewModifier {
-  let uid: Int
-
-  @AppStorage("hideBlocklist") var hideBlocklist: Bool = false
-  @AppStorage("blocklist") var blocklist: [Int] = []
-
-  func body(content: Content) -> some View {
-    if hideBlocklist, blocklist.contains(uid) {
-      Rectangle()
-        .fill(
-          LinearGradient(
-            gradient: Gradient(colors: [Color.secondary, Color.clear]),
-            startPoint: .leading,
-            endPoint: .trailing)
-        )
-        .frame(height: 8)
-    } else {
-      content
-    }
-  }
-}
-
-extension View {
-  func filterBlocklist(_ uid: Int) -> some View {
-    modifier(FilterBlocklist(uid: uid))
-  }
-}

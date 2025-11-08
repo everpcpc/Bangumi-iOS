@@ -24,10 +24,7 @@ struct SubjectReviewListView: View {
     ScrollView {
       PageView<SubjectReviewDTO, _>(reloader: reloader, nextPageFunc: load) { review in
         if !hideBlocklist || !blocklist.contains(review.user.id) {
-          VStack {
-            SubjectReviewItemView(item: review)
-            Divider()
-          }.padding(.top, 2)
+          SubjectReviewItemView(item: review)
         }
       }.padding(.horizontal, 8)
     }

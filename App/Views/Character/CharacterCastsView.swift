@@ -31,10 +31,7 @@ struct CharacterCastsView: View {
     }
     LazyVStack {
       ForEach(casts, id: \.subject.id) { item in
-        VStack {
-          CharacterCastItemView(item: item)
-          Divider()
-        }
+        CharacterCastItemView(item: item)
       }
     }.animation(.default, value: casts)
   }

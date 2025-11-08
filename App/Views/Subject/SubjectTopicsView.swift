@@ -50,34 +50,12 @@ struct SubjectTopicsView: View {
     VStack {
       ForEach(topics) { topic in
         if !hideBlocklist || !blocklist.contains(topic.creator?.id ?? 0) {
-          VStack {
-            HStack {
-              NavigationLink(value: NavDestination.subjectTopicDetail(topic.id)) {
-                Text(topic.title)
-                  .font(.callout)
-                  .lineLimit(1)
-              }.buttonStyle(.navigation)
-              Spacer()
-              if topic.replyCount ?? 0 > 0 {
-                Text("(+\(topic.replyCount ?? 0))")
-                  .font(.footnote)
-                  .foregroundStyle(.orange)
-              }
-            }
-            HStack {
-              Text(topic.createdAt.dateDisplay)
-                .lineLimit(1)
-                .foregroundStyle(.secondary)
-              Spacer()
-              if let creator = topic.creator {
-                Text(creator.nickname.withLink(creator.link))
-                  .lineLimit(1)
-              }
-            }.font(.footnote)
-          }.padding(.top, 2)
+          SubjectTopicItemView(topic: topic)
         }
       }
-    }.animation(.default, value: topics)
+    }
+    .buttonStyle(.navigation)
+    .animation(.default, value: topics)
   }
 }
 

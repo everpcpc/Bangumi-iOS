@@ -77,7 +77,6 @@ struct SubjectCollectsListView: View {
         PageView<SubjectCollectDTO, _>(limit: 20, reloader: reloader, nextPageFunc: load) {
           item in
           SubjectCollectRowView(collect: item, subjectType: subjectType)
-          Divider()
         }.padding(8)
       }
     }
@@ -95,49 +94,50 @@ struct SubjectCollectRowView: View {
   }
 
   var body: some View {
-    HStack(alignment: .top, spacing: 12) {
-      ImageView(img: collect.user.avatar?.large)
-        .imageStyle(width: 60, height: 60)
-        .imageType(.avatar)
-        .imageLink(collect.user.link)
+    CardView {
+      HStack(alignment: .top, spacing: 12) {
+        ImageView(img: collect.user.avatar?.large)
+          .imageStyle(width: 60, height: 60)
+          .imageType(.avatar)
+          .imageLink(collect.user.link)
 
-      VStack(alignment: .leading, spacing: 4) {
-        HStack {
-          Text(collect.user.nickname)
-            .font(.headline)
+        VStack(alignment: .leading, spacing: 4) {
+          HStack {
+            Text(collect.user.nickname)
+              .font(.headline)
 
-          Spacer()
+            Spacer()
 
-          Label(typeText, systemImage: collect.interest.type.icon)
-            .font(.caption)
-            .foregroundStyle(.secondary)
+            Label(typeText, systemImage: collect.interest.type.icon)
+              .font(.caption)
+              .foregroundStyle(.secondary)
+          }
+
+          HStack {
+            StarsView(score: Float(collect.interest.rate), size: 12)
+            Spacer()
+            collect.interest.updatedAt.relativeText
+              .font(.caption2)
+              .foregroundStyle(.tertiary)
+          }
+
+          if !collect.interest.tags.isEmpty {
+            Text("标签: \(collect.interest.tags.joined(separator: ", "))")
+              .font(.caption)
+              .foregroundStyle(.secondary)
+          }
+
+          if !collect.interest.comment.isEmpty {
+            Divider()
+            Text(collect.interest.comment)
+              .font(.caption)
+              .foregroundStyle(.secondary)
+              .lineLimit(3)
+          }
+
         }
-
-        HStack {
-          StarsView(score: Float(collect.interest.rate), size: 12)
-          Spacer()
-          collect.interest.updatedAt.relativeText
-            .font(.caption2)
-            .foregroundStyle(.tertiary)
-        }
-
-        if !collect.interest.tags.isEmpty {
-          Text("标签: \(collect.interest.tags.joined(separator: ", "))")
-            .font(.caption)
-            .foregroundStyle(.secondary)
-        }
-
-        if !collect.interest.comment.isEmpty {
-          Divider()
-          Text(collect.interest.comment)
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            .lineLimit(3)
-        }
-
       }
     }
-    .padding(.vertical, 4)
   }
 }
 

@@ -39,45 +39,45 @@ struct RakuenGroupTopicListView: View {
   var body: some View {
     PageView<GroupTopicDTO, _>(reloader: reloader, nextPageFunc: load) { topic in
       if !hideBlocklist || !blocklist.contains(topic.creator?.id ?? 0) {
-        CardView {
-          GroupTopicItemView(topic: topic)
-        }
+        RakuenGroupTopicItemView(topic: topic)
       }
     }
   }
 }
 
-struct GroupTopicItemView: View {
+struct RakuenGroupTopicItemView: View {
   let topic: GroupTopicDTO
 
   var body: some View {
-    HStack(alignment: .top) {
-      ImageView(img: topic.creator?.avatar?.large)
-        .imageStyle(width: 40, height: 40)
-        .imageType(.avatar)
-        .imageLink(topic.link)
-      VStack(alignment: .leading) {
-        Section {
-          Text(topic.title.withLink(topic.link))
-            .font(.headline)
-            + Text("(+\(topic.replyCount))")
-            .font(.footnote)
-            .foregroundStyle(.secondary)
-        }
-        HStack {
-          topic.updatedAt.relativeText
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            .lineLimit(1)
-          Spacer()
-          NavigationLink(value: NavDestination.group(topic.group.name)) {
-            Text(topic.group.title)
+    CardView {
+      HStack(alignment: .top) {
+        ImageView(img: topic.creator?.avatar?.large)
+          .imageStyle(width: 40, height: 40)
+          .imageType(.avatar)
+          .imageLink(topic.link)
+        VStack(alignment: .leading) {
+          Section {
+            Text(topic.title.withLink(topic.link))
+              .font(.headline)
+              + Text("(+\(topic.replyCount))")
               .font(.footnote)
+              .foregroundStyle(.secondary)
+          }
+          HStack {
+            topic.updatedAt.relativeText
+              .font(.caption)
+              .foregroundStyle(.secondary)
               .lineLimit(1)
-          }.buttonStyle(.scale)
+            Spacer()
+            NavigationLink(value: NavDestination.group(topic.group.name)) {
+              Text(topic.group.title)
+                .font(.footnote)
+                .lineLimit(1)
+            }.buttonStyle(.scale)
+          }
         }
+        Spacer()
       }
-      Spacer()
     }
   }
 }

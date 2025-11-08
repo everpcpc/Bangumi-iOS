@@ -1082,6 +1082,7 @@ struct IndexDTO: Codable, Identifiable, Hashable, Linkable {
 struct SlimIndexDTO: Codable, Identifiable, Hashable, Linkable {
   var id: Int
   var uid: Int
+  var user: SlimUserDTO? = nil
   var type: Int
   var title: String
   var `private`: Bool
@@ -1093,6 +1094,7 @@ struct SlimIndexDTO: Codable, Identifiable, Hashable, Linkable {
   init(_ index: IndexDTO) {
     self.id = index.id
     self.uid = index.uid
+    self.user = index.user
     self.type = index.type
     self.title = index.title
     self.private = index.private

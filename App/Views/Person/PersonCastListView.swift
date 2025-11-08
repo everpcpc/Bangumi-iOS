@@ -31,9 +31,7 @@ struct PersonCastListView: View {
     }
     ScrollView {
       PageView<PersonCastDTO, _>(reloader: reloader, nextPageFunc: load) { item in
-        CardView {
-          PersonCastItemView(item: item)
-        }
+        PersonCastItemView(item: item)
       }
       .padding(8)
     }
