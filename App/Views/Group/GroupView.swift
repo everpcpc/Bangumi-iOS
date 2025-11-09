@@ -173,13 +173,13 @@ struct GroupDetailView: View {
               joinGroup()
             } label: {
               Label("加入这个小组", systemImage: "plus")
-            }
+            }.disabled(true)
           } else {
             Button(role: .destructive) {
               leaveGroup()
             } label: {
               Label("退出这个小组", systemImage: "xmark.bin")
-            }
+            }.disabled(true)
           }
           Divider()
           ShareLink(item: shareLink) {
