@@ -450,7 +450,7 @@ var textRenders: [BBType: TextRender] {
           "gif", "png", "jpg", "jpeg",
           "webp", "heic", "heif", "jxl",
         ]
-        let ext = url.split(separator: ".").last?.lowercased() ?? "unknown"
+        let ext = link.pathExtension.lowercased()
         if !allowed.contains(ext) {
           var content = AttributedString(url + "\n")
           content.link = link
