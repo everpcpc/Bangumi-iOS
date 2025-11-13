@@ -1125,6 +1125,7 @@ enum ReactionType {
   case subjectReply(Int)
   case episodeReply(Int)
   case subjectCollect(Int)
+  case timelineStatus(Int)
 
   var value: Int {
     switch self {
@@ -1136,6 +1137,8 @@ enum ReactionType {
       return 11
     case .subjectCollect:
       return 40
+    case .timelineStatus:
+      return 50
     }
   }
 
@@ -1158,6 +1161,8 @@ enum ReactionType {
       return "episodes/-/comments/\(relatedID)"
     case .subjectCollect(let relatedID):
       return "subjects/-/collects/\(relatedID)"
+    case .timelineStatus(let relatedID):
+      return "timeline/\(relatedID)"
     }
   }
 }

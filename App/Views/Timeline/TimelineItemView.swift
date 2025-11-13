@@ -12,19 +12,23 @@ struct TimelineItemView: View {
   @State private var showTime = false
 
   var showReactions: Bool {
-    if item.cat != .subject {
+    switch item.cat {
+    case .status:
+      return true
+    case .subject:
+      if item.batch {
+        return false
+      }
+      guard let collect = item.memo.subject?.first else {
+        return false
+      }
+      if collect.comment.isEmpty {
+        return false
+      }
+      return true
+    default:
       return false
     }
-    if item.batch {
-      return false
-    }
-    guard let collect = item.memo.subject?.first else {
-      return false
-    }
-    if collect.comment.isEmpty {
-      return false
-    }
-    return true
   }
 
   var collectID: Int? {
@@ -37,9 +41,7 @@ struct TimelineItemView: View {
   init(item: TimelineDTO, previousUID: Int?) {
     self.item = item
     self.previousUID = previousUID
-    if item.cat == .subject, !item.batch, let collect = item.memo.subject?.first,
-      !collect.comment.isEmpty, let reactions = collect.reactions
-    {
+    if let reactions = item.reactions {
       self._reactions = State(initialValue: reactions)
     } else {
       self._reactions = State(initialValue: [])
@@ -188,15 +190,27 @@ struct TimelineItemView: View {
         default:
           Text(item.desc)
         }
-        if showReactions, let collectID = collectID, !reactions.isEmpty {
-          ReactionsView(type: .subjectCollect(collectID), reactions: $reactions)
+        if showReactions {
+          switch item.cat {
+          case .status:
+            ReactionButton(type: .timelineStatus(item.id), reactions: $reactions)
+          case .subject:
+            if let collectID = collectID {
+              ReactionButton(type: .subjectCollect(collectID), reactions: $reactions)
+            }
+          default:
+            EmptyView()
+          }
         }
         HStack {
           if isAuthenticated {
-            if item.cat == .status, item.type == 1 {
-              NavigationLink(value: NavDestination.timeline(item)) {
-                Text(item.replies > 0 ? "\(item.replies) 回复 " : "回复")
-              }.buttonStyle(.navigation)
+            if item.cat == .status {
+              ReactionButton(type: .timelineStatus(item.id), reactions: $reactions)
+              if item.type == 1 {
+                NavigationLink(value: NavDestination.timeline(item)) {
+                  Text(item.replies > 0 ? "\(item.replies) 回复 " : "回复")
+                }.buttonStyle(.navigation)
+              }
             } else if showReactions, let collectID = collectID {
               ReactionButton(type: .subjectCollect(collectID), reactions: $reactions)
             }

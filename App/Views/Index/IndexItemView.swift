@@ -15,13 +15,14 @@ struct IndexItemView: View {
             Text("更新").foregroundStyle(.secondary.opacity(0.5))
             Text(index.updatedAt.datetimeDisplay).foregroundStyle(.secondary)
             Spacer()
-            if let user = index.user {
-              Text("by").foregroundStyle(.secondary.opacity(0.5))
+          }.font(.footnote)
+          if let user = index.user {
+            HStack(spacing: 2) {
+              Text("by").foregroundStyle(.secondary)
               Text(user.nickname.withLink(user.link))
                 .lineLimit(1)
-                .foregroundStyle(.secondary)
-            }
-          }.font(.footnote)
+            }.font(.footnote)
+          }
           HStack(spacing: 5) {
             if let count = index.stats.subject.book, count > 0 {
               Label("\(count)", systemImage: SubjectType.book.icon)

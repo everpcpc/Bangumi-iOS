@@ -2,13 +2,12 @@ import Flow
 import SwiftUI
 
 struct ReactionsView: View {
-  @AppStorage("enableReactions") var enableReactions: Bool = true
-
   let type: ReactionType
   @Binding var reactions: [ReactionDTO]
 
   @AppStorage("profile") var profile: Profile = Profile()
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
+  @AppStorage("enableReactions") var enableReactions: Bool = true
 
   @State private var updating = false
 
@@ -110,13 +109,13 @@ struct ReactionsView: View {
 }
 
 struct ReactionButton: View {
-  @AppStorage("enableReactions") var enableReactions: Bool = true
 
   let type: ReactionType
   @Binding var reactions: [ReactionDTO]
 
   @AppStorage("profile") var profile: Profile = Profile()
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
+  @AppStorage("enableReactions") var enableReactions: Bool = true
 
   @State private var showPopover = false
   @State private var updating = false

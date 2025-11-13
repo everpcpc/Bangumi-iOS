@@ -857,6 +857,7 @@ struct TimelineDTO: Codable, Identifiable, Hashable {
   var replies: Int
   var createdAt: Int
   var user: SlimUserDTO?
+  var reactions: [ReactionDTO]?
 }
 
 struct TimelineMemoDTO: Codable, Hashable {
@@ -963,7 +964,6 @@ struct TimelineSubjectDTO: Codable, Hashable {
   var comment: String
   var rate: Float
   var collectID: Int?
-  var reactions: [ReactionDTO]?
 }
 
 struct TimelineWikiDTO: Codable, Hashable {
