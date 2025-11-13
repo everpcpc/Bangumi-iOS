@@ -72,7 +72,7 @@ struct ReactionsView: View {
   }
 
   var body: some View {
-    if enableReactions {
+    if enableReactions, !reactions.isEmpty {
       HFlow {
         ForEach(reactions, id: \.value) { reaction in
           Button {

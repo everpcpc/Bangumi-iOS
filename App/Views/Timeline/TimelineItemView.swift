@@ -193,10 +193,10 @@ struct TimelineItemView: View {
         if showReactions {
           switch item.cat {
           case .status:
-            ReactionButton(type: .timelineStatus(item.id), reactions: $reactions)
+            ReactionsView(type: .timelineStatus(item.id), reactions: $reactions)
           case .subject:
             if let collectID = collectID {
-              ReactionButton(type: .subjectCollect(collectID), reactions: $reactions)
+              ReactionsView(type: .subjectCollect(collectID), reactions: $reactions)
             }
           default:
             EmptyView()
@@ -204,15 +204,22 @@ struct TimelineItemView: View {
         }
         HStack {
           if isAuthenticated {
-            if item.cat == .status {
-              ReactionButton(type: .timelineStatus(item.id), reactions: $reactions)
+            switch item.cat {
+            case .status:
+              if showReactions {
+                ReactionButton(type: .timelineStatus(item.id), reactions: $reactions)
+              }
               if item.type == 1 {
                 NavigationLink(value: NavDestination.timeline(item)) {
                   Text(item.replies > 0 ? "\(item.replies) 回复 " : "回复")
                 }.buttonStyle(.navigation)
               }
-            } else if showReactions, let collectID = collectID {
-              ReactionButton(type: .subjectCollect(collectID), reactions: $reactions)
+            case .subject:
+              if showReactions, let collectID = collectID {
+                ReactionButton(type: .subjectCollect(collectID), reactions: $reactions)
+              }
+            default:
+              EmptyView()
             }
           }
           Button {
