@@ -22,6 +22,12 @@ struct SettingsView: View {
   @State private var spotlightProgress: CGFloat = 0
   @State private var logoutConfirm: Bool = false
 
+  private var privacyPolicyURL: String {
+    let langCode = Locale.current.language.languageCode?.identifier ?? "zh"
+    let lang = langCode.hasPrefix("zh") ? "zh" : "en"
+    return "https://bangumi.github.io/Bangumi-iOS/privacy/\(lang)/"
+  }
+
   func reindex() {
     spotlightRefreshing = true
     spotlightProgress = 0
@@ -119,7 +125,7 @@ struct SettingsView: View {
           Spacer()
           Text(Chii.shared.version).foregroundStyle(.secondary)
         }
-        Link(destination: URL(string: "https://bangumi.github.io/Bangumi-iOS/privacy-policy/")!) {
+        Link(destination: URL(string: privacyPolicyURL)!) {
           Text("隐私政策")
         }
         Link(destination: URL(string: "https://discord.gg/nZPTwzXxAX")!) {
