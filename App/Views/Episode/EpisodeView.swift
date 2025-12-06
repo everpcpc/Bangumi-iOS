@@ -6,6 +6,7 @@ struct EpisodeView: View {
 
   @AppStorage("shareDomain") var shareDomain: ShareDomain = .chii
   @AppStorage("isolationMode") var isolationMode: Bool = false
+  @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
 
   @Environment(\.dismiss) private var dismiss
 
@@ -104,12 +105,14 @@ struct EpisodeView: View {
           } label: {
             Label("吐槽", systemImage: "plus.bubble")
           }
+          .disabled(!isAuthenticated)
           Divider()
           Button {
             showIndexPicker = true
           } label: {
             Label("收藏", systemImage: "book")
           }
+          .disabled(!isAuthenticated)
           ShareLink(item: shareLink) {
             Label("分享", systemImage: "square.and.arrow.up")
           }

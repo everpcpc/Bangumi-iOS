@@ -280,6 +280,7 @@ struct IndexView: View {
             } label: {
               Label("留言", systemImage: "plus.bubble")
             }
+            .disabled(!isAuthenticated)
           }
           Divider()
           Button {
@@ -287,6 +288,7 @@ struct IndexView: View {
           } label: {
             Label("报告疑虑", systemImage: "exclamationmark.triangle")
           }
+          .disabled(!isAuthenticated)
           ShareLink(item: shareLink) {
             Label("分享", systemImage: "square.and.arrow.up")
           }

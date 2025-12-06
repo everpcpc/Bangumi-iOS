@@ -8,6 +8,7 @@ struct SubjectTopicDetailView: View {
   @AppStorage("profile") var profile: Profile = Profile()
   @AppStorage("replySortOrder") var replySortOrder: ReplySortOrder = .ascending
   @AppStorage("friendlist") var friendlist: [Int] = []
+  @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
 
   @State private var topic: SubjectTopicDTO?
   @State private var refreshed = false
@@ -258,6 +259,7 @@ struct SubjectTopicDetailView: View {
           } label: {
             Label("回复", systemImage: "plus.bubble")
           }
+          .disabled(!isAuthenticated)
           if let authorID = topic?.creatorID, profile.user.id == authorID {
             Button {
               showEditBox = true
@@ -271,11 +273,13 @@ struct SubjectTopicDetailView: View {
           } label: {
             Label("收藏", systemImage: "book")
           }
+          .disabled(!isAuthenticated)
           Button {
             showReportView = true
           } label: {
             Label("报告疑虑", systemImage: "exclamationmark.triangle")
           }
+          .disabled(!isAuthenticated)
           ShareLink(item: shareLink) {
             Label("分享", systemImage: "square.and.arrow.up")
           }

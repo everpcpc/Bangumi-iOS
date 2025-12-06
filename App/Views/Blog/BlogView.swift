@@ -7,6 +7,7 @@ struct BlogView: View {
 
   @AppStorage("shareDomain") var shareDomain: ShareDomain = .chii
   @AppStorage("isolationMode") var isolationMode: Bool = false
+  @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
 
   @State private var refreshed: Bool = false
   @State private var blog: BlogEntryDTO?
@@ -134,17 +135,20 @@ struct BlogView: View {
           } label: {
             Label("吐槽", systemImage: "plus.bubble")
           }
+          .disabled(!isAuthenticated)
           Divider()
           Button {
             showIndexPicker = true
           } label: {
             Label("收藏", systemImage: "book")
           }
+          .disabled(!isAuthenticated)
           Button {
             showReportView = true
           } label: {
             Label("报告疑虑", systemImage: "exclamationmark.triangle")
           }
+          .disabled(!isAuthenticated)
           ShareLink(item: shareLink) {
             Label("分享", systemImage: "square.and.arrow.up")
           }

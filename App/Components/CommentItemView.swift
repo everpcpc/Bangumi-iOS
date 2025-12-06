@@ -103,6 +103,7 @@ struct CommentItemNormalView: View {
 
   @AppStorage("profile") var profile: Profile = Profile()
   @AppStorage("friendlist") var friendlist: [Int] = []
+  @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
 
   @State private var showReplyBox: Bool = false
   @State private var showEditBox: Bool = false
@@ -142,6 +143,7 @@ struct CommentItemNormalView: View {
                 Image(systemName: "bubble.fill")
                   .foregroundStyle(.secondary.opacity(0.5))
               }
+              .disabled(!isAuthenticated)
               if case .episode(let id) = type {
                 ReactionButton(type: .episodeReply(id), reactions: $reactions)
               }
@@ -166,6 +168,7 @@ struct CommentItemNormalView: View {
                 } label: {
                   Label("报告疑虑", systemImage: "exclamationmark.triangle")
                 }
+                .disabled(!isAuthenticated)
                 ShareLink(item: type.shareLink(commentId: comment.id)) {
                   Label("分享", systemImage: "square.and.arrow.up")
                 }
@@ -279,6 +282,7 @@ struct CommentSubReplyNormalView: View {
 
   @AppStorage("profile") var profile: Profile = Profile()
   @AppStorage("friendlist") var friendlist: [Int] = []
+  @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
 
   @State private var showReplyBox: Bool = false
   @State private var showEditBox: Bool = false
@@ -329,6 +333,7 @@ struct CommentSubReplyNormalView: View {
               Image(systemName: "bubble.fill")
                 .foregroundStyle(.secondary.opacity(0.5))
             }
+            .disabled(!isAuthenticated)
             if case .episode(let id) = type {
               ReactionButton(type: .episodeReply(id), reactions: $reactions)
             }
@@ -353,6 +358,7 @@ struct CommentSubReplyNormalView: View {
               } label: {
                 Label("报告疑虑", systemImage: "exclamationmark.triangle")
               }
+              .disabled(!isAuthenticated)
               ShareLink(item: type.shareLink(commentId: reply.id)) {
                 Label("分享", systemImage: "square.and.arrow.up")
               }

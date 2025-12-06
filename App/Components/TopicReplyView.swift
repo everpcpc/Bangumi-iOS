@@ -87,6 +87,7 @@ struct ReplyItemNormalView: View {
 
   @AppStorage("profile") var profile: Profile = Profile()
   @AppStorage("friendlist") var friendlist: [Int] = []
+  @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
 
   @State private var showReplyBox: Bool = false
   @State private var showEditBox: Bool = false
@@ -138,6 +139,7 @@ struct ReplyItemNormalView: View {
                 Image(systemName: "bubble.fill")
                   .foregroundStyle(.secondary.opacity(0.5))
               }
+              .disabled(!isAuthenticated)
               switch type {
               case .subject:
                 ReactionButton(type: .subjectReply(reply.id), reactions: $reactions)
@@ -165,6 +167,7 @@ struct ReplyItemNormalView: View {
                 } label: {
                   Label("报告疑虑", systemImage: "exclamationmark.triangle")
                 }
+                .disabled(!isAuthenticated)
                 ShareLink(item: type.shareLink(topicId: topicId, postId: reply.id)) {
                   Label("分享", systemImage: "square.and.arrow.up")
                 }
@@ -265,6 +268,7 @@ struct SubReplyNormalView: View {
 
   @AppStorage("profile") var profile: Profile = Profile()
   @AppStorage("friendlist") var friendlist: [Int] = []
+  @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
 
   @State private var showReplyBox: Bool = false
   @State private var showEditBox: Bool = false
@@ -323,6 +327,7 @@ struct SubReplyNormalView: View {
               Image(systemName: "bubble.fill")
                 .foregroundStyle(.secondary.opacity(0.5))
             }
+            .disabled(!isAuthenticated)
             switch type {
             case .subject:
               ReactionButton(type: .subjectReply(subreply.id), reactions: $reactions)
@@ -350,6 +355,7 @@ struct SubReplyNormalView: View {
               } label: {
                 Label("报告疑虑", systemImage: "exclamationmark.triangle")
               }
+              .disabled(!isAuthenticated)
               ShareLink(item: type.shareLink(topicId: topicId, postId: subreply.id)) {
                 Label("分享", systemImage: "square.and.arrow.up")
               }
