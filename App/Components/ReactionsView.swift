@@ -167,10 +167,10 @@ struct ReactionButton: View {
   @ViewBuilder
   var buttonLabel: some View {
     if showLabel {
-      Label(labelText, systemImage: "heart.circle")
+      Label(labelText, systemImage: "heart")
         .font(.subheadline)
     } else {
-      Image(systemName: "heart.circle")
+      Image(systemName: "heart")
     }
   }
 

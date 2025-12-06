@@ -42,40 +42,40 @@ struct ReplyActionButtons: View {
         Button {
           onReply()
         } label: {
-          Image(systemName: "bubble.left.circle")
+          Image(systemName: "quote.bubble")
         }
         .disabled(!isAuthenticated)
         if let reactionType = reactionType {
           ReactionButton(type: reactionType, reactions: $reactions)
         }
-      }
-      Menu {
-        if isOwner, let onEdit = onEdit {
-          Button {
-            onEdit()
-          } label: {
-            Text("编辑")
+        Menu {
+          if isOwner, let onEdit = onEdit {
+            Button {
+              onEdit()
+            } label: {
+              Label("编辑", systemImage: "pencil")
+            }
+            Divider()
+            Button(role: .destructive) {
+              onDelete()
+            } label: {
+              Label("删除", systemImage: "trash")
+            }
+            .disabled(updating)
           }
           Divider()
-          Button(role: .destructive) {
-            onDelete()
+          Button {
+            onReport()
           } label: {
-            Text("删除")
+            Label("报告疑虑", systemImage: "exclamationmark.triangle")
           }
-          .disabled(updating)
-        }
-        Divider()
-        Button {
-          onReport()
+          .disabled(!isAuthenticated)
+          ShareLink(item: shareLink) {
+            Label("分享", systemImage: "square.and.arrow.up")
+          }
         } label: {
-          Label("报告疑虑", systemImage: "exclamationmark.triangle")
+          Image(systemName: "ellipsis.circle")
         }
-        .disabled(!isAuthenticated)
-        ShareLink(item: shareLink) {
-          Label("分享", systemImage: "square.and.arrow.up")
-        }
-      } label: {
-        Image(systemName: "ellipsis.circle")
       }
     }
     .padding(.trailing, 8)
