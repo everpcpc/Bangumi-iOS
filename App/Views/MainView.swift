@@ -14,9 +14,9 @@ struct MainView: View {
 
   var discoverTabRole: TabRole? {
     if UIDevice.current.userInterfaceIdiom == .pad {
-      return .search
-    } else {
       return nil
+    } else {
+      return .search
     }
   }
 
