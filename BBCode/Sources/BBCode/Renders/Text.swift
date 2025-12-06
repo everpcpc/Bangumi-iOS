@@ -626,6 +626,35 @@ var textRenders: [BBType: TextRender] {
         )
       )
     },
+    .ruby: { (n: Node, args: [String: Any]?) in
+      let textSize = args?["textSize"] as? Int ?? 16
+      let rubySize = CGFloat(textSize) * 0.5
+      let offset = CGFloat(textSize) * 0.6
+
+      switch n.renderInnerText(args) {
+      case .string(let content):
+        if n.attr.isEmpty {
+          return .string(content)
+        } else {
+          // Create inline ruby annotation - place annotation after base text with superscript
+          let baseStr = content
+          var rubyStr = AttributedString("(\(n.attr))")
+          rubyStr.font = .system(size: rubySize)
+          rubyStr.baselineOffset = offset
+          return .string(baseStr + rubyStr)
+        }
+      case .text(let content):
+        if n.attr.isEmpty {
+          return .text(content)
+        } else {
+          // For Text, append annotation as superscript
+          let ruby = Text("(\(n.attr))").font(.system(size: rubySize)).baselineOffset(offset)
+          return .text(content + ruby)
+        }
+      case .view(_):
+        return .string(AttributedString())
+      }
+    },
     .bgm: { (n: Node, args: [String: Any]?) in
       let bgmId = Int(n.attr) ?? 24
       let textSize = args?["textSize"] as? Int ?? 16
