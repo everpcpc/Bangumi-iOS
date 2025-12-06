@@ -828,18 +828,20 @@ struct MainPostContentView: View {
   let idx: Int
   let reply: ReplyDTO
   let author: SlimUserDTO?
+  @Binding var reactions: [ReactionDTO]
 
   @AppStorage("friendlist") var friendlist: [Int] = []
 
-  @State private var reactions: [ReactionDTO]
-
-  init(type: TopicParentType, topicId: Int, idx: Int, reply: ReplyDTO, author: SlimUserDTO?) {
+  init(
+    type: TopicParentType, topicId: Int, idx: Int, reply: ReplyDTO, author: SlimUserDTO?,
+    reactions: Binding<[ReactionDTO]>
+  ) {
     self.type = type
     self.topicId = topicId
     self.idx = idx
     self.reply = reply
     self.author = author
-    self._reactions = State(initialValue: reply.reactions ?? [])
+    self._reactions = reactions
   }
 
   var body: some View {

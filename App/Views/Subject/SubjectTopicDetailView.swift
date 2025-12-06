@@ -140,9 +140,10 @@ struct SubjectTopicDetailView: View {
               VStack(alignment: .leading) {
                 MainPostContentView(
                   type: .subject(topic.subject.id), topicId: topicId, idx: 0,
-                  reply: mainPost, author: topic.creator)
+                  reply: mainPost, author: topic.creator,
+                  reactions: $mainPostReactions)
 
-                HStack(spacing: 16) {
+                HStack {
                   Spacer()
 
                   Button {
@@ -169,9 +170,10 @@ struct SubjectTopicDetailView: View {
                   }
                   .disabled(!isAuthenticated)
 
-                  TopicReactionButton(
+                  ReactionButton(
                     type: ReactionType.subjectReply(mainPost.id),
-                    reactions: $mainPostReactions
+                    reactions: $mainPostReactions,
+                    showLabel: true
                   )
                 }
                 .foregroundStyle(.secondary)
