@@ -120,11 +120,6 @@ struct SettingsView: View {
       }
 
       Section(header: Text("关于")) {
-        HStack {
-          Text("版本")
-          Spacer()
-          Text(Chii.shared.version).foregroundStyle(.secondary)
-        }
         Link(destination: URL(string: privacyPolicyURL)!) {
           Text("隐私政策")
         }
@@ -133,6 +128,11 @@ struct SettingsView: View {
         }
         Link(destination: URL(string: "https://github.com/bangumi/Bangumi-iOS")!) {
           Text("查看源码(GitHub)")
+        }
+        HStack {
+          Spacer()
+          Text(Chii.shared.version).foregroundStyle(.secondary)
+          Spacer()
         }
       }
 

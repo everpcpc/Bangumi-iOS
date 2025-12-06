@@ -3,6 +3,7 @@ import Foundation
 import KeychainSwift
 import OSLog
 import SwiftData
+import UIKit
 
 let APP_DOMAIN = "com.everpcpc.chobits"
 
@@ -65,8 +66,10 @@ actor Chii {
     guard let build = plist["CFBundleVersion"] as? String else {
       fatalError("Could not find CFBundleVersion in Info.plist")
     }
-    self.version = "v\(version)b\(build)"
-    self.userAgent = "everpcpc/Bangumi/\(self.version) (iOS)"
+    let device = MainActor.assumeIsolated { UIDevice.current.model }
+    let osVersion = MainActor.assumeIsolated { UIDevice.current.systemVersion }
+    self.version = "\(version) (build \(build))"
+    self.userAgent = "Bangumi/\(version) (\(device); iOS \(osVersion); Build \(build))"
     self.appInfo = AppInfo(
       clientId: clientId,
       clientSecret: clientSecret,
