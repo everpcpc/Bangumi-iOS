@@ -15,6 +15,7 @@ struct SettingsView: View {
   @AppStorage("hideBlocklist") var hideBlocklist: Bool = false
   @AppStorage("autoCompleteProgress") var autoCompleteProgress: Bool = false
   @AppStorage("enableReactions") var enableReactions: Bool = true
+  @AppStorage("replySortOrder") var replySortOrder: ReplySortOrder = .ascending
 
   @Environment(\.modelContext) var modelContext
 
@@ -94,6 +95,11 @@ struct SettingsView: View {
         Picker(selection: $subjectImageQuality, label: Text("条目封面图片质量")) {
           ForEach(ImageQuality.allCases, id: \.self) { quality in
             Text(quality.desc).tag(quality)
+          }
+        }
+        Picker(selection: $replySortOrder, label: Text("话题回复排序")) {
+          ForEach(ReplySortOrder.allCases, id: \.self) { order in
+            Text(order.description).tag(order)
           }
         }
       }

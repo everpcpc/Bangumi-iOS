@@ -7,7 +7,7 @@ struct GroupTopicListView: View {
   @AppStorage("blocklist") var blocklist: [Int] = []
 
   var title: String {
-    "小组讨论"
+    "小组话题"
   }
 
   func loadTopics(limit: Int, offset: Int) async -> PagedDTO<TopicDTO>? {

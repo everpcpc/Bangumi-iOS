@@ -40,7 +40,7 @@
           },
           {
             "/": "/group/topic/\\d+",
-            "comment": "小组讨论页面"
+            "comment": "小组话题页面"
           }
         ]
       }

@@ -157,7 +157,7 @@ struct GroupDetailView: View {
             Label("成员列表", systemImage: "person.3")
           }
           NavigationLink(value: NavDestination.groupTopicList(group.name)) {
-            Label("讨论列表", systemImage: "bubble.left.and.bubble.right")
+            Label("话题列表", systemImage: "bubble.left.and.bubble.right")
           }
           Divider()
           if isAuthenticated, group.canCreateTopic {
@@ -266,7 +266,7 @@ struct GroupRecentTopicView: View {
     VStack(alignment: .leading) {
       VStack(spacing: 4) {
         HStack {
-          Text("小组最新讨论")
+          Text("小组最新话题")
             .font(.title3)
           if isAuthenticated {
             Button {
@@ -277,7 +277,7 @@ struct GroupRecentTopicView: View {
           }
           Spacer()
           NavigationLink(value: NavDestination.groupTopicList(group.name)) {
-            Text("更多小组讨论 »")
+            Text("更多小组话题 »")
               .font(.caption)
           }.buttonStyle(.navigation)
         }

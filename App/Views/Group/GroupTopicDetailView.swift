@@ -6,6 +6,8 @@ struct GroupTopicDetailView: View {
 
   @AppStorage("shareDomain") var shareDomain: ShareDomain = .chii
   @AppStorage("profile") var profile: Profile = Profile()
+  @AppStorage("replySortOrder") var replySortOrder: ReplySortOrder = .ascending
+  @AppStorage("friendlist") var friendlist: [Int] = []
 
   @State private var topic: GroupTopicDTO?
   @State private var refreshed = false
@@ -13,6 +15,9 @@ struct GroupTopicDetailView: View {
   @State private var showEditBox = false
   @State private var showIndexPicker = false
   @State private var showReportView = false
+  @State private var filterMode: ReplyFilterMode = .all
+  @State private var sortOrder: ReplySortOrder?
+  @State private var replyLimit: Double = 0  // 0 = show all, higher = show fewer
 
   var title: String {
     topic?.title ?? "讨论详情"
@@ -32,10 +37,75 @@ struct GroupTopicDetailView: View {
     }
   }
 
+  var effectiveSortOrder: ReplySortOrder {
+    sortOrder ?? replySortOrder
+  }
+
+  // Collect all timestamps (main replies + sub-replies) for time-based limiting
+  var allPostTimestamps: [Int] {
+    guard let topic = topic else { return [] }
+    let filtered = topic.replies.rest
+      .filtered(by: filterMode, posterID: topic.creatorID, friendlist: friendlist, myID: profile.id)
+
+    var timestamps: [Int] = []
+    for reply in filtered {
+      timestamps.append(reply.createdAt)
+      for subReply in reply.replies {
+        timestamps.append(subReply.createdAt)
+      }
+    }
+    return timestamps.sorted()
+  }
+
+  var maxReplyCount: Int {
+    allPostTimestamps.count
+  }
+
+  // Time cutoff based on slider position
+  var timeCutoff: Int? {
+    guard replyLimit > 0, maxReplyCount > 1 else { return nil }
+    let showCount = max(1, maxReplyCount - Int(replyLimit))
+    let timestamps = allPostTimestamps
+    if showCount < timestamps.count {
+      return timestamps[showCount - 1]
+    }
+    return nil
+  }
+
+  var filteredReplies: [ReplyDTO] {
+    guard let topic = topic else { return [] }
+    var filtered = topic.replies.rest
+      .filtered(by: filterMode, posterID: topic.creatorID, friendlist: friendlist, myID: profile.id)
+
+    // Apply time cutoff if set
+    if let cutoff = timeCutoff {
+      filtered = filtered.compactMap { reply in
+        // Check if main reply is within cutoff
+        if reply.createdAt <= cutoff {
+          // Filter sub-replies by cutoff too
+          var newReply = reply
+          newReply.replies = reply.replies.filter { $0.createdAt <= cutoff }
+          return newReply
+        } else {
+          // Check if any sub-reply is within cutoff
+          let validSubReplies = reply.replies.filter { $0.createdAt <= cutoff }
+          if !validSubReplies.isEmpty {
+            var newReply = reply
+            newReply.replies = validSubReplies
+            return newReply
+          }
+          return nil
+        }
+      }
+    }
+
+    return filtered.sorted(by: effectiveSortOrder)
+  }
+
   var body: some View {
     ScrollView {
       if let topic = topic {
-        VStack(alignment: .leading, spacing: 8) {
+        LazyVStack(alignment: .leading, spacing: 8, pinnedViews: [.sectionHeaders]) {
           CardView {
             VStack(alignment: .leading, spacing: 8) {
               HStack {
@@ -59,19 +129,58 @@ struct GroupTopicDetailView: View {
             }
           }
 
-          if !topic.replies.isEmpty {
-            LazyVStack(alignment: .leading, spacing: 8) {
-              ForEach(Array(zip(topic.replies.indices, topic.replies)), id: \.1) { idx, reply in
+          // Main post (first reply) - always shown prominently
+          if let mainPost = topic.replies.mainPost {
+            CardView {
+              ReplyItemView(
+                type: .group(topic.group.name), topicId: topicId, idx: 0,
+                reply: mainPost, author: topic.creator)
+            }
+            .background(Color.accentColor.opacity(0.03))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+          }
+
+          // Replies section with sticky slider header
+          Section {
+            // Filtered and sorted replies
+            if !filteredReplies.isEmpty {
+              ForEach(Array(filteredReplies.enumerated()), id: \.element) { displayIdx, reply in
+                let originalIdx =
+                  topic.replies.firstIndex(where: { $0.id == reply.id }) ?? displayIdx
                 ReplyItemView(
-                  type: .group(topic.group.name), topicId: topicId, idx: idx,
+                  type: .group(topic.group.name), topicId: topicId, idx: originalIdx,
                   reply: reply, author: topic.creator)
-                if reply.id != topic.replies.last?.id {
+                if reply.id != filteredReplies.last?.id {
                   Divider()
                 }
               }
+            } else if topic.replies.rest.count > 0 {
+              HStack {
+                Spacer()
+                Text("没有符合条件的回复")
+                  .font(.footnote)
+                  .foregroundStyle(.secondary)
+                Spacer()
+              }
+              .padding(.vertical, 8)
+            }
+          } header: {
+            // Sticky reply limit slider
+            if maxReplyCount > 1 {
+              Slider(
+                value: $replyLimit,
+                in: 0...Double(maxReplyCount - 1),
+                step: 1
+              )
+              .scaleEffect(x: -1, y: 1)
+              .padding(.horizontal, 4)
+              .padding(.vertical, 8)
             }
           }
         }
+        .animation(.default, value: filterMode)
+        .animation(.default, value: sortOrder)
+        .animation(.default, value: replyLimit)
         .padding(8)
         .refreshable {
           Task {
@@ -113,13 +222,40 @@ struct GroupTopicDetailView: View {
     .toolbar {
       ToolbarItem(placement: .topBarTrailing) {
         Menu {
+          Picker(selection: $filterMode) {
+            ForEach(ReplyFilterMode.allCases, id: \.self) { mode in
+              Label(mode.description, systemImage: mode.icon).tag(mode)
+            }
+          } label: {
+            Label("筛选", systemImage: filterMode.icon)
+          }
+          .pickerStyle(.menu)
+          .onChange(of: filterMode) {
+            replyLimit = 0
+          }
+
+          Picker(
+            selection: Binding(
+              get: { effectiveSortOrder },
+              set: { sortOrder = $0 }
+            )
+          ) {
+            ForEach(ReplySortOrder.allCases, id: \.self) { order in
+              Label(order.description, systemImage: order.icon).tag(order)
+            }
+          } label: {
+            Label("排序", systemImage: effectiveSortOrder.icon)
+          }
+          .pickerStyle(.menu)
+
+          Divider()
+
           Button {
             showReplyBox = true
           } label: {
             Label("回复", systemImage: "plus.bubble")
           }
           if let authorID = topic?.creatorID, profile.user.id == authorID {
-            Divider()
             Button {
               showEditBox = true
             } label: {
