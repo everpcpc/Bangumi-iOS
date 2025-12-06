@@ -108,11 +108,11 @@ struct BlogView: View {
           }
         }
         .sheet(isPresented: $showCommentBox) {
-          CreateCommentBoxView(type: .blog(blogId))
+          CreateCommentBoxSheet(type: .blog(blogId))
             .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showIndexPicker) {
-          IndexPickerView(
+          IndexPickerSheet(
             category: .blog,
             itemId: blogId,
             itemTitle: title
@@ -159,7 +159,7 @@ struct BlogView: View {
     }
     .sheet(isPresented: $showReportView) {
       if let blog = blog {
-        ReportView(reportType: .blog, itemId: blogId, itemTitle: blog.title, user: blog.user)
+        ReportSheet(reportType: .blog, itemId: blogId, itemTitle: blog.title, user: blog.user)
       }
     }
     .task(load)

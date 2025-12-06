@@ -317,7 +317,7 @@ struct IndexView: View {
     }
     .sheet(isPresented: $showEditIndex) {
       if let index = index {
-        IndexEditView(
+        IndexEditSheet(
           indexId: indexId, title: index.title, desc: index.desc, isPrivate: index.private
         ) {
           Task {
@@ -327,19 +327,19 @@ struct IndexView: View {
       }
     }
     .sheet(isPresented: $showAddRelated) {
-      IndexRelatedAddView(indexId: indexId) {
+      IndexRelatedAddSheet(indexId: indexId) {
         reloader.toggle()
       }
     }
     .sheet(isPresented: $showCommentBox) {
       if !isolationMode {
-        CreateCommentBoxView(type: .index(indexId))
+        CreateCommentBoxSheet(type: .index(indexId))
           .presentationDetents([.medium, .large])
       }
     }
     .sheet(isPresented: $showReportView) {
       if let index = index {
-        ReportView(reportType: .index, itemId: indexId, itemTitle: index.title, user: index.user)
+        ReportSheet(reportType: .index, itemId: indexId, itemTitle: index.title, user: index.user)
       }
     }
     .handoff(url: shareLink, title: index?.title ?? "目录")

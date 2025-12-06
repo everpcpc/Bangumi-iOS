@@ -373,7 +373,7 @@ struct IndexRelatedItemView: View {
       }
     }
     .sheet(isPresented: $showEditRelated) {
-      IndexRelatedEditView(
+      IndexRelatedEditSheet(
         indexId: item.rid, relatedId: item.id,
         order: item.order, comment: item.comment
       ) {

@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct IndexRelatedAddView: View {
+struct IndexRelatedAddSheet: View {
   @Environment(\.dismiss) var dismiss
 
   let indexId: Int
@@ -37,39 +37,7 @@ struct IndexRelatedAddView: View {
   }
 
   var body: some View {
-    VStack(spacing: 0) {
-      HStack {
-        Button {
-          dismiss()
-        } label: {
-          Label("取消", systemImage: "xmark")
-        }
-        .disabled(isSubmitting)
-        .adaptiveButtonStyle(.bordered)
-
-        Spacer()
-
-        Text("添加关联内容")
-          .font(.headline)
-          .fontWeight(.semibold)
-
-        Spacer()
-
-        Button {
-          Task {
-            await submit()
-          }
-        } label: {
-          Label("添加", systemImage: "plus")
-        }
-        .disabled(isSubmitting || subjectId.isEmpty)
-        .adaptiveButtonStyle(.borderedProminent)
-      }
-      .padding()
-      .background(Color(.systemBackground))
-
-      Divider()
-
+    NavigationStack {
       Form {
         Section {
           Picker("类型", selection: $selectedCategory) {
@@ -100,11 +68,33 @@ struct IndexRelatedAddView: View {
           Text("可选")
         }
       }
+      .navigationTitle("添加关联内容")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button {
+            dismiss()
+          } label: {
+            Label("取消", systemImage: "xmark")
+          }
+          .disabled(isSubmitting)
+        }
+        ToolbarItem(placement: .confirmationAction) {
+          Button {
+            Task {
+              await submit()
+            }
+          } label: {
+            Label("添加", systemImage: "plus")
+          }
+          .disabled(isSubmitting || subjectId.isEmpty)
+        }
+      }
     }
   }
 }
 
-struct IndexRelatedEditView: View {
+struct IndexRelatedEditSheet: View {
   @Environment(\.dismiss) var dismiss
 
   let indexId: Int
@@ -150,39 +140,7 @@ struct IndexRelatedEditView: View {
   }
 
   var body: some View {
-    VStack(spacing: 0) {
-      HStack {
-        Button {
-          dismiss()
-        } label: {
-          Label("取消", systemImage: "xmark")
-        }
-        .disabled(isSubmitting)
-        .adaptiveButtonStyle(.bordered)
-
-        Spacer()
-
-        Text("编辑关联内容")
-          .font(.headline)
-          .fontWeight(.semibold)
-
-        Spacer()
-
-        Button {
-          Task {
-            await submit()
-          }
-        } label: {
-          Label("保存", systemImage: "checkmark")
-        }
-        .disabled(isSubmitting || order.isEmpty)
-        .adaptiveButtonStyle(.borderedProminent)
-      }
-      .padding()
-      .background(Color(.systemBackground))
-
-      Divider()
-
+    NavigationStack {
       Form {
         TextField("排序", text: $order)
           .keyboardType(.numberPad)
@@ -197,6 +155,28 @@ struct IndexRelatedEditView: View {
                 .padding(.leading, 4)
             }
           }
+      }
+      .navigationTitle("编辑关联内容")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button {
+            dismiss()
+          } label: {
+            Label("取消", systemImage: "xmark")
+          }
+          .disabled(isSubmitting)
+        }
+        ToolbarItem(placement: .confirmationAction) {
+          Button {
+            Task {
+              await submit()
+            }
+          } label: {
+            Label("保存", systemImage: "checkmark")
+          }
+          .disabled(isSubmitting || order.isEmpty)
+        }
       }
     }
   }

@@ -117,7 +117,7 @@ struct UserView: View {
     .navigationBarTitleDisplayMode(.inline)
     .sheet(isPresented: $showReportView) {
       if let user = user {
-        ReportView(
+        ReportSheet(
           reportType: .user, itemId: user.userId, itemTitle: user.nickname, user: user.slim
         )
         .presentationDetents([.medium, .large])

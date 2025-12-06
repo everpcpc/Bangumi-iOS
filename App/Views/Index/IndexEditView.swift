@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct IndexEditView: View {
+struct IndexEditSheet: View {
   @Environment(\.dismiss) var dismiss
 
   let indexId: Int?
@@ -55,39 +55,7 @@ struct IndexEditView: View {
   }
 
   var body: some View {
-    VStack(spacing: 0) {
-      HStack {
-        Button {
-          dismiss()
-        } label: {
-          Label("取消", systemImage: "xmark")
-        }
-        .disabled(isSubmitting)
-        .adaptiveButtonStyle(.bordered)
-
-        Spacer()
-
-        Text(indexId == nil ? "创建目录" : "编辑目录")
-          .font(.headline)
-          .fontWeight(.semibold)
-
-        Spacer()
-
-        Button {
-          Task {
-            await submit()
-          }
-        } label: {
-          Label("保存", systemImage: "checkmark")
-        }
-        .disabled(isSubmitting || title.isEmpty || desc.isEmpty)
-        .adaptiveButtonStyle(.borderedProminent)
-      }
-      .padding()
-      .background(Color(.systemBackground))
-
-      Divider()
-
+    NavigationStack {
       Form {
         Section {
           TextField("标题", text: $title)
@@ -111,6 +79,28 @@ struct IndexEditView: View {
           Toggle("仅自己可见", isOn: $isPrivate)
         } header: {
           Text("隐私设置")
+        }
+      }
+      .navigationTitle(indexId == nil ? "创建目录" : "编辑目录")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button {
+            dismiss()
+          } label: {
+            Label("取消", systemImage: "xmark")
+          }
+          .disabled(isSubmitting)
+        }
+        ToolbarItem(placement: .confirmationAction) {
+          Button {
+            Task {
+              await submit()
+            }
+          } label: {
+            Label("保存", systemImage: "checkmark")
+          }
+          .disabled(isSubmitting || title.isEmpty || desc.isEmpty)
         }
       }
     }

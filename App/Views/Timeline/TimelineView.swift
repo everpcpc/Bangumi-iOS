@@ -89,11 +89,11 @@ struct TimelineView: View {
       }
     }
     .sheet(isPresented: $showCommentBox) {
-      CreateCommentBoxView(type: .timeline(item.id))
+      CreateCommentBoxSheet(type: .timeline(item.id))
         .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showReportView) {
-      ReportView(
+      ReportSheet(
         reportType: .timeline, itemId: item.id, itemTitle: "吐槽 #\(item.id)", user: item.user)
     }
   }

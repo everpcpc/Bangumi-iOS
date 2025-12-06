@@ -208,46 +208,46 @@ struct CommentItemNormalView: View {
       }
     }
     .sheet(isPresented: $showReplyBox) {
-      CreateCommentBoxView(type: type, comment: comment)
+      CreateCommentBoxSheet(type: type, comment: comment)
         .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showEditBox) {
-      EditCommentBoxView(type: type, comment: comment)
+      EditCommentBoxSheet(type: type, comment: comment)
         .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showReportView) {
       switch type {
       case .episode:
-        ReportView(
+        ReportSheet(
           reportType: .episodeReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)",
           user: comment.user
         )
         .presentationDetents([.medium, .large])
       case .character:
-        ReportView(
+        ReportSheet(
           reportType: .characterReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)",
           user: comment.user
         )
         .presentationDetents([.medium, .large])
       case .person:
-        ReportView(
+        ReportSheet(
           reportType: .personReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)",
           user: comment.user
         )
         .presentationDetents([.medium, .large])
       case .blog:
-        ReportView(
+        ReportSheet(
           reportType: .blogReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)", user: comment.user
         )
         .presentationDetents([.medium, .large])
       case .timeline:
-        ReportView(
+        ReportSheet(
           reportType: .timelineReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)",
           user: comment.user
         )
         .presentationDetents([.medium, .large])
       case .index:
-        ReportView(
+        ReportSheet(
           reportType: .indexReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)", user: comment.user
         )
         .presentationDetents([.medium, .large])
@@ -380,47 +380,47 @@ struct CommentSubReplyNormalView: View {
       }
     }
     .sheet(isPresented: $showReplyBox) {
-      CreateCommentBoxView(type: type, comment: comment, reply: reply)
+      CreateCommentBoxSheet(type: type, comment: comment, reply: reply)
         .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showEditBox) {
-      EditCommentBoxView(type: type, comment: comment, reply: reply)
+      EditCommentBoxSheet(type: type, comment: comment, reply: reply)
         .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showReportView) {
       switch type {
       case .episode:
-        ReportView(
+        ReportSheet(
           reportType: .episodeReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
           user: reply.user
         )
         .presentationDetents([.medium, .large])
       case .character:
-        ReportView(
+        ReportSheet(
           reportType: .characterReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
           user: reply.user
         )
         .presentationDetents([.medium, .large])
       case .person:
-        ReportView(
+        ReportSheet(
           reportType: .personReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
           user: reply.user
         )
         .presentationDetents([.medium, .large])
       case .blog:
-        ReportView(
+        ReportSheet(
           reportType: .blogReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
           user: reply.user
         )
         .presentationDetents([.medium, .large])
       case .timeline:
-        ReportView(
+        ReportSheet(
           reportType: .timelineReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
           user: reply.user
         )
         .presentationDetents([.medium, .large])
       case .index:
-        ReportView(
+        ReportSheet(
           reportType: .indexReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
           user: reply.user
         )
@@ -447,7 +447,7 @@ struct CommentSubReplyNormalView: View {
   }
 }
 
-struct CreateCommentBoxView: View {
+struct CreateCommentBoxSheet: View {
   let type: CommentParentType
   let comment: CommentDTO?
   let reply: CommentBaseDTO?
@@ -495,38 +495,7 @@ struct CreateCommentBoxView: View {
   }
 
   var body: some View {
-    VStack(spacing: 0) {
-      HStack {
-        Button {
-          dismiss()
-        } label: {
-          Label("取消", systemImage: "xmark")
-        }
-        .disabled(updating)
-        .adaptiveButtonStyle(.bordered)
-
-        Spacer()
-
-        Text(title)
-          .font(.headline)
-          .fontWeight(.semibold)
-          .lineLimit(1)
-
-        Spacer()
-
-        Button {
-          showTurnstile = true
-        } label: {
-          Label("发送", systemImage: "paperplane")
-        }
-        .disabled(content.isEmpty || updating)
-        .adaptiveButtonStyle(.borderedProminent)
-      }
-      .padding()
-      .background(Color(.systemBackground))
-
-      Divider()
-
+    NavigationStack {
       ScrollView {
         VStack {
           TextInputView(type: "回复", text: $content)
@@ -542,11 +511,31 @@ struct CreateCommentBoxView: View {
             }
         }.padding()
       }
+      .navigationTitle(title)
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button {
+            dismiss()
+          } label: {
+            Label("取消", systemImage: "xmark")
+          }
+          .disabled(updating)
+        }
+        ToolbarItem(placement: .confirmationAction) {
+          Button {
+            showTurnstile = true
+          } label: {
+            Label("发送", systemImage: "paperplane")
+          }
+          .disabled(content.isEmpty || updating)
+        }
+      }
     }
   }
 }
 
-struct EditCommentBoxView: View {
+struct EditCommentBoxSheet: View {
   let type: CommentParentType
   let comment: CommentDTO?
   let reply: CommentBaseDTO?
@@ -595,45 +584,34 @@ struct EditCommentBoxView: View {
   }
 
   var body: some View {
-    VStack(spacing: 0) {
-      HStack {
-        Button {
-          dismiss()
-        } label: {
-          Label("取消", systemImage: "xmark")
-        }
-        .disabled(updating)
-        .adaptiveButtonStyle(.bordered)
-
-        Spacer()
-
-        Text(title)
-          .font(.headline)
-          .fontWeight(.semibold)
-          .lineLimit(1)
-
-        Spacer()
-
-        Button {
-          Task {
-            await editComment(content: content)
-          }
-        } label: {
-          Label("保存", systemImage: "checkmark")
-        }
-        .disabled(content.isEmpty || updating)
-        .adaptiveButtonStyle(.borderedProminent)
-      }
-      .padding()
-      .background(Color(.systemBackground))
-
-      Divider()
-
+    NavigationStack {
       ScrollView {
         VStack {
           TextInputView(type: "回复", text: $content)
             .textInputStyle(bbcode: true)
         }.padding()
+      }
+      .navigationTitle(title)
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button {
+            dismiss()
+          } label: {
+            Label("取消", systemImage: "xmark")
+          }
+          .disabled(updating)
+        }
+        ToolbarItem(placement: .confirmationAction) {
+          Button {
+            Task {
+              await editComment(content: content)
+            }
+          } label: {
+            Label("保存", systemImage: "checkmark")
+          }
+          .disabled(content.isEmpty || updating)
+        }
       }
     }
   }

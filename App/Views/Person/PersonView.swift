@@ -94,11 +94,11 @@ struct PersonView: View {
           }
         }
         .sheet(isPresented: $showCommentBox) {
-          CreateCommentBoxView(type: .person(personId))
+          CreateCommentBoxSheet(type: .person(personId))
             .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showIndexPicker) {
-          IndexPickerView(
+          IndexPickerSheet(
             category: .person,
             itemId: personId,
             itemTitle: title

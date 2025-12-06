@@ -35,7 +35,7 @@ struct SubjectTopicsView: View {
     }
     .padding(.top, 5)
     .sheet(isPresented: $showCreateTopic) {
-      CreateTopicBoxView(type: .subject(subjectId))
+      CreateTopicBoxSheet(type: .subject(subjectId))
         .presentationDetents([.medium, .large])
     }
     if topics.count == 0 {

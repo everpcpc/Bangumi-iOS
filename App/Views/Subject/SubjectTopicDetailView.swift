@@ -235,17 +235,17 @@ struct SubjectTopicDetailView: View {
           }
         }
         .sheet(isPresented: $showReplyBox) {
-          CreateReplyBoxView(type: .subject(topic.subject.id), topicId: topicId)
+          CreateReplyBoxSheet(type: .subject(topic.subject.id), topicId: topicId)
             .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showEditBox) {
-          EditTopicBoxView(
+          EditTopicBoxSheet(
             type: .subject(topic.subject.id), topicId: topicId,
             title: topic.title, post: topic.replies.first
           ).presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showIndexPicker) {
-          IndexPickerView(
+          IndexPickerSheet(
             category: .subjectTopic,
             itemId: topicId,
             itemTitle: title
@@ -253,7 +253,7 @@ struct SubjectTopicDetailView: View {
           .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showReportView) {
-          ReportView(
+          ReportSheet(
             reportType: .subjectTopic, itemId: topicId, itemTitle: title, user: topic.creator
           )
           .presentationDetents([.medium, .large])

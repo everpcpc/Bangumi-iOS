@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct ReportView: View {
+struct ReportSheet: View {
   let reportType: ReportType
   let itemId: Int
   let itemTitle: String
@@ -32,40 +32,7 @@ struct ReportView: View {
   }
 
   var body: some View {
-    VStack(spacing: 0) {
-      HStack {
-        Button {
-          dismiss()
-        } label: {
-          Label("取消", systemImage: "xmark")
-        }
-        .disabled(submitting)
-        .adaptiveButtonStyle(.bordered)
-
-        Spacer()
-
-        Text("报告疑虑")
-          .font(.headline)
-          .fontWeight(.semibold)
-          .lineLimit(1)
-
-        Spacer()
-
-        Button {
-          Task {
-            await submitReport()
-          }
-        } label: {
-          Label("提交", systemImage: "paperplane")
-        }
-        .disabled(submitting || comment.count > 2000)
-        .adaptiveButtonStyle(.borderedProminent)
-      }
-      .padding()
-      .background(Color(.systemBackground))
-
-      Divider()
-
+    NavigationStack {
       ScrollView {
         VStack(alignment: .leading, spacing: 16) {
           VStack(alignment: .leading, spacing: 8) {
@@ -126,6 +93,28 @@ struct ReportView: View {
           }
         }
         .padding()
+      }
+      .navigationTitle("报告疑虑")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button {
+            dismiss()
+          } label: {
+            Label("取消", systemImage: "xmark")
+          }
+          .disabled(submitting)
+        }
+        ToolbarItem(placement: .confirmationAction) {
+          Button {
+            Task {
+              await submitReport()
+            }
+          } label: {
+            Label("提交", systemImage: "paperplane")
+          }
+          .disabled(submitting || comment.count > 2000)
+        }
       }
     }
   }

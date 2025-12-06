@@ -116,11 +116,11 @@ struct SubjectDetailView: View {
       }.padding(.horizontal, 8)
     }
     .sheet(isPresented: $showCreateTopic) {
-      CreateTopicBoxView(type: .subject(subject.subjectId))
+      CreateTopicBoxSheet(type: .subject(subject.subjectId))
         .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showIndexPicker) {
-      IndexPickerView(
+      IndexPickerSheet(
         category: .subject,
         itemId: subject.subjectId,
         itemTitle: subject.title

@@ -83,7 +83,7 @@ struct UserIndexListView: View {
       }
     }
     .sheet(isPresented: $showCreateIndex) {
-      IndexEditView {
+      IndexEditSheet {
         reloader.toggle()
       }
     }

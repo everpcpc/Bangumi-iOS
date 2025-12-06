@@ -234,17 +234,17 @@ struct GroupTopicDetailView: View {
           }
         }
         .sheet(isPresented: $showReplyBox) {
-          CreateReplyBoxView(type: .group(topic.group.name), topicId: topicId)
+          CreateReplyBoxSheet(type: .group(topic.group.name), topicId: topicId)
             .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showEditBox) {
-          EditTopicBoxView(
+          EditTopicBoxSheet(
             type: .group(topic.group.name), topicId: topicId,
             title: topic.title, post: topic.replies.first
           ).presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showIndexPicker) {
-          IndexPickerView(
+          IndexPickerSheet(
             category: .groupTopic,
             itemId: topicId,
             itemTitle: title
@@ -252,7 +252,7 @@ struct GroupTopicDetailView: View {
           .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showReportView) {
-          ReportView(
+          ReportSheet(
             reportType: .groupTopic, itemId: topicId, itemTitle: title, user: topic.creator
           )
           .presentationDetents([.medium, .large])

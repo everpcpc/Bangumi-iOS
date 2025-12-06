@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct IndexPickerView: View {
+struct IndexPickerSheet: View {
   let category: IndexRelatedCategory
   let itemId: Int
   let itemTitle: String
@@ -102,8 +102,10 @@ struct IndexPickerView: View {
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .topBarTrailing) {
-          Button("取消") {
+          Button {
             dismiss()
+          } label: {
+            Label("取消", systemImage: "xmark")
           }
         }
       }
@@ -115,7 +117,7 @@ struct IndexPickerView: View {
 }
 
 #Preview {
-  IndexPickerView(
+  IndexPickerSheet(
     category: .subject,
     itemId: 123,
     itemTitle: "测试条目"

@@ -122,11 +122,11 @@ struct EpisodeView: View {
       }
     }
     .sheet(isPresented: $showCommentBox) {
-      CreateCommentBoxView(type: .episode(episodeId))
+      CreateCommentBoxSheet(type: .episode(episodeId))
         .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showIndexPicker) {
-      IndexPickerView(
+      IndexPickerSheet(
         category: .episode,
         itemId: episodeId,
         itemTitle: "章节详情"

@@ -213,23 +213,23 @@ struct ReplyItemNormalView: View {
         }
       }
       .sheet(isPresented: $showReplyBox) {
-        CreateReplyBoxView(type: type, topicId: topicId, reply: idx == 0 ? nil : reply)
+        CreateReplyBoxSheet(type: type, topicId: topicId, reply: idx == 0 ? nil : reply)
           .presentationDetents([.medium, .large])
       }
       .sheet(isPresented: $showEditBox) {
-        EditReplyBoxView(type: type, topicId: topicId, reply: reply)
+        EditReplyBoxSheet(type: type, topicId: topicId, reply: reply)
           .presentationDetents([.medium, .large])
       }
       .sheet(isPresented: $showReportView) {
         switch type {
         case .group:
-          ReportView(
+          ReportSheet(
             reportType: .groupReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)",
             user: reply.creator
           )
           .presentationDetents([.medium, .large])
         case .subject:
-          ReportView(
+          ReportSheet(
             reportType: .subjectReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)",
             user: reply.creator
           )
@@ -382,23 +382,23 @@ struct SubReplyNormalView: View {
       }
     }
     .sheet(isPresented: $showReplyBox) {
-      CreateReplyBoxView(type: type, topicId: topicId, reply: reply, subreply: subreply)
+      CreateReplyBoxSheet(type: type, topicId: topicId, reply: reply, subreply: subreply)
         .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showEditBox) {
-      EditReplyBoxView(type: type, topicId: topicId, reply: reply, subreply: subreply)
+      EditReplyBoxSheet(type: type, topicId: topicId, reply: reply, subreply: subreply)
         .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showReportView) {
       switch type {
       case .group:
-        ReportView(
+        ReportSheet(
           reportType: .groupReply, itemId: subreply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
           user: subreply.creator
         )
         .presentationDetents([.medium, .large])
       case .subject:
-        ReportView(
+        ReportSheet(
           reportType: .subjectReply, itemId: subreply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
           user: subreply.creator
         )
@@ -425,7 +425,7 @@ struct SubReplyNormalView: View {
   }
 }
 
-struct CreateReplyBoxView: View {
+struct CreateReplyBoxSheet: View {
   let type: TopicParentType
   let topicId: Int
   let reply: ReplyDTO?
@@ -475,38 +475,7 @@ struct CreateReplyBoxView: View {
   }
 
   var body: some View {
-    VStack(spacing: 0) {
-      HStack {
-        Button {
-          dismiss()
-        } label: {
-          Label("取消", systemImage: "xmark")
-        }
-        .disabled(updating)
-        .adaptiveButtonStyle(.bordered)
-
-        Spacer()
-
-        Text(title)
-          .font(.headline)
-          .fontWeight(.semibold)
-          .lineLimit(1)
-
-        Spacer()
-
-        Button {
-          showTurnstile = true
-        } label: {
-          Label("发送", systemImage: "paperplane")
-        }
-        .disabled(content.isEmpty || updating)
-        .adaptiveButtonStyle(.borderedProminent)
-      }
-      .padding()
-      .background(Color(.systemBackground))
-
-      Divider()
-
+    NavigationStack {
       ScrollView {
         VStack {
           TextInputView(type: "回复", text: $content)
@@ -522,11 +491,31 @@ struct CreateReplyBoxView: View {
             }
         }.padding()
       }
+      .navigationTitle(title)
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button {
+            dismiss()
+          } label: {
+            Label("取消", systemImage: "xmark")
+          }
+          .disabled(updating)
+        }
+        ToolbarItem(placement: .confirmationAction) {
+          Button {
+            showTurnstile = true
+          } label: {
+            Label("发送", systemImage: "paperplane")
+          }
+          .disabled(content.isEmpty || updating)
+        }
+      }
     }
   }
 }
 
-struct EditReplyBoxView: View {
+struct EditReplyBoxSheet: View {
   let type: TopicParentType
   let topicId: Int
   let reply: ReplyDTO?
@@ -577,51 +566,40 @@ struct EditReplyBoxView: View {
   }
 
   var body: some View {
-    VStack(spacing: 0) {
-      HStack {
-        Button {
-          dismiss()
-        } label: {
-          Label("取消", systemImage: "xmark")
-        }
-        .disabled(updating)
-        .adaptiveButtonStyle(.bordered)
-
-        Spacer()
-
-        Text(title)
-          .font(.headline)
-          .fontWeight(.semibold)
-          .lineLimit(1)
-
-        Spacer()
-
-        Button {
-          Task {
-            await editReply(content: content)
-          }
-        } label: {
-          Label("保存", systemImage: "checkmark")
-        }
-        .disabled(content.isEmpty || updating)
-        .adaptiveButtonStyle(.borderedProminent)
-      }
-      .padding()
-      .background(Color(.systemBackground))
-
-      Divider()
-
+    NavigationStack {
       ScrollView {
         VStack {
           TextInputView(type: "回复", text: $content)
             .textInputStyle(bbcode: true)
         }.padding()
       }
+      .navigationTitle(title)
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button {
+            dismiss()
+          } label: {
+            Label("取消", systemImage: "xmark")
+          }
+          .disabled(updating)
+        }
+        ToolbarItem(placement: .confirmationAction) {
+          Button {
+            Task {
+              await editReply(content: content)
+            }
+          } label: {
+            Label("保存", systemImage: "checkmark")
+          }
+          .disabled(content.isEmpty || updating)
+        }
+      }
     }
   }
 }
 
-struct CreateTopicBoxView: View {
+struct CreateTopicBoxSheet: View {
   let type: TopicParentType
 
   @Environment(\.dismiss) private var dismiss
@@ -652,38 +630,7 @@ struct CreateTopicBoxView: View {
   }
 
   var body: some View {
-    VStack(spacing: 0) {
-      HStack {
-        Button {
-          dismiss()
-        } label: {
-          Label("取消", systemImage: "xmark")
-        }
-        .disabled(updating)
-        .adaptiveButtonStyle(.bordered)
-
-        Spacer()
-
-        Text(header)
-          .font(.headline)
-          .fontWeight(.semibold)
-          .lineLimit(1)
-
-        Spacer()
-
-        Button {
-          showTurnstile = true
-        } label: {
-          Label("发送", systemImage: "paperplane")
-        }
-        .disabled(title.isEmpty || content.isEmpty || updating)
-        .adaptiveButtonStyle(.borderedProminent)
-      }
-      .padding()
-      .background(Color(.systemBackground))
-
-      Divider()
-
+    NavigationStack {
       ScrollView {
         VStack {
           BorderView(color: .secondary.opacity(0.2), padding: 4) {
@@ -704,11 +651,31 @@ struct CreateTopicBoxView: View {
             }
         }.padding()
       }
+      .navigationTitle(header)
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button {
+            dismiss()
+          } label: {
+            Label("取消", systemImage: "xmark")
+          }
+          .disabled(updating)
+        }
+        ToolbarItem(placement: .confirmationAction) {
+          Button {
+            showTurnstile = true
+          } label: {
+            Label("发送", systemImage: "paperplane")
+          }
+          .disabled(title.isEmpty || content.isEmpty || updating)
+        }
+      }
     }
   }
 }
 
-struct EditTopicBoxView: View {
+struct EditTopicBoxSheet: View {
   let type: TopicParentType
   let topicId: Int
   let post: ReplyDTO?
@@ -761,40 +728,7 @@ struct EditTopicBoxView: View {
   }
 
   var body: some View {
-    VStack(spacing: 0) {
-      HStack {
-        Button {
-          dismiss()
-        } label: {
-          Label("取消", systemImage: "xmark")
-        }
-        .disabled(updating)
-        .adaptiveButtonStyle(.bordered)
-
-        Spacer()
-
-        Text(header)
-          .font(.headline)
-          .fontWeight(.semibold)
-          .lineLimit(1)
-
-        Spacer()
-
-        Button {
-          Task {
-            await editTopic(title: title, content: content)
-          }
-        } label: {
-          Label("保存", systemImage: "checkmark")
-        }
-        .disabled(submitDisabled)
-        .adaptiveButtonStyle(.borderedProminent)
-      }
-      .padding()
-      .background(Color(.systemBackground))
-
-      Divider()
-
+    NavigationStack {
       ScrollView {
         VStack {
           if post == nil {
@@ -817,6 +751,28 @@ struct EditTopicBoxView: View {
           TextInputView(type: "讨论", text: $content)
             .textInputStyle(bbcode: true)
         }.padding()
+      }
+      .navigationTitle(header)
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button {
+            dismiss()
+          } label: {
+            Label("取消", systemImage: "xmark")
+          }
+          .disabled(updating)
+        }
+        ToolbarItem(placement: .confirmationAction) {
+          Button {
+            Task {
+              await editTopic(title: title, content: content)
+            }
+          } label: {
+            Label("保存", systemImage: "checkmark")
+          }
+          .disabled(submitDisabled)
+        }
       }
     }
   }
