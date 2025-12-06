@@ -25,7 +25,7 @@ extension View {
       case .borderedProminent:
         self.buttonStyle(.glassProminent)
       case .plain:
-        self.buttonStyle(.glass)
+        self.buttonStyle(.plain)
       case .borderless:
         self.buttonStyle(.glass)
       }
