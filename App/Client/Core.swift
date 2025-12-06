@@ -68,7 +68,7 @@ actor Chii {
     }
     let device = MainActor.assumeIsolated { UIDevice.current.model }
     let osVersion = MainActor.assumeIsolated { UIDevice.current.systemVersion }
-    self.version = "\(version) (build \(build))"
+    self.version = "v\(version) (build \(build))"
     self.userAgent = "Bangumi/\(version) (\(device); iOS \(osVersion); Build \(build))"
     self.appInfo = AppInfo(
       clientId: clientId,
