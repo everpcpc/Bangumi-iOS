@@ -165,7 +165,6 @@ struct GroupTopicDetailView: View {
               .padding(.vertical, 8)
             }
           } header: {
-            // Sticky reply limit slider
             if maxReplyCount > 1 {
               Slider(
                 value: $replyLimit,
@@ -173,8 +172,12 @@ struct GroupTopicDetailView: View {
                 step: 1
               )
               .scaleEffect(x: -1, y: 1)
-              .padding(.horizontal, 4)
-              .padding(.vertical, 8)
+              .padding(.horizontal, 8)
+              .padding(.vertical, 4)
+              .background(
+                RoundedRectangle(cornerRadius: 10)
+                  .fill(Color(.systemBackground).opacity(0.6))
+              )
             }
           }
         }
