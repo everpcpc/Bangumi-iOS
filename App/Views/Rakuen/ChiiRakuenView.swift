@@ -1,7 +1,21 @@
 import SwiftUI
 
+enum RakuenListMode: String, CaseIterable {
+  case trendingSubjectTopics = "trending_subject_topics"
+  case groupTopics = "group_topics"
+
+  var description: String {
+    switch self {
+    case .trendingSubjectTopics:
+      return "热门条目讨论"
+    case .groupTopics:
+      return "小组话题"
+    }
+  }
+}
+
 struct ChiiRakuenView: View {
-  @AppStorage("rakuenListMode") var rakuenListMode: GroupTopicFilterMode = .joined
+  @AppStorage("rakuenListMode") var rakuenListMode: RakuenListMode = .trendingSubjectTopics
 
   @State private var reloader = false
 
@@ -12,24 +26,33 @@ struct ChiiRakuenView: View {
         VStack(alignment: .leading, spacing: 5) {
           HStack {
             HStack(spacing: 2) {
-              Picker(selection: $rakuenListMode, label: Text("话题列表")) {
-                ForEach(GroupTopicFilterMode.allCases, id: \.self) { mode in
+              Picker("", selection: $rakuenListMode) {
+                ForEach(RakuenListMode.allCases, id: \.self) { mode in
                   Text(mode.description).tag(mode)
                 }
               }
+              .pickerStyle(.segmented)
             }
             Spacer()
           }.padding(.top, 8)
-          RakuenGroupTopicListView(mode: rakuenListMode, reloader: $reloader)
+          ZStack(alignment: .topLeading) {
+            RakuenSubjectTopicListView(mode: .trending, reloader: $reloader)
+              .opacity(rakuenListMode == .trendingSubjectTopics ? 1 : 0)
+              .allowsHitTesting(rakuenListMode == .trendingSubjectTopics)
+              .frame(maxWidth: .infinity, alignment: .leading)
+            RakuenGroupTopicListView(mode: .joined, reloader: $reloader)
+              .opacity(rakuenListMode == .groupTopics ? 1 : 0)
+              .allowsHitTesting(rakuenListMode == .groupTopics)
+              .frame(maxWidth: .infinity, alignment: .leading)
+          }
+          .frame(maxWidth: .infinity, alignment: .leading)
         }
       }.padding(.horizontal, 8)
     }
     .refreshable {
       reloader.toggle()
     }
-    .onChange(of: rakuenListMode) {
-      reloader.toggle()
-    }
+    .animation(.default, value: rakuenListMode)
     .navigationTitle("超展开")
     .toolbarTitleDisplayMode(.inline)
     .toolbar {
