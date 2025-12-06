@@ -13,7 +13,6 @@ struct LinkableDTO: Codable, Hashable, Linkable {
 }
 
 enum NavDestination: Hashable, View {
-  case setting
   case notice
   case friends
   case collections
@@ -72,8 +71,6 @@ enum NavDestination: Hashable, View {
 
   var body: some View {
     switch self {
-    case .setting:
-      SettingsView()
     case .notice:
       NoticeView()
     case .collections:

@@ -9,8 +9,9 @@ struct MainView: View {
 
   @State private var timelineNav: NavigationPath = NavigationPath()
   @State private var progressNav: NavigationPath = NavigationPath()
-  @State private var discoverNav: NavigationPath = NavigationPath()
   @State private var rakuenNav: NavigationPath = NavigationPath()
+  @State private var settingsNav: NavigationPath = NavigationPath()
+  @State private var discoverNav: NavigationPath = NavigationPath()
 
   var discoverTabRole: TabRole? {
     if UIDevice.current.userInterfaceIdiom == .pad {
@@ -77,6 +78,13 @@ struct MainView: View {
         }
       }
 
+      Tab(ChiiViewTab.settings.title, systemImage: ChiiViewTab.settings.icon, value: .settings) {
+        NavigationStack(path: $settingsNav) {
+          SettingsView()
+            .navigationDestination(for: NavDestination.self) { $0 }
+        }
+      }
+
       Tab(
         ChiiViewTab.discover.title, systemImage: ChiiViewTab.discover.icon,
         value: ChiiViewTab.discover, role: discoverTabRole
@@ -100,6 +108,7 @@ struct MainView: View {
           mainTab = .discover
         }
       }
+
     }.tabBarMinimizeBehaviorIfAvailable()
   }
 }

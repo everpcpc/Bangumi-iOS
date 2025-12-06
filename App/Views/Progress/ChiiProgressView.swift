@@ -247,13 +247,6 @@ struct ChiiProgressView: View {
         }
       } else {
         AuthView(slogan: "使用 Bangumi 管理观看进度")
-          .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-              NavigationLink(value: NavDestination.setting) {
-                Image(systemName: "gearshape")
-              }
-            }
-          }
       }
     }
   }
