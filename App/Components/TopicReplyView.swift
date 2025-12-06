@@ -118,66 +118,43 @@ struct ReplyItemNormalView: View {
           Rectangle().fill(.clear).frame(width: 40, height: 40)
         }
         VStack(alignment: .leading) {
-          VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 4) {
-              PosterLabel(uid: reply.creatorID, poster: author?.id)
-              FriendLabel(uid: reply.creatorID)
-              if let creator = reply.creator {
-                Text(creator.header).lineLimit(1)
-              } else {
-                Text("用户 \(reply.creatorID)")
-                  .lineLimit(1)
+          HStack(alignment: .center) {
+            VStack(alignment: .leading, spacing: 0) {
+              HStack(spacing: 4) {
+                PosterLabel(uid: reply.creatorID, poster: author?.id)
+                FriendLabel(uid: reply.creatorID)
+                if let creator = reply.creator {
+                  Text(creator.header).lineLimit(1)
+                } else {
+                  Text("用户 \(reply.creatorID)")
+                    .lineLimit(1)
+                }
               }
-            }
-            HStack {
               Text("#\(idx+1) - \(reply.createdAt.datetimeDisplay)")
                 .lineLimit(1)
-              Spacer()
-              Button {
-                showReplyBox = true
-              } label: {
-                Image(systemName: "bubble.fill")
-                  .foregroundStyle(.secondary.opacity(0.5))
-              }
-              .disabled(!isAuthenticated)
-              switch type {
-              case .subject:
-                ReactionButton(type: .subjectReply(reply.id), reactions: $reactions)
-              case .group:
-                ReactionButton(type: .groupReply(reply.id), reactions: $reactions)
-              }
-              Menu {
-                if reply.creatorID == profile.id {
-                  Button {
-                    showEditBox = true
-                  } label: {
-                    Text("编辑")
-                  }
-                  Divider()
-                  Button(role: .destructive) {
-                    showDeleteConfirm = true
-                  } label: {
-                    Text("删除")
-                  }
-                  .disabled(updating)
-                }
-                Divider()
-                Button {
-                  showReportView = true
-                } label: {
-                  Label("报告疑虑", systemImage: "exclamationmark.triangle")
-                }
-                .disabled(!isAuthenticated)
-                ShareLink(item: type.shareLink(topicId: topicId, postId: reply.id)) {
-                  Label("分享", systemImage: "square.and.arrow.up")
-                }
-              } label: {
-                Image(systemName: "ellipsis")
-              }.padding(.trailing, 16)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
             }
-            .buttonStyle(.scale)
-            .font(.footnote)
-            .foregroundStyle(.secondary)
+            Spacer()
+            ReplyActionButtons(
+              onReply: { showReplyBox = true },
+              reactionType: {
+                switch type {
+                case .subject:
+                  return .subjectReply(reply.id)
+                case .group:
+                  return .groupReply(reply.id)
+                }
+              }(),
+              reactions: $reactions,
+              onEdit: { showEditBox = true },
+              onDelete: { showDeleteConfirm = true },
+              onReport: { showReportView = true },
+              shareLink: type.shareLink(topicId: topicId, postId: reply.id),
+              isAuthenticated: isAuthenticated,
+              isOwner: reply.creatorID == profile.id,
+              updating: updating
+            )
           }
           BBCodeView(reply.content)
             .tint(.linkText)
@@ -305,67 +282,44 @@ struct SubReplyNormalView: View {
         Rectangle().fill(.clear).frame(width: 40, height: 40)
       }
       VStack(alignment: .leading) {
-        VStack(alignment: .leading, spacing: 0) {
-          HStack(spacing: 4) {
-            PosterLabel(uid: subreply.creatorID, poster: author?.id)
-            FriendLabel(uid: subreply.creatorID)
-            if let creator = subreply.creator {
-              Text(creator.nickname.withLink(creator.link))
-                .lineLimit(1)
-            } else {
-              Text("用户 \(subreply.creatorID)")
-                .lineLimit(1)
+        HStack(alignment: .center) {
+          VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 4) {
+              PosterLabel(uid: subreply.creatorID, poster: author?.id)
+              FriendLabel(uid: subreply.creatorID)
+              if let creator = subreply.creator {
+                Text(creator.nickname.withLink(creator.link))
+                  .lineLimit(1)
+              } else {
+                Text("用户 \(subreply.creatorID)")
+                  .lineLimit(1)
+              }
             }
-          }
-          HStack {
             Text("#\(idx+1)-\(subidx+1) - \(subreply.createdAt.datetimeDisplay)")
               .lineLimit(1)
-            Spacer()
-            Button {
-              showReplyBox = true
-            } label: {
-              Image(systemName: "bubble.fill")
-                .foregroundStyle(.secondary.opacity(0.5))
-            }
-            .disabled(!isAuthenticated)
-            switch type {
-            case .subject:
-              ReactionButton(type: .subjectReply(subreply.id), reactions: $reactions)
-            case .group:
-              ReactionButton(type: .groupReply(subreply.id), reactions: $reactions)
-            }
-            Menu {
-              if subreply.creatorID == profile.id {
-                Button {
-                  showEditBox = true
-                } label: {
-                  Text("编辑")
-                }
-                Divider()
-                Button(role: .destructive) {
-                  showDeleteConfirm = true
-                } label: {
-                  Text("删除")
-                }
-                .disabled(updating)
-              }
-              Divider()
-              Button {
-                showReportView = true
-              } label: {
-                Label("报告疑虑", systemImage: "exclamationmark.triangle")
-              }
-              .disabled(!isAuthenticated)
-              ShareLink(item: type.shareLink(topicId: topicId, postId: subreply.id)) {
-                Label("分享", systemImage: "square.and.arrow.up")
-              }
-            } label: {
-              Image(systemName: "ellipsis")
-            }.padding(.trailing, 16)
+              .font(.footnote)
+              .foregroundStyle(.secondary)
           }
-          .font(.footnote)
-          .buttonStyle(.scale)
-          .foregroundStyle(.secondary)
+          Spacer()
+          ReplyActionButtons(
+            onReply: { showReplyBox = true },
+            reactionType: {
+              switch type {
+              case .subject:
+                return .subjectReply(subreply.id)
+              case .group:
+                return .groupReply(subreply.id)
+              }
+            }(),
+            reactions: $reactions,
+            onEdit: { showEditBox = true },
+            onDelete: { showDeleteConfirm = true },
+            onReport: { showReportView = true },
+            shareLink: type.shareLink(topicId: topicId, postId: subreply.id),
+            isAuthenticated: isAuthenticated,
+            isOwner: subreply.creatorID == profile.id,
+            updating: updating
+          )
         }
         BBCodeView(subreply.content)
           .tint(.linkText)

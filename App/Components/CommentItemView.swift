@@ -128,57 +128,35 @@ struct CommentItemNormalView: View {
           .imageType(.avatar)
           .imageLink(comment.user.link)
         VStack(alignment: .leading) {
-          VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 4) {
-              FriendLabel(uid: comment.creatorID)
-              Text(comment.user.header).lineLimit(1)
-            }
-            HStack {
+          HStack(alignment: .center) {
+            VStack(alignment: .leading, spacing: 0) {
+              HStack(spacing: 4) {
+                FriendLabel(uid: comment.creatorID)
+                Text(comment.user.header).lineLimit(1)
+              }
               Text("#\(idx+1) - \(comment.createdAt.datetimeDisplay)")
                 .lineLimit(1)
-              Spacer()
-              Button {
-                showReplyBox = true
-              } label: {
-                Image(systemName: "bubble.fill")
-                  .foregroundStyle(.secondary.opacity(0.5))
-              }
-              .disabled(!isAuthenticated)
-              if case .episode(let id) = type {
-                ReactionButton(type: .episodeReply(id), reactions: $reactions)
-              }
-              Menu {
-                if comment.creatorID == profile.id {
-                  Button {
-                    showEditBox = true
-                  } label: {
-                    Text("编辑")
-                  }
-                  Divider()
-                  Button(role: .destructive) {
-                    showDeleteConfirm = true
-                  } label: {
-                    Text("删除")
-                  }
-                  .disabled(updating)
-                }
-                Divider()
-                Button {
-                  showReportView = true
-                } label: {
-                  Label("报告疑虑", systemImage: "exclamationmark.triangle")
-                }
-                .disabled(!isAuthenticated)
-                ShareLink(item: type.shareLink(commentId: comment.id)) {
-                  Label("分享", systemImage: "square.and.arrow.up")
-                }
-              } label: {
-                Image(systemName: "ellipsis")
-              }.padding(.trailing, 16)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
             }
-            .buttonStyle(.scale)
-            .font(.footnote)
-            .foregroundStyle(.secondary)
+            Spacer()
+            ReplyActionButtons(
+              onReply: { showReplyBox = true },
+              reactionType: {
+                if case .episode(let id) = type {
+                  return .episodeReply(id)
+                }
+                return nil
+              }(),
+              reactions: $reactions,
+              onEdit: { showEditBox = true },
+              onDelete: { showDeleteConfirm = true },
+              onReport: { showReportView = true },
+              shareLink: type.shareLink(commentId: comment.id),
+              isAuthenticated: isAuthenticated,
+              isOwner: comment.creatorID == profile.id,
+              updating: updating
+            )
           }
           BBCodeView(comment.content)
             .tint(.linkText)
@@ -312,63 +290,41 @@ struct CommentSubReplyNormalView: View {
         Rectangle().fill(.clear).frame(width: 40, height: 40)
       }
       VStack(alignment: .leading) {
-        VStack(alignment: .leading, spacing: 0) {
-          HStack(spacing: 4) {
-            FriendLabel(uid: reply.creatorID)
-            if let user = reply.user {
-              Text(user.nickname.withLink(user.link))
-                .lineLimit(1)
-            } else {
-              Text("用户 \(reply.creatorID)")
-                .lineLimit(1)
+        HStack(alignment: .center) {
+          VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 4) {
+              FriendLabel(uid: reply.creatorID)
+              if let user = reply.user {
+                Text(user.nickname.withLink(user.link))
+                  .lineLimit(1)
+              } else {
+                Text("用户 \(reply.creatorID)")
+                  .lineLimit(1)
+              }
             }
-          }
-          HStack {
             Text("#\(idx+1)-\(subidx+1) - \(reply.createdAt.datetimeDisplay)")
               .lineLimit(1)
-            Spacer()
-            Button {
-              showReplyBox = true
-            } label: {
-              Image(systemName: "bubble.fill")
-                .foregroundStyle(.secondary.opacity(0.5))
-            }
-            .disabled(!isAuthenticated)
-            if case .episode(let id) = type {
-              ReactionButton(type: .episodeReply(id), reactions: $reactions)
-            }
-            Menu {
-              if reply.creatorID == profile.id {
-                Button {
-                  showEditBox = true
-                } label: {
-                  Text("编辑")
-                }
-                Divider()
-                Button(role: .destructive) {
-                  showDeleteConfirm = true
-                } label: {
-                  Text("删除")
-                }
-                .disabled(updating)
-              }
-              Divider()
-              Button {
-                showReportView = true
-              } label: {
-                Label("报告疑虑", systemImage: "exclamationmark.triangle")
-              }
-              .disabled(!isAuthenticated)
-              ShareLink(item: type.shareLink(commentId: reply.id)) {
-                Label("分享", systemImage: "square.and.arrow.up")
-              }
-            } label: {
-              Image(systemName: "ellipsis")
-            }.padding(.trailing, 16)
+              .font(.footnote)
+              .foregroundStyle(.secondary)
           }
-          .buttonStyle(.scale)
-          .font(.footnote)
-          .foregroundStyle(.secondary)
+          Spacer()
+          ReplyActionButtons(
+            onReply: { showReplyBox = true },
+            reactionType: {
+              if case .episode(let id) = type {
+                return .episodeReply(id)
+              }
+              return nil
+            }(),
+            reactions: $reactions,
+            onEdit: { showEditBox = true },
+            onDelete: { showDeleteConfirm = true },
+            onReport: { showReportView = true },
+            shareLink: type.shareLink(commentId: reply.id),
+            isAuthenticated: isAuthenticated,
+            isOwner: reply.creatorID == profile.id,
+            updating: updating
+          )
         }
         BBCodeView(reply.content)
           .tint(.linkText)
