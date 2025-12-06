@@ -821,3 +821,88 @@ struct EditTopicBoxView: View {
     }
   }
 }
+
+struct MainPostContentView: View {
+  let type: TopicParentType
+  let topicId: Int
+  let idx: Int
+  let reply: ReplyDTO
+  let author: SlimUserDTO?
+
+  @AppStorage("friendlist") var friendlist: [Int] = []
+
+  @State private var reactions: [ReactionDTO]
+
+  init(type: TopicParentType, topicId: Int, idx: Int, reply: ReplyDTO, author: SlimUserDTO?) {
+    self.type = type
+    self.topicId = topicId
+    self.idx = idx
+    self.reply = reply
+    self.author = author
+    self._reactions = State(initialValue: reply.reactions ?? [])
+  }
+
+  var body: some View {
+    VStack(alignment: .leading) {
+      HStack(alignment: .top) {
+        if let creator = reply.creator {
+          ImageView(img: creator.avatar?.large)
+            .imageStyle(width: 40, height: 40)
+            .imageType(.avatar)
+            .imageLink(creator.link)
+        } else {
+          Rectangle().fill(.clear).frame(width: 40, height: 40)
+        }
+        VStack(alignment: .leading) {
+          VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 4) {
+              PosterLabel(uid: reply.creatorID, poster: author?.id)
+              FriendLabel(uid: reply.creatorID)
+              if let creator = reply.creator {
+                Text(creator.header).lineLimit(1)
+              } else {
+                Text("用户 \(reply.creatorID)")
+                  .lineLimit(1)
+              }
+            }
+            Text("#\(idx+1) - \(reply.createdAt.datetimeDisplay)")
+              .lineLimit(1)
+              .font(.footnote)
+              .foregroundStyle(.secondary)
+          }
+          BBCodeView(reply.content)
+            .tint(.linkText)
+            .textSelection(.enabled)
+            .fixedSize(horizontal: false, vertical: true)
+          if !reactions.isEmpty {
+            switch type {
+            case .subject:
+              ReactionsView(type: .subjectReply(reply.id), reactions: $reactions)
+            case .group:
+              ReactionsView(type: .groupReply(reply.id), reactions: $reactions)
+            }
+          }
+          ForEach(Array(zip(reply.replies.indices, reply.replies)), id: \.1) { subidx, subreply in
+            VStack(alignment: .leading) {
+              Divider()
+              switch subreply.state {
+              case .normal:
+                SubReplyNormalView(
+                  type: type, idx: idx, reply: reply, subidx: subidx, subreply: subreply,
+                  author: author, topicId: topicId)
+              case .userDelete:
+                PostUserDeleteStateView(
+                  subreply.creatorID, subreply.creator, subreply.createdAt, author)
+              case .adminOffTopic:
+                PostAdminOffTopicStateView(
+                  subreply.creatorID, subreply.creator, subreply.createdAt, author)
+              default:
+                PostStateView(subreply.state)
+              }
+            }.blocklistFilter(subreply.creatorID)
+          }
+        }
+      }
+    }
+  }
+}

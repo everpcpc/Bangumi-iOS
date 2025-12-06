@@ -19,6 +19,7 @@ struct SubjectTopicDetailView: View {
   @State private var filterMode: ReplyFilterMode = .all
   @State private var sortOrder: ReplySortOrder?
   @State private var replyLimit: Double = 0  // 0 = show all
+  @State private var mainPostReactions: [ReactionDTO] = []
 
   var title: String {
     topic?.title ?? "讨论详情"
@@ -32,6 +33,9 @@ struct SubjectTopicDetailView: View {
     do {
       let resp = try await Chii.shared.getSubjectTopic(topicId)
       topic = resp
+      if let mainPost = resp.replies.mainPost {
+        mainPostReactions = mainPost.reactions ?? []
+      }
       refreshed = true
     } catch {
       Notifier.shared.alert(error: error)
@@ -133,12 +137,51 @@ struct SubjectTopicDetailView: View {
           // Main post (first reply) - always shown prominently
           if let mainPost = topic.replies.mainPost {
             CardView {
-              ReplyItemView(
-                type: .subject(topic.subject.id), topicId: topicId, idx: 0,
-                reply: mainPost, author: topic.creator)
+              VStack(alignment: .leading) {
+                MainPostContentView(
+                  type: .subject(topic.subject.id), topicId: topicId, idx: 0,
+                  reply: mainPost, author: topic.creator)
+
+                HStack(spacing: 16) {
+                  Spacer()
+
+                  Button {
+                    showReplyBox = true
+                  } label: {
+                    Label {
+                      if maxReplyCount > 0 {
+                        Text("\(maxReplyCount)")
+                          .foregroundStyle(.secondary)
+                      }
+                      Text("回复")
+                    } icon: {
+                      Image(systemName: "plus.bubble")
+                    }
+                    .labelStyle(.compact)
+                  }
+                  .disabled(!isAuthenticated)
+
+                  Button {
+                    showIndexPicker = true
+                  } label: {
+                    Label("收藏", systemImage: "book")
+                      .font(.subheadline)
+                  }
+                  .disabled(!isAuthenticated)
+
+                  TopicReactionButton(
+                    type: ReactionType.subjectReply(mainPost.id),
+                    reactions: $mainPostReactions
+                  )
+                }
+                .foregroundStyle(.secondary)
+                .controlSize(.small)
+                .adaptiveButtonStyle(.bordered)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 8)
+              }
             }
             .background(Color.accentColor.opacity(0.03))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
           }
 
           // Replies section with sticky slider header
@@ -166,20 +209,18 @@ struct SubjectTopicDetailView: View {
               .padding(.vertical, 8)
             }
           } header: {
-            if maxReplyCount > 1 {
-              Slider(
-                value: $replyLimit,
-                in: 0...Double(maxReplyCount - 1),
-                step: 1
-              )
-              .scaleEffect(x: -1, y: 1)
-              .padding(.horizontal, 8)
-              .padding(.vertical, 4)
-              .background(
-                RoundedRectangle(cornerRadius: 10)
-                  .fill(Color(.systemBackground).opacity(0.6))
-              )
-            }
+            Slider(
+              value: $replyLimit,
+              in: 0...max(1, Double(maxReplyCount - 1)),
+              step: 1
+            )
+            .scaleEffect(x: -1, y: 1)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(
+              RoundedRectangle(cornerRadius: 10)
+                .fill(Color(.systemBackground).opacity(0.6))
+            )
           }
         }
         .animation(.default, value: filterMode)
@@ -260,20 +301,22 @@ struct SubjectTopicDetailView: View {
             Label("回复", systemImage: "plus.bubble")
           }
           .disabled(!isAuthenticated)
-          if let authorID = topic?.creatorID, profile.user.id == authorID {
-            Button {
-              showEditBox = true
-            } label: {
-              Label("编辑", systemImage: "pencil")
-            }
-          }
-          Divider()
           Button {
             showIndexPicker = true
           } label: {
             Label("收藏", systemImage: "book")
           }
           .disabled(!isAuthenticated)
+          Divider()
+
+          if let authorID = topic?.creatorID, profile.user.id == authorID {
+            Button {
+              showEditBox = true
+            } label: {
+              Label("编辑", systemImage: "pencil")
+            }
+            Divider()
+          }
           Button {
             showReportView = true
           } label: {
