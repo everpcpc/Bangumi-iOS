@@ -2,16 +2,16 @@ import SwiftUI
 
 struct EULAView: View {
   @Binding var isPresented: Bool
-  @State private var hasAgreed: Bool = false
-  let onAgree: (() -> Void)?
+  @AppStorage("eulaAgreed") private var hasAgreed: Bool = false
+  let showLoginButton: Bool
 
-  init(isPresented: Binding<Bool>, onAgree: (() -> Void)? = nil) {
+  init(isPresented: Binding<Bool>, showLoginButton: Bool = true) {
     self._isPresented = isPresented
-    self.onAgree = onAgree
+    self.showLoginButton = showLoginButton
   }
 
   var body: some View {
-    NavigationView {
+    NavigationStack {
       ScrollView {
         VStack(alignment: .leading, spacing: 16) {
           // Header
@@ -92,32 +92,34 @@ struct EULAView: View {
           Button {
             isPresented = false
           } label: {
-            Label("取消", systemImage: "xmark")
+            Label(
+              showLoginButton ? "取消" : "完成", systemImage: showLoginButton ? "xmark" : "checkmark")
           }
         }
       }
       .safeAreaInset(edge: .bottom) {
-        VStack(spacing: 12) {
-          Toggle("我已阅读并同意以上社区指导原则", isOn: $hasAgreed)
-            .toggleStyle(.switch)
-            .padding(.horizontal)
+        if showLoginButton {
+          VStack(spacing: 12) {
+            Toggle("我已阅读并同意以上社区指导原则", isOn: $hasAgreed)
+              .toggleStyle(.switch)
+              .padding(.horizontal)
 
-          Button {
-            isPresented = false
-            onAgree?()
-          } label: {
-            Text("同意并继续登录")
-              .frame(maxWidth: .infinity)
-              .padding()
-              .background(hasAgreed ? Color.accentColor : Color.gray)
-              .foregroundColor(.white)
-              .cornerRadius(12)
+            Button {
+              isPresented = false
+            } label: {
+              Text("同意并继续登录")
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(hasAgreed ? Color.accentColor : Color.gray)
+                .foregroundColor(.white)
+                .cornerRadius(12)
+            }
+            .disabled(!hasAgreed)
+            .padding(.horizontal)
           }
-          .disabled(!hasAgreed)
-          .padding(.horizontal)
+          .padding(.vertical)
+          .background(Color(UIColor.systemBackground))
         }
-        .padding(.vertical)
-        .background(Color(UIColor.systemBackground))
       }
     }
   }

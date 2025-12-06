@@ -22,6 +22,7 @@ struct SettingsView: View {
   @State private var spotlightRefreshing: Bool = false
   @State private var spotlightProgress: CGFloat = 0
   @State private var logoutConfirm: Bool = false
+  @State private var showEULA: Bool = false
 
   private var privacyPolicyURL: String {
     let langCode = Locale.current.language.languageCode?.identifier ?? "zh"
@@ -126,14 +127,37 @@ struct SettingsView: View {
       }
 
       Section(header: Text("关于")) {
+        Button {
+          showEULA = true
+        } label: {
+          Text("社区指导原则")
+        }
         Link(destination: URL(string: privacyPolicyURL)!) {
-          Text("隐私政策")
+          HStack {
+            Text("隐私政策")
+            Spacer()
+            Image(systemName: "arrow.up.right.square")
+              .foregroundColor(.secondary)
+              .font(.caption)
+          }
         }
         Link(destination: URL(string: "https://discord.gg/nZPTwzXxAX")!) {
-          Text("问题反馈(Discord)")
+          HStack {
+            Text("问题反馈(Discord)")
+            Spacer()
+            Image(systemName: "arrow.up.right.square")
+              .foregroundColor(.secondary)
+              .font(.caption)
+          }
         }
         Link(destination: URL(string: "https://github.com/bangumi/Bangumi-iOS")!) {
-          Text("查看源码(GitHub)")
+          HStack {
+            Text("查看源码(GitHub)")
+            Spacer()
+            Image(systemName: "arrow.up.right.square")
+              .foregroundColor(.secondary)
+              .font(.caption)
+          }
         }
         HStack {
           Spacer()
@@ -186,6 +210,9 @@ struct SettingsView: View {
     }
     .navigationTitle("设置")
     .navigationBarTitleDisplayMode(.inline)
+    .sheet(isPresented: $showEULA) {
+      EULAView(isPresented: $showEULA, showLoginButton: false)
+    }
   }
 }
 

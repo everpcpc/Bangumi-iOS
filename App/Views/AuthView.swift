@@ -6,18 +6,28 @@ import UIKit
 struct AuthView: View {
   var slogan: String
   @State private var showEULA = false
+  @AppStorage("eulaAgreed") private var eulaAgreed: Bool = false
 
   var body: some View {
     VStack {
       Text(slogan)
       Button {
-        showEULA = true
+        if eulaAgreed {
+          Task {
+            await signInView.signIn()
+          }
+        } else {
+          showEULA = true
+        }
       } label: {
         Text("登录")
       }.adaptiveButtonStyle(.borderedProminent)
     }
     .fullScreenCover(isPresented: $showEULA) {
-      EULAView(isPresented: $showEULA) {
+      EULAView(isPresented: $showEULA)
+    }
+    .onChange(of: showEULA) { _, newValue in
+      if newValue == false && eulaAgreed {
         Task {
           await signInView.signIn()
         }
