@@ -140,7 +140,7 @@ enum ProgressViewMode: String, CaseIterable {
     case .list:
       "列表"
     case .tile:
-      "瀑布流"
+      "网格"
     }
   }
 }
@@ -172,27 +172,23 @@ enum ProgressSortMode: String, CaseIterable {
 
 enum ChiiViewTab: String {
   case timeline = "timeline"
-  case discover = "discover"
+  case progress = "progress"
   case rakuen = "rakuen"
   case settings = "settings"
-
-  case progress = "progress"
-  case notice = "notice"
+  case discover = "discover"
 
   init(_ label: String? = nil) {
     switch label {
     case "timeline":
       self = .timeline
-    case "discover":
-      self = .discover
+    case "progress":
+      self = .progress
     case "rakuen":
       self = .rakuen
     case "settings":
       self = .settings
-    case "progress":
-      self = .progress
-    case "notice":
-      self = .notice
+    case "discover":
+      self = .discover
     default:
       self = .timeline
     }
@@ -202,16 +198,14 @@ enum ChiiViewTab: String {
     switch self {
     case .timeline:
       "时间线"
-    case .discover:
-      "发现"
+    case .progress:
+      "进度管理"
     case .rakuen:
       "超展开"
     case .settings:
       "设置"
-    case .progress:
-      "进度管理"
-    case .notice:
-      "电波提醒"
+    case .discover:
+      "发现"
     }
   }
 
@@ -219,16 +213,14 @@ enum ChiiViewTab: String {
     switch self {
     case .timeline:
       "person"
-    case .discover:
-      "magnifyingglass"
+    case .progress:
+      "square.grid.2x2"
     case .rakuen:
       "rectangle.3.group.bubble"
     case .settings:
       "gear"
-    case .progress:
-      "square.grid.2x2"
-    case .notice:
-      "bell"
+    case .discover:
+      "magnifyingglass"
     }
   }
 }

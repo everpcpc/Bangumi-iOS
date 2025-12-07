@@ -77,7 +77,6 @@ struct OldTabView: View {
 
       NavigationStack(path: $discoverNav) {
         ChiiDiscoverView()
-          .navigationDestination(for: NavDestination.self) { $0 }
       }
       .tag(ChiiViewTab.discover)
       .tabItem {

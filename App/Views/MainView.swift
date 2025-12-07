@@ -73,7 +73,6 @@ struct MainView: View {
       Tab(ChiiViewTab.settings.title, systemImage: ChiiViewTab.settings.icon, value: .settings) {
         NavigationStack(path: $settingsNav) {
           SettingsView()
-            .navigationDestination(for: NavDestination.self) { $0 }
         }
       }
 
