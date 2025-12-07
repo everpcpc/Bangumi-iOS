@@ -79,14 +79,9 @@ struct TextInputView: View {
 
   var body: some View {
     VStack {
-      if style.bbcode, #available(iOS 18.0, *) {
+      if style.bbcode {
         BBCodeEditor(text: $text)
       } else {
-        if style.bbcode {
-          Text("BBCode 编辑器需要 iOS 18 及以上版本")
-            .font(.footnote)
-            .foregroundStyle(.secondary)
-        }
         PlainTextEditor(text: $text)
       }
 
@@ -172,23 +167,24 @@ private struct DraftBoxView: View {
                 .foregroundStyle(.secondary)
             }
           } else {
-            Button {
+            VStack(alignment: .leading, spacing: 4) {
+              Text(draft.content)
+                .lineLimit(3)
+                .multilineTextAlignment(.leading)
+              Text("\(draft.content.count)字 · \(draft.updatedAt.date, style: .relative)前")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
               onLoad(draft)
               isPresented = false
-            } label: {
-              VStack(alignment: .leading, spacing: 4) {
-                Text(draft.content)
-                  .lineLimit(3)
-                  .multilineTextAlignment(.leading)
-                Text("\(draft.content.count)字 · \(draft.updatedAt.date, style: .relative)前")
-                  .font(.caption)
-                  .foregroundStyle(.secondary)
-              }
             }
-            .buttonStyle(.scale)
             .swipeActions {
               Button(role: .destructive) {
-                modelContext.delete(draft)
+                withAnimation {
+                  modelContext.delete(draft)
+                }
               } label: {
                 Label("删除", systemImage: "trash")
               }

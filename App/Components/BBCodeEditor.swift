@@ -1,13 +1,12 @@
 import BBCode
 import SwiftUI
 
-@available(iOS 18.0, *)
 struct BBCodeEditor: View {
   @Binding var text: String
 
   private let minHeight: CGFloat = 80
   @State private var height: CGFloat = 120
-  @State private var textSelection: TextSelection?
+  @State private var textSelection: EditorSelection?
   @State private var preview: Bool = false
 
   @State private var inputSize: Int = 14
@@ -30,7 +29,7 @@ struct BBCodeEditor: View {
       text.index(bound, offsetBy: offset, limitedBy: text.endIndex) ?? text.endIndex
     let cursorEndIndex =
       text.index(cursorStartIndex, offsetBy: length, limitedBy: text.endIndex) ?? text.endIndex
-    textSelection = TextSelection(range: cursorStartIndex..<cursorEndIndex)
+    textSelection = text.editorSelection(from: cursorStartIndex..<cursorEndIndex)
   }
 
   private func insertTagToEnd(_ before: String, _ after: String) {
@@ -42,26 +41,19 @@ struct BBCodeEditor: View {
   private func handleBasicInput(_ tag: BBCodeType) {
     let tagBefore = "[\(tag.code)]"
     let tagAfter = "[/\(tag.code)]"
-    if let selection = textSelection {
-      switch selection.indices {
-      case .selection(let range):
-        if range.lowerBound == range.upperBound {
-          text = text.replacingCharacters(in: range, with: tagBefore + tagAfter)
-          newSelection(range.lowerBound, tagBefore.count)
+    if let selection = textSelection, let range = selection.range(in: text) {
+      if range.lowerBound == range.upperBound {
+        text = text.replacingCharacters(in: range, with: tagBefore + tagAfter)
+        newSelection(range.lowerBound, tagBefore.count)
+      } else {
+        let newText = "\(tagBefore)\(text[range])\(tagAfter)"
+        if tag.isBlock {
+          text.replaceSubrange(range, with: "\n\(newText)\n")
+          newSelection(range.lowerBound, newText.count + 2)
         } else {
-          let newText = "\(tagBefore)\(text[range])\(tagAfter)"
-          if tag.isBlock {
-            text.replaceSubrange(range, with: "\n\(newText)\n")
-            newSelection(range.lowerBound, newText.count + 2)
-          } else {
-            text.replaceSubrange(range, with: newText)
-            newSelection(range.lowerBound, newText.count)
-          }
+          text.replaceSubrange(range, with: newText)
+          newSelection(range.lowerBound, newText.count)
         }
-      case .multiSelection:
-        break
-      @unknown default:
-        break
       }
     } else {
       insertTagToEnd(tagBefore, tagAfter)
@@ -71,16 +63,9 @@ struct BBCodeEditor: View {
   private func handleImageInput() {
     let tagBefore = "[\(BBCodeType.image.code)]"
     let tagAfter = "[/\(BBCodeType.image.code)]"
-    if let selection = textSelection {
-      switch selection.indices {
-      case .selection(let range):
-        text.replaceSubrange(range, with: "\(tagBefore)\(inputURL)\(tagAfter)")
-        newSelection(range.lowerBound, tagBefore.count + inputURL.count + tagAfter.count)
-      case .multiSelection:
-        break
-      @unknown default:
-        break
-      }
+    if let selection = textSelection, let range = selection.range(in: text) {
+      text.replaceSubrange(range, with: "\(tagBefore)\(inputURL)\(tagAfter)")
+      newSelection(range.lowerBound, tagBefore.count + inputURL.count + tagAfter.count)
     } else {
       insertTagToEnd("\(tagBefore)\(inputURL)\(tagAfter)", "")
     }
@@ -88,24 +73,17 @@ struct BBCodeEditor: View {
   }
 
   private func handleURLInput() {
-    if let selection = textSelection {
-      switch selection.indices {
-      case .selection(let range):
-        let tagBefore = "[\(BBCodeType.url.code)=\(inputURL)]"
-        let tagAfter = "[/\(BBCodeType.url.code)]"
-        if range.lowerBound == range.upperBound {
-          let placeholder = "链接描述"
-          text.replaceSubrange(range, with: tagBefore + placeholder + tagAfter)
-          newSelection(range.lowerBound, tagBefore.count, placeholder.count)
-        } else {
-          let selectedText = text[range]
-          text.replaceSubrange(range, with: "\(tagBefore)\(selectedText)\(tagAfter)")
-          newSelection(range.lowerBound, tagBefore.count + selectedText.count + tagAfter.count)
-        }
-      case .multiSelection:
-        break
-      @unknown default:
-        break
+    if let selection = textSelection, let range = selection.range(in: text) {
+      let tagBefore = "[\(BBCodeType.url.code)=\(inputURL)]"
+      let tagAfter = "[/\(BBCodeType.url.code)]"
+      if range.lowerBound == range.upperBound {
+        let placeholder = "链接描述"
+        text.replaceSubrange(range, with: tagBefore + placeholder + tagAfter)
+        newSelection(range.lowerBound, tagBefore.count, placeholder.count)
+      } else {
+        let selectedText = text[range]
+        text.replaceSubrange(range, with: "\(tagBefore)\(selectedText)\(tagAfter)")
+        newSelection(range.lowerBound, tagBefore.count + selectedText.count + tagAfter.count)
       }
     } else {
       let endIndex = text.endIndex
@@ -121,21 +99,14 @@ struct BBCodeEditor: View {
   private func handleSizeInput() {
     let tagBefore = "[\(BBCodeType.size.code)=\(inputSize)]"
     let tagAfter = "[/\(BBCodeType.size.code)]"
-    if let selection = textSelection {
-      switch selection.indices {
-      case .selection(let range):
-        if range.lowerBound == range.upperBound {
-          text.replaceSubrange(range, with: tagBefore + tagAfter)
-          newSelection(range.lowerBound, tagBefore.count)
-        } else {
-          let selectedText = text[range]
-          text.replaceSubrange(range, with: "\(tagBefore)\(selectedText)\(tagAfter)")
-          newSelection(range.lowerBound, tagBefore.count + selectedText.count + tagAfter.count)
-        }
-      case .multiSelection:
-        break
-      @unknown default:
-        break
+    if let selection = textSelection, let range = selection.range(in: text) {
+      if range.lowerBound == range.upperBound {
+        text.replaceSubrange(range, with: tagBefore + tagAfter)
+        newSelection(range.lowerBound, tagBefore.count)
+      } else {
+        let selectedText = text[range]
+        text.replaceSubrange(range, with: "\(tagBefore)\(selectedText)\(tagAfter)")
+        newSelection(range.lowerBound, tagBefore.count + selectedText.count + tagAfter.count)
       }
     } else {
       insertTagToEnd(tagBefore, tagAfter)
@@ -172,21 +143,14 @@ struct BBCodeEditor: View {
     let hexColor = convertColorToHex(inputColorStart)
     let tagBefore = "[\(BBCodeType.color.code)=\(hexColor)]"
     let tagAfter = "[/\(BBCodeType.color.code)]"
-    if let selection = textSelection {
-      switch selection.indices {
-      case .selection(let range):
-        if range.lowerBound == range.upperBound {
-          text.replaceSubrange(range, with: tagBefore + tagAfter)
-          newSelection(range.lowerBound, tagBefore.count)
-        } else {
-          let selectedText = text[range]
-          text.replaceSubrange(range, with: "\(tagBefore)\(selectedText)\(tagAfter)")
-          newSelection(range.lowerBound, tagBefore.count + selectedText.count + tagAfter.count)
-        }
-      case .multiSelection:
-        break
-      @unknown default:
-        break
+    if let selection = textSelection, let range = selection.range(in: text) {
+      if range.lowerBound == range.upperBound {
+        text.replaceSubrange(range, with: tagBefore + tagAfter)
+        newSelection(range.lowerBound, tagBefore.count)
+      } else {
+        let selectedText = text[range]
+        text.replaceSubrange(range, with: "\(tagBefore)\(selectedText)\(tagAfter)")
+        newSelection(range.lowerBound, tagBefore.count + selectedText.count + tagAfter.count)
       }
     } else {
       insertTagToEnd(tagBefore, tagAfter)
@@ -194,39 +158,25 @@ struct BBCodeEditor: View {
   }
 
   private func handleGradientInput() {
-    if let selection = textSelection {
-      switch selection.indices {
-      case .selection(let range):
-        if range.lowerBound == range.upperBound {
-          break
-        } else {
-          // Get the selected text and its length
-          let selectedText = text[range]
-          let charCount = selectedText.count
-
-          // Create a new string with gradient colors
-          var gradientText = ""
-          selectedText.enumerated().forEach { index, char in
-            // Calculate the color for this position
-            let progress = Double(index) / Double(max(1, charCount - 1))
-            let currentColor = interpolateColor(
-              start: inputColorStart, end: inputColorEnd, progress: progress)
-            let hexColor = convertColorToHex(currentColor)
-
-            // Add the colored character
-            gradientText +=
-              "[\(BBCodeType.color.code)=\(hexColor)]\(char)[/\(BBCodeType.color.code)]"
-          }
-
-          // Replace the selected text with the gradient version
-          text.replaceSubrange(range, with: gradientText)
-          newSelection(range.lowerBound, gradientText.count)
-        }
-      case .multiSelection:
-        break
-      @unknown default:
-        break
+    if let selection = textSelection, let range = selection.range(in: text) {
+      if range.lowerBound == range.upperBound {
+        return
       }
+      let selectedText = text[range]
+      let charCount = selectedText.count
+
+      var gradientText = ""
+      selectedText.enumerated().forEach { index, char in
+        let progress = Double(index) / Double(max(1, charCount - 1))
+        let currentColor = interpolateColor(
+          start: inputColorStart, end: inputColorEnd, progress: progress)
+        let hexColor = convertColorToHex(currentColor)
+        gradientText +=
+          "[\(BBCodeType.color.code)=\(hexColor)]\(char)[/\(BBCodeType.color.code)]"
+      }
+
+      text.replaceSubrange(range, with: gradientText)
+      newSelection(range.lowerBound, gradientText.count)
     }
   }
 
@@ -256,16 +206,9 @@ struct BBCodeEditor: View {
 
   private func handleEmojiInput(_ index: Int) {
     let emoji = "(bgm\(index))"
-    if let selection = textSelection {
-      switch selection.indices {
-      case .selection(let range):
-        text.replaceSubrange(range, with: emoji)
-        newSelection(range.lowerBound, emoji.count)
-      case .multiSelection:
-        break
-      @unknown default:
-        break
-      }
+    if let selection = textSelection, let range = selection.range(in: text) {
+      text.replaceSubrange(range, with: emoji)
+      newSelection(range.lowerBound, emoji.count)
     } else {
       let endIndex = text.endIndex
       text += emoji
@@ -361,10 +304,8 @@ struct BBCodeEditor: View {
           }.padding(.horizontal, 2)
         }.buttonStyle(.bordered)
         BorderView(color: .secondary.opacity(0.2), padding: 0) {
-          TextEditor(text: $text, selection: $textSelection)
+          BBCodeTextView(text: $text, selection: $textSelection)
             .frame(height: height)
-            .autocorrectionDisabled()
-            .textInputAutocapitalization(.never)
         }
         .toolbar {
           ToolbarItem(placement: .keyboard) {
@@ -487,6 +428,133 @@ struct BBCodeEditor: View {
         handleGradientInput: handleGradientInput
       ).presentationDetents([.medium])
     }
+  }
+}
+
+/// UIKit-backed text view keeps IME marked text intact inside sheets.
+private struct BBCodeTextView: UIViewRepresentable {
+  @Binding var text: String
+  @Binding var selection: EditorSelection?
+
+  func makeCoordinator() -> Coordinator {
+    Coordinator(text: $text, selection: $selection)
+  }
+
+  func makeUIView(context: Context) -> UITextView {
+    let textView = UITextView()
+    textView.delegate = context.coordinator
+    textView.backgroundColor = .clear
+    textView.text = text
+    textView.font = UIFont.preferredFont(forTextStyle: .body)
+    textView.adjustsFontForContentSizeCategory = true
+    textView.autocorrectionType = .no
+    textView.autocapitalizationType = .none
+    textView.smartDashesType = .no
+    textView.smartQuotesType = .no
+    textView.smartInsertDeleteType = .no
+    textView.keyboardDismissMode = .interactive
+    textView.textColor = UIColor.label
+    textView.textContainerInset = UIEdgeInsets(top: 8, left: 4, bottom: 8, right: 4)
+    textView.textContainer.lineFragmentPadding = 0
+    return textView
+  }
+
+  func updateUIView(_ textView: UITextView, context: Context) {
+    if textView.text != text {
+      context.coordinator.updatingText = true
+      textView.text = text
+      context.coordinator.updatingText = false
+    }
+
+    if let selection {
+      let nsRange = text.nsRange(from: selection)
+      if textView.selectedRange != nsRange, textView.markedTextRange == nil {
+        context.coordinator.updatingSelection = true
+        textView.selectedRange = nsRange
+        context.coordinator.updatingSelection = false
+      }
+    }
+  }
+
+  class Coordinator: NSObject, UITextViewDelegate {
+    var text: Binding<String>
+    var selection: Binding<EditorSelection?>
+    var updatingText = false
+    var updatingSelection = false
+
+    init(text: Binding<String>, selection: Binding<EditorSelection?>) {
+      self.text = text
+      self.selection = selection
+    }
+
+    func textViewDidChange(_ textView: UITextView) {
+      guard !updatingText else { return }
+      text.wrappedValue = textView.text ?? ""
+    }
+
+    func textViewDidChangeSelection(_ textView: UITextView) {
+      guard !updatingSelection else { return }
+      selection.wrappedValue = EditorSelection(nsRange: textView.selectedRange)
+    }
+  }
+}
+
+extension String {
+  fileprivate func nsRange(from selection: EditorSelection) -> NSRange {
+    let utf16Count = utf16.count
+    let location = max(0, min(selection.location, utf16Count))
+    let length = max(0, min(selection.length, utf16Count - location))
+    return NSRange(location: location, length: length)
+  }
+
+  fileprivate func range(from nsRange: NSRange) -> Range<String.Index>? {
+    let utf16View = utf16
+    let clippedLocation = max(0, min(nsRange.location, utf16View.count))
+    guard
+      let startUTF16 = utf16View.index(
+        utf16View.startIndex, offsetBy: clippedLocation, limitedBy: utf16View.endIndex
+      )
+    else {
+      return nil
+    }
+    let remaining = utf16View.distance(from: startUTF16, to: utf16View.endIndex)
+    let clippedLength = max(0, min(nsRange.length, remaining))
+    guard
+      let endUTF16 = utf16View.index(
+        startUTF16, offsetBy: clippedLength, limitedBy: utf16View.endIndex
+      )
+    else {
+      return nil
+    }
+    guard let start = String.Index(startUTF16, within: self),
+      let end = String.Index(endUTF16, within: self)
+    else {
+      return nil
+    }
+    return start..<end
+  }
+
+  fileprivate func editorSelection(from range: Range<String.Index>) -> EditorSelection {
+    let nsRange = NSRange(range, in: self)
+    return EditorSelection(location: nsRange.location, length: nsRange.length)
+  }
+}
+
+private struct EditorSelection: Equatable {
+  var location: Int
+  var length: Int
+
+  init(location: Int, length: Int) {
+    self.location = max(0, location)
+    self.length = max(0, length)
+  }
+
+  init(nsRange: NSRange) {
+    self.init(location: nsRange.location, length: nsRange.length)
+  }
+
+  func range(in text: String) -> Range<String.Index>? {
+    text.range(from: text.nsRange(from: self))
   }
 }
 
@@ -670,7 +738,7 @@ enum BBCodeType: String, CaseIterable, Identifiable {
     case .size: return "textformat.size"
     case .color: return "paintpalette"
     case .quote: return "text.quote"
-    case .mask: return "character.square.fill"
+    case .mask: return "m.square.fill"
     case .code: return "chevron.left.forwardslash.chevron.right"
     case .left: return "text.alignleft"
     case .center: return "text.aligncenter"
@@ -687,7 +755,6 @@ enum BBCodeType: String, CaseIterable, Identifiable {
   }
 }
 
-@available(iOS 18.0, *)
 #Preview {
   @Previewable @State var text = ""
   ScrollView {
