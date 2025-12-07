@@ -8,7 +8,7 @@ enum ReplySortOrder: String, Codable, CaseIterable {
 
   var description: String {
     switch self {
-    case .ascending: return "正序"
+    case .ascending: return "顺序"
     case .descending: return "倒序"
     }
   }
