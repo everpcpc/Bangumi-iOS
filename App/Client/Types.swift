@@ -316,6 +316,16 @@ struct SubjectTopicDTO: Codable, Identifiable, Hashable, Linkable {
   var link: String {
     "chii://subject/topic/\(id)"
   }
+
+  /// Returns the main post (first reply), or nil if array is empty
+  var mainPost: ReplyDTO? {
+    replies.first
+  }
+
+  /// Returns all replies except the main post (first reply)
+  var rest: [ReplyDTO] {
+    Array(replies.dropFirst())
+  }
 }
 
 struct GroupTopicDTO: Codable, Identifiable, Hashable, Linkable {
@@ -338,6 +348,16 @@ struct GroupTopicDTO: Codable, Identifiable, Hashable, Linkable {
 
   var link: String {
     "chii://group/topic/\(id)"
+  }
+
+  /// Returns the main post (first reply), or nil if array is empty
+  var mainPost: ReplyDTO? {
+    replies.first
+  }
+
+  /// Returns all replies except the main post (first reply)
+  var rest: [ReplyDTO] {
+    Array(replies.dropFirst())
   }
 }
 

@@ -80,6 +80,6 @@ struct ReplyActionButtons: View {
     }
     .padding(.trailing, 8)
     .buttonStyle(.scale)
-    .foregroundStyle(.secondary)
+    .foregroundStyle(.quaternary)
   }
 }

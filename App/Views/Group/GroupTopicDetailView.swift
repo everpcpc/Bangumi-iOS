@@ -33,7 +33,7 @@ struct GroupTopicDetailView: View {
     do {
       let resp = try await Chii.shared.getGroupTopic(topicId)
       topic = resp
-      if let mainPost = resp.replies.mainPost {
+      if let mainPost = resp.mainPost {
         mainPostReactions = mainPost.reactions ?? []
       }
       refreshed = true
@@ -49,7 +49,7 @@ struct GroupTopicDetailView: View {
   // Collect all timestamps (main replies + sub-replies) for time-based limiting
   var allPostTimestamps: [Int] {
     guard let topic = topic else { return [] }
-    let filtered = topic.replies.rest
+    let filtered = topic.rest
       .filtered(by: filterMode, posterID: topic.creatorID, friendlist: friendlist, myID: profile.id)
 
     var timestamps: [Int] = []
@@ -79,7 +79,7 @@ struct GroupTopicDetailView: View {
 
   var filteredReplies: [ReplyDTO] {
     guard let topic = topic else { return [] }
-    var filtered = topic.replies.rest
+    var filtered = topic.rest
       .filtered(by: filterMode, posterID: topic.creatorID, friendlist: friendlist, myID: profile.id)
 
     // Apply time cutoff if set
@@ -134,7 +134,7 @@ struct GroupTopicDetailView: View {
             }
           }
 
-          if let mainPost = topic.replies.mainPost {
+          if let mainPost = topic.mainPost {
             CardView {
               VStack(alignment: .leading) {
                 MainPostContentView(
@@ -142,47 +142,15 @@ struct GroupTopicDetailView: View {
                   reply: mainPost, author: topic.creator,
                   reactions: $mainPostReactions)
 
-                HStack {
-                  Spacer()
-
-                  Button {
-                    showReplyBox = true
-                  } label: {
-                    Label {
-                      if maxReplyCount > 0 {
-                        Text("\(maxReplyCount)")
-                          .foregroundStyle(.secondary)
-                      }
-                      Text("回复")
-                    } icon: {
-                      Image(systemName: "plus.bubble")
-                    }
-                    .labelStyle(.compact)
-                  }
-                  .disabled(!isAuthenticated)
-
-                  Button {
-                    showIndexPicker = true
-                  } label: {
-                    Label("收藏", systemImage: "book")
-                      .font(.subheadline)
-                  }
-                  .disabled(!isAuthenticated)
-
-                  ReactionButton(
-                    type: ReactionType.groupReply(mainPost.id),
-                    reactions: $mainPostReactions,
-                    showLabel: true
-                  )
-                }
-                .foregroundStyle(.secondary)
-                .controlSize(.small)
-                .adaptiveButtonStyle(.bordered)
-                .padding(.horizontal, 16)
-                .padding(.bottom, 8)
+                MainPostActionButtons(
+                  onReply: { showReplyBox = true },
+                  onIndex: { showIndexPicker = true },
+                  reactionType: .groupReply(mainPost.id),
+                  reactions: $mainPostReactions,
+                  maxReplyCount: maxReplyCount
+                )
               }
             }
-            .background(Color.accentColor.opacity(0.03))
           }
 
           // Replies section with sticky slider header
@@ -199,7 +167,7 @@ struct GroupTopicDetailView: View {
                   Divider()
                 }
               }
-            } else if topic.replies.rest.count > 0 {
+            } else if topic.rest.count > 0 {
               HStack {
                 Spacer()
                 Text("没有符合条件的回复")
@@ -210,12 +178,24 @@ struct GroupTopicDetailView: View {
               .padding(.vertical, 8)
             }
           } header: {
-            Slider(
-              value: $replyLimit,
-              in: 0...max(1, Double(maxReplyCount - 1)),
-              step: 1
-            )
-            .scaleEffect(x: -1, y: 1)
+            HStack {
+              Slider(
+                value: $replyLimit,
+                in: 0...max(1, Double(maxReplyCount - 1)),
+                step: 1
+              )
+              .scaleEffect(x: -1, y: 1)
+
+              ReplyFilterSortButtons(
+                filterMode: $filterMode,
+                sortOrder: Binding(
+                  get: { effectiveSortOrder },
+                  set: { sortOrder = $0 }
+                ),
+                effectiveSortOrder: effectiveSortOrder,
+                onFilterChange: { replyLimit = 0 }
+              )
+            }
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
             .background(

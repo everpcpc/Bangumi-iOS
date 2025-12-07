@@ -54,16 +54,6 @@ enum ReplyFilterMode: String, Codable, CaseIterable {
 // MARK: - ReplyDTO Extension
 
 extension Array where Element == ReplyDTO {
-  /// Returns the main post (first reply), or nil if array is empty
-  var mainPost: ReplyDTO? {
-    first
-  }
-
-  /// Returns all replies except the main post (first reply)
-  var rest: [ReplyDTO] {
-    Array(dropFirst())
-  }
-
   /// Filter replies based on filter mode
   func filtered(
     by mode: ReplyFilterMode,
