@@ -489,12 +489,19 @@ private struct BBCodeTextView: UIViewRepresentable {
 
     func textViewDidChange(_ textView: UITextView) {
       guard !updatingText else { return }
-      text.wrappedValue = textView.text ?? ""
+      let newText = textView.text ?? ""
+      DispatchQueue.main.async {
+        self.text.wrappedValue = newText
+      }
     }
 
     func textViewDidChangeSelection(_ textView: UITextView) {
       guard !updatingSelection else { return }
-      selection.wrappedValue = EditorSelection(nsRange: textView.selectedRange)
+      guard textView.markedTextRange == nil else { return }
+      let range = textView.selectedRange
+      DispatchQueue.main.async {
+        self.selection.wrappedValue = EditorSelection(nsRange: range)
+      }
     }
   }
 }
