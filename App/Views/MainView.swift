@@ -13,14 +13,6 @@ struct MainView: View {
   @State private var settingsNav: NavigationPath = NavigationPath()
   @State private var discoverNav: NavigationPath = NavigationPath()
 
-  var discoverTabRole: TabRole? {
-    if UIDevice.current.userInterfaceIdiom == .pad {
-      return nil
-    } else {
-      return .search
-    }
-  }
-
   var body: some View {
     TabView(selection: $mainTab) {
       Tab(ChiiViewTab.timeline.title, systemImage: ChiiViewTab.timeline.icon, value: .timeline) {
@@ -87,7 +79,7 @@ struct MainView: View {
 
       Tab(
         ChiiViewTab.discover.title, systemImage: ChiiViewTab.discover.icon,
-        value: ChiiViewTab.discover, role: discoverTabRole
+        value: ChiiViewTab.discover, role: .search
       ) {
         NavigationStack(path: $discoverNav) {
           ChiiDiscoverView()
