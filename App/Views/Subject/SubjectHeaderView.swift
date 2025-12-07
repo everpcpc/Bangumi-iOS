@@ -112,11 +112,7 @@ struct SubjectLockView: View {
   var body: some View {
     ZStack {
       HStack {
-        Image("Musume")
-          .scaleEffect(x: 0.5, y: 0.5, anchor: .bottomLeading)
-          .offset(x: -40, y: 20)
-          .frame(width: 36, height: 60, alignment: .bottomLeading)
-          .clipped()
+        MusumeView(index: 0, width: 40, height: 60)
           .padding(.horizontal, 5)
         VStack(alignment: .leading) {
           Text("条目已锁定")

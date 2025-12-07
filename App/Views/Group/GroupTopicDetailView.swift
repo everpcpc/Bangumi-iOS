@@ -223,6 +223,12 @@ struct GroupTopicDetailView: View {
                 .fill(Color(.systemBackground).opacity(0.6))
             )
           }
+
+          HStack {
+            Spacer()
+            MusumeView(index: 3, width: 40)
+            Spacer()
+          }.padding(.bottom, 16)
         }
         .animation(.default, value: filterMode)
         .animation(.default, value: sortOrder)

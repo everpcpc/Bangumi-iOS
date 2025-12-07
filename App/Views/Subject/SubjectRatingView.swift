@@ -28,11 +28,7 @@ struct SubjectRatingView: View {
       GeometryReader { geometry in
         VStack(alignment: .leading) {
           HStack {
-            Image("Musume")
-              .scaleEffect(x: 0.5, y: 0.5, anchor: .bottomLeading)
-              .offset(x: CGFloat(-40 * scoreInfo.offset), y: 20)
-              .frame(width: 40, height: 55, alignment: .bottomLeading)
-              .clipped()
+            MusumeView(index: scoreInfo.offset, width: 40, height: 55)
             VStack(alignment: .leading) {
               HStack(alignment: .center) {
                 Text("\(subject.rating.score.rateDisplay)").font(.title).foregroundStyle(.accent)
