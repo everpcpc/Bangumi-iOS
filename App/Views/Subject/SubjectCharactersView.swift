@@ -6,6 +6,7 @@ struct SubjectCharactersView: View {
   let characters: [SubjectCharacterDTO]
 
   @AppStorage("isolationMode") var isolationMode: Bool = false
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
 
   var body: some View {
     VStack(spacing: 2) {
@@ -50,6 +51,8 @@ struct CharacterCard: View {
   let item: SubjectCharacterDTO
   let isolationMode: Bool
 
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+
   var body: some View {
     VStack(alignment: .leading, spacing: 2) {
       ImageView(img: item.character.images?.medium)
@@ -59,7 +62,7 @@ struct CharacterCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .shadow(radius: 2)
 
-      Text(item.character.name.withLink(item.character.link))
+      Text(item.character.title(with: titlePreference).withLink(item.character.link))
         .font(.footnote)
         .fontWeight(.medium)
         .lineLimit(2)

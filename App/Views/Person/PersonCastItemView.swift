@@ -14,12 +14,14 @@ struct PersonCastItemView: View {
           .imageLink(item.character.link)
 
         VStack(alignment: .leading) {
-          Text(item.character.name.withLink(item.character.link))
+          Text(item.character.title(with: titlePreference).withLink(item.character.link))
             .lineLimit(2)
-          Text(item.character.nameCN)
-            .lineLimit(1)
-            .font(.footnote)
-            .foregroundStyle(.secondary)
+          if let subtitle = item.character.subtitle(with: titlePreference) {
+            Text(subtitle)
+              .lineLimit(1)
+              .font(.footnote)
+              .foregroundStyle(.secondary)
+          }
         }
 
         Spacer()

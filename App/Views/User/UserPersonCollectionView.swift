@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct UserPersonCollectionView: View {
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+
   @Environment(User.self) var user
 
   @State private var refreshing = false
@@ -55,7 +57,7 @@ struct UserPersonCollectionView: View {
                   .imageType(.person)
                   .imageLink(person.link)
                   .shadow(radius: 2)
-                Text(person.name)
+                Text(person.title(with: titlePreference))
                   .font(.caption2)
                   .lineLimit(2)
                   .multilineTextAlignment(.leading)

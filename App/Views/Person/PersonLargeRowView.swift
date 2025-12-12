@@ -2,6 +2,8 @@ import SwiftData
 import SwiftUI
 
 struct PersonLargeRowView: View {
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+
   @Environment(Person.self) private var person
 
   var body: some View {
@@ -12,11 +14,11 @@ struct PersonLargeRowView: View {
         .imageNSFW(person.nsfw)
         .imageLink(person.link)
       VStack(alignment: .leading, spacing: 4) {
-        Text(person.name)
+        Text(person.title(with: titlePreference))
           .font(.headline)
           .lineLimit(1)
-        if !person.nameCN.isEmpty {
-          Text(person.nameCN)
+        if let subtitle = person.subtitle(with: titlePreference) {
+          Text(subtitle)
             .font(.subheadline)
             .foregroundStyle(.secondary)
             .lineLimit(1)

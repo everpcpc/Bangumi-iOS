@@ -32,8 +32,17 @@ final class CharacterV2: Searchable, Linkable {
     return CharacterType(role)
   }
 
-  var title: String {
-    nameCN.isEmpty ? name : nameCN
+  func title(with preference: TitlePreference) -> String {
+    preference.title(name: name, nameCN: nameCN)
+  }
+
+  func subtitle(with preference: TitlePreference) -> String? {
+    switch preference {
+    case .chinese:
+      return nameCN.isEmpty ? nil : (name != nameCN ? name : nil)
+    case .original:
+      return name.isEmpty ? nil : (nameCN != name && !nameCN.isEmpty ? nameCN : nil)
+    }
   }
 
   var link: String {

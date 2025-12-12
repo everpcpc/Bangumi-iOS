@@ -9,6 +9,7 @@ struct PersonView: View {
   @AppStorage("shareDomain") var shareDomain: ShareDomain = .chii
   @AppStorage("isolationMode") var isolationMode: Bool = false
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
 
   @State private var refreshed: Bool = false
 
@@ -36,7 +37,7 @@ struct PersonView: View {
     guard let person = person else {
       return "人物"
     }
-    return person.name
+    return person.title(with: titlePreference)
   }
 
   func refresh() async {
@@ -202,11 +203,19 @@ struct PersonDetailView: View {
         .padding(.trailing, 16)
 
         Spacer()
-        Text(person.title)
-          .multilineTextAlignment(.leading)
-          .truncationMode(.middle)
-          .lineLimit(2)
-          .textSelection(.enabled)
+        if person.nameCN.isEmpty {
+          Text(person.name)
+            .multilineTextAlignment(.leading)
+            .truncationMode(.middle)
+            .lineLimit(2)
+            .textSelection(.enabled)
+        } else {
+          Text(person.nameCN)
+            .multilineTextAlignment(.leading)
+            .truncationMode(.middle)
+            .lineLimit(2)
+            .textSelection(.enabled)
+        }
         Spacer()
 
         if !careers.isEmpty {

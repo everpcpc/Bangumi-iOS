@@ -9,6 +9,7 @@ struct CharacterView: View {
   @AppStorage("shareDomain") var shareDomain: ShareDomain = .chii
   @AppStorage("isolationMode") var isolationMode: Bool = false
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
 
   @State private var refreshed: Bool = false
 
@@ -36,7 +37,7 @@ struct CharacterView: View {
     guard let character = character else {
       return "角色"
     }
-    return character.name
+    return character.title(with: titlePreference)
   }
 
   func refresh() async {
@@ -197,11 +198,19 @@ struct CharacterDetailView: View {
         .padding(.trailing, 16)
 
         Spacer()
-        Text(character.title)
-          .multilineTextAlignment(.leading)
-          .truncationMode(.middle)
-          .lineLimit(2)
-          .textSelection(.enabled)
+        if character.nameCN.isEmpty {
+          Text(character.name)
+            .multilineTextAlignment(.leading)
+            .truncationMode(.middle)
+            .lineLimit(2)
+            .textSelection(.enabled)
+        } else {
+          Text(character.nameCN)
+            .multilineTextAlignment(.leading)
+            .truncationMode(.middle)
+            .lineLimit(2)
+            .textSelection(.enabled)
+        }
         Spacer()
 
         NavigationLink(value: NavDestination.infobox("角色信息", character.infobox)) {

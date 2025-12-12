@@ -37,9 +37,11 @@ struct CharacterCastItemView: View {
           ForEach(item.actors) { person in
             HStack(alignment: .top) {
               VStack(alignment: .trailing) {
-                Text(person.name.withLink(person.link))
-                Text(person.nameCN)
-                  .foregroundStyle(.secondary)
+                Text(person.title(with: titlePreference).withLink(person.link))
+                if let subtitle = person.subtitle(with: titlePreference) {
+                  Text(subtitle)
+                    .foregroundStyle(.secondary)
+                }
               }
               .lineLimit(1)
               .font(.footnote)

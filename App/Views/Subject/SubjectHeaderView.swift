@@ -2,8 +2,6 @@ import SwiftData
 import SwiftUI
 
 struct SubjectHeaderView: View {
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
-
   @Environment(Subject.self) var subject
 
   var type: SubjectType {
@@ -25,7 +23,7 @@ struct SubjectHeaderView: View {
     if subject.locked {
       SubjectLockView()
     }
-    Text(subject.title(with: titlePreference))
+    Text(subject.name)
       .font(.title2.bold())
       .multilineTextAlignment(.leading)
       .textSelection(.enabled)
@@ -54,8 +52,14 @@ struct SubjectHeaderView: View {
         .foregroundStyle(.secondary)
 
         Spacer()
-        if let subtitle = subject.subtitle(with: titlePreference) {
-          Text(subtitle)
+        if subject.nameCN.isEmpty {
+          Text(subject.name)
+            .multilineTextAlignment(.leading)
+            .truncationMode(.middle)
+            .lineLimit(2)
+            .textSelection(.enabled)
+        } else {
+          Text(subject.nameCN)
             .multilineTextAlignment(.leading)
             .truncationMode(.middle)
             .lineLimit(2)

@@ -6,6 +6,7 @@ struct SubjectCharacterListView: View {
   let subjectId: Int
 
   @AppStorage("isolationMode") var isolationMode: Bool = false
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
 
   @State private var castType: CastType = .none
   @State private var reloader = false
@@ -46,7 +47,7 @@ struct SubjectCharacterListView: View {
             VStack(alignment: .leading) {
               VStack(alignment: .leading) {
                 HStack {
-                  Text(item.character.name.withLink(item.character.link))
+                  Text(item.character.title(with: titlePreference).withLink(item.character.link))
                     .foregroundStyle(.linkText)
                     .lineLimit(1)
                   Spacer()
@@ -56,10 +57,12 @@ struct SubjectCharacterListView: View {
                       .foregroundStyle(.orange)
                   }
                 }
-                Text(item.character.nameCN)
-                  .font(.footnote)
-                  .foregroundStyle(.secondary)
-                  .lineLimit(1)
+                if let subtitle = item.character.subtitle(with: titlePreference) {
+                  Text(subtitle)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                }
               }
               HFlow {
                 ForEach(item.actors) { person in
@@ -69,14 +72,16 @@ struct SubjectCharacterListView: View {
                       .imageType(.person)
                       .imageLink(person.link)
                     VStack(alignment: .leading) {
-                      Text(person.name.withLink(person.link))
+                      Text(person.title(with: titlePreference).withLink(person.link))
                         .foregroundStyle(.linkText)
                         .font(.footnote)
                         .lineLimit(1)
-                      Text(person.nameCN)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                      if let subtitle = person.subtitle(with: titlePreference) {
+                        Text(subtitle)
+                          .font(.footnote)
+                          .foregroundStyle(.secondary)
+                          .lineLimit(1)
+                      }
                     }
                   }
                 }

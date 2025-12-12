@@ -2,6 +2,8 @@ import SwiftData
 import SwiftUI
 
 struct CharacterLargeRowView: View {
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+
   @Environment(Character.self) private var character
 
   var body: some View {
@@ -12,11 +14,11 @@ struct CharacterLargeRowView: View {
         .imageNSFW(character.nsfw)
         .imageLink(character.link)
       VStack(alignment: .leading, spacing: 4) {
-        Text(character.name)
+        Text(character.title(with: titlePreference))
           .font(.headline)
           .lineLimit(1)
-        if !character.nameCN.isEmpty {
-          Text(character.nameCN)
+        if let subtitle = character.subtitle(with: titlePreference) {
+          Text(subtitle)
             .font(.subheadline)
             .foregroundStyle(.secondary)
             .lineLimit(1)

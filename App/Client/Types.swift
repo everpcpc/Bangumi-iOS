@@ -546,6 +546,19 @@ struct SlimCharacterDTO: Codable, Identifiable, Hashable, Linkable {
     self.info = character.info
   }
 
+  func title(with preference: TitlePreference) -> String {
+    preference.title(name: name, nameCN: nameCN)
+  }
+
+  func subtitle(with preference: TitlePreference) -> String? {
+    switch preference {
+    case .chinese:
+      return nameCN.isEmpty ? nil : (name != nameCN ? name : nil)
+    case .original:
+      return name.isEmpty ? nil : (nameCN != name && !nameCN.isEmpty ? nameCN : nil)
+    }
+  }
+
   var link: String {
     "chii://character/\(id)"
   }
@@ -758,6 +771,19 @@ struct SlimPersonDTO: Codable, Identifiable, Hashable, Linkable {
     self.nsfw = person.nsfw
     self.comment = person.comment
     self.info = person.info
+  }
+
+  func title(with preference: TitlePreference) -> String {
+    preference.title(name: name, nameCN: nameCN)
+  }
+
+  func subtitle(with preference: TitlePreference) -> String? {
+    switch preference {
+    case .chinese:
+      return nameCN.isEmpty ? nil : (name != nameCN ? name : nil)
+    case .original:
+      return name.isEmpty ? nil : (nameCN != name && !nameCN.isEmpty ? nameCN : nil)
+    }
   }
 
   var link: String {

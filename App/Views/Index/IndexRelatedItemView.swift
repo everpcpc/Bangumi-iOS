@@ -82,14 +82,16 @@ struct IndexRelatedItemView: View {
                   Image(systemName: item.cat.icon)
                     .foregroundStyle(.secondary)
                     .font(.footnote)
-                  Text(character.name.withLink(character.link))
+                  Text(character.title(with: titlePreference).withLink(character.link))
                     .lineLimit(1)
                   Spacer(minLength: 0)
                 }
-                Text(character.nameCN)
-                  .font(.footnote)
-                  .foregroundStyle(.secondary)
-                  .lineLimit(1)
+                if let subtitle = character.subtitle(with: titlePreference) {
+                  Text(subtitle)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                }
                 Text(character.info ?? "")
                   .font(.footnote)
                   .foregroundStyle(.secondary)
@@ -126,7 +128,7 @@ struct IndexRelatedItemView: View {
                   Image(systemName: item.cat.icon)
                     .foregroundStyle(.secondary)
                     .font(.footnote)
-                  Text(person.name.withLink(person.link))
+                  Text(person.title(with: titlePreference).withLink(person.link))
                     .lineLimit(1)
                   Spacer(minLength: 0)
                 }
@@ -139,10 +141,12 @@ struct IndexRelatedItemView: View {
                       }
                     }
                   }
-                  Text(person.nameCN)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                  if let subtitle = person.subtitle(with: titlePreference) {
+                    Text(subtitle)
+                      .font(.footnote)
+                      .foregroundStyle(.secondary)
+                      .lineLimit(1)
+                  }
                 }
                 Text(person.info ?? "")
                   .font(.footnote)
