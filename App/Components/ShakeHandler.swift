@@ -3,12 +3,18 @@ import UIKit
 
 struct ShakeHandler: UIViewControllerRepresentable {
   @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
+  @AppStorage("enableShakeTitleToggle") var enableShakeTitleToggle: Bool = false
 
   func makeUIViewController(context: Context) -> ShakeViewController {
     ShakeViewController()
   }
 
   func updateUIViewController(_ uiViewController: ShakeViewController, context: Context) {
+    guard enableShakeTitleToggle else {
+      uiViewController.onShake = nil
+      return
+    }
+
     uiViewController.onShake = {
       // Toggle between chinese and original
       titlePreference = titlePreference == .chinese ? .original : .chinese

@@ -15,6 +15,7 @@ struct SettingsView: View {
   @AppStorage("hideBlocklist") var hideBlocklist: Bool = false
   @AppStorage("autoCompleteProgress") var autoCompleteProgress: Bool = false
   @AppStorage("enableReactions") var enableReactions: Bool = true
+  @AppStorage("enableShakeTitleToggle") var enableShakeTitleToggle: Bool = false
   @AppStorage("replySortOrder") var replySortOrder: ReplySortOrder = .ascending
   @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
@@ -129,6 +130,9 @@ struct SettingsView: View {
         }
         Toggle(isOn: $enableReactions) {
           Text("启用贴贴")
+        }
+        Toggle(isOn: $enableShakeTitleToggle) {
+          Text("摇一摇切换标题显示")
         }
       }
 
