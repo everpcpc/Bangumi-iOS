@@ -220,14 +220,19 @@ struct GroupTopicDetailView: View {
           }
         }
         .sheet(isPresented: $showReplyBox) {
-          CreateReplyBoxSheet(type: .group(topic.group.name), topicId: topicId)
-            .presentationDetents([.medium, .large])
+          CreateReplyBoxSheet(type: .group(topic.group.name), topicId: topicId) {
+            Task { await refresh() }
+          }
+          .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showEditBox) {
           EditTopicBoxSheet(
             type: .group(topic.group.name), topicId: topicId,
             title: topic.title, post: topic.replies.first
-          ).presentationDetents([.medium, .large])
+          ) {
+            Task { await refresh() }
+          }
+          .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showIndexPicker) {
           IndexPickerSheet(

@@ -94,8 +94,10 @@ struct PersonView: View {
           }
         }
         .sheet(isPresented: $showCommentBox) {
-          CreateCommentBoxSheet(type: .person(personId))
-            .presentationDetents([.medium, .large])
+          CreateCommentBoxSheet(type: .person(personId)) {
+            Task { await refresh() }
+          }
+          .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showIndexPicker) {
           IndexPickerSheet(

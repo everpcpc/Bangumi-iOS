@@ -221,14 +221,19 @@ struct SubjectTopicDetailView: View {
           }
         }
         .sheet(isPresented: $showReplyBox) {
-          CreateReplyBoxSheet(type: .subject(topic.subject.id), topicId: topicId)
-            .presentationDetents([.medium, .large])
+          CreateReplyBoxSheet(type: .subject(topic.subject.id), topicId: topicId) {
+            Task { await refresh() }
+          }
+          .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showEditBox) {
           EditTopicBoxSheet(
             type: .subject(topic.subject.id), topicId: topicId,
             title: topic.title, post: topic.replies.first
-          ).presentationDetents([.medium, .large])
+          ) {
+            Task { await refresh() }
+          }
+          .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showIndexPicker) {
           IndexPickerSheet(

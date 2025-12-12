@@ -333,8 +333,10 @@ struct IndexView: View {
     }
     .sheet(isPresented: $showCommentBox) {
       if !isolationMode {
-        CreateCommentBoxSheet(type: .index(indexId))
-          .presentationDetents([.medium, .large])
+        CreateCommentBoxSheet(type: .index(indexId)) {
+          Task { await loadComments() }
+        }
+        .presentationDetents([.medium, .large])
       }
     }
     .sheet(isPresented: $showReportView) {

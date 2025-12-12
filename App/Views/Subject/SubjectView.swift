@@ -116,8 +116,13 @@ struct SubjectDetailView: View {
       }.padding(.horizontal, 8)
     }
     .sheet(isPresented: $showCreateTopic) {
-      CreateTopicBoxSheet(type: .subject(subject.subjectId))
-        .presentationDetents([.medium, .large])
+      CreateTopicBoxSheet(type: .subject(subject.subjectId)) {
+        Task {
+          try? await Chii.shared.loadSubjectDetails(
+            subject.subjectId, offprints: false, social: true)
+        }
+      }
+      .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showIndexPicker) {
       IndexPickerSheet(

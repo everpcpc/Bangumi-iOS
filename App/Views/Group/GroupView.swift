@@ -147,8 +147,12 @@ struct GroupDetailView: View {
     .navigationTitle(group.title)
     .navigationBarTitleDisplayMode(.inline)
     .sheet(isPresented: $showCreateTopic) {
-      CreateTopicBoxSheet(type: .group(group.name))
-        .presentationDetents([.medium, .large])
+      CreateTopicBoxSheet(type: .group(group.name)) {
+        Task {
+          try? await Chii.shared.loadGroupDetails(group.name)
+        }
+      }
+      .presentationDetents([.medium, .large])
     }
     .toolbar {
       ToolbarItem(placement: .topBarTrailing) {
@@ -284,8 +288,12 @@ struct GroupRecentTopicView: View {
         Divider()
       }
       .sheet(isPresented: $showCreateTopic) {
-        CreateTopicBoxSheet(type: .group(group.name))
-          .presentationDetents([.medium, .large])
+        CreateTopicBoxSheet(type: .group(group.name)) {
+          Task {
+            try? await Chii.shared.loadGroupDetails(group.name)
+          }
+        }
+        .presentationDetents([.medium, .large])
       }
       VStack {
         ForEach(group.recentTopics) { topic in

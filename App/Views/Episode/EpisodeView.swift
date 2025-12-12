@@ -122,8 +122,10 @@ struct EpisodeView: View {
       }
     }
     .sheet(isPresented: $showCommentBox) {
-      CreateCommentBoxSheet(type: .episode(episodeId))
-        .presentationDetents([.medium, .large])
+      CreateCommentBoxSheet(type: .episode(episodeId)) {
+        Task { await load() }
+      }
+      .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showIndexPicker) {
       IndexPickerSheet(

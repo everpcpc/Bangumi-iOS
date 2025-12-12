@@ -89,8 +89,10 @@ struct TimelineView: View {
       }
     }
     .sheet(isPresented: $showCommentBox) {
-      CreateCommentBoxSheet(type: .timeline(item.id))
-        .presentationDetents([.medium, .large])
+      CreateCommentBoxSheet(type: .timeline(item.id)) {
+        Task { await load() }
+      }
+      .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showReportView) {
       ReportSheet(

@@ -407,6 +407,7 @@ struct CreateCommentBoxSheet: View {
   let type: CommentParentType
   let comment: CommentDTO?
   let reply: CommentBaseDTO?
+  let onSuccess: (() -> Void)?
 
   @Environment(\.dismiss) private var dismiss
 
@@ -425,10 +426,14 @@ struct CreateCommentBoxSheet: View {
     }
   }
 
-  init(type: CommentParentType, comment: CommentDTO? = nil, reply: CommentBaseDTO? = nil) {
+  init(
+    type: CommentParentType, comment: CommentDTO? = nil, reply: CommentBaseDTO? = nil,
+    onSuccess: (() -> Void)? = nil
+  ) {
     self.type = type
     self.comment = comment
     self.reply = reply
+    self.onSuccess = onSuccess
   }
 
   func postReply(content: String) async {
@@ -443,6 +448,7 @@ struct CreateCommentBoxSheet: View {
       }
       try await type.reply(commentId: comment?.id, content: content, token: token)
       Notifier.shared.notify(message: "回复成功")
+      onSuccess?()
       dismiss()
     } catch {
       Notifier.shared.alert(error: error)
@@ -456,6 +462,7 @@ struct CreateCommentBoxSheet: View {
         VStack {
           TextInputView(type: "回复", text: $content)
             .textInputStyle(bbcode: true)
+            .disabled(updating)
             .sheet(isPresented: $showTurnstile) {
               TurnstileSheetView(
                 token: $token,
@@ -479,12 +486,16 @@ struct CreateCommentBoxSheet: View {
           .disabled(updating)
         }
         ToolbarItem(placement: .confirmationAction) {
-          Button {
-            showTurnstile = true
-          } label: {
-            Label("发送", systemImage: "paperplane")
+          if updating {
+            ProgressView()
+          } else {
+            Button {
+              showTurnstile = true
+            } label: {
+              Label("发送", systemImage: "paperplane")
+            }
+            .disabled(content.isEmpty)
           }
-          .disabled(content.isEmpty || updating)
         }
       }
     }
@@ -495,6 +506,7 @@ struct EditCommentBoxSheet: View {
   let type: CommentParentType
   let comment: CommentDTO?
   let reply: CommentBaseDTO?
+  let onSuccess: (() -> Void)?
 
   @Environment(\.dismiss) private var dismiss
 
@@ -511,10 +523,14 @@ struct EditCommentBoxSheet: View {
     }
   }
 
-  init(type: CommentParentType, comment: CommentDTO? = nil, reply: CommentBaseDTO? = nil) {
+  init(
+    type: CommentParentType, comment: CommentDTO? = nil, reply: CommentBaseDTO? = nil,
+    onSuccess: (() -> Void)? = nil
+  ) {
     self.type = type
     self.comment = comment
     self.reply = reply
+    self.onSuccess = onSuccess
     _content = State(initialValue: reply?.content ?? comment?.content ?? "")
   }
 
@@ -532,6 +548,7 @@ struct EditCommentBoxSheet: View {
       }
       try await type.edit(commentId: commentId, content: content)
       Notifier.shared.notify(message: "编辑成功")
+      onSuccess?()
       dismiss()
     } catch {
       Notifier.shared.alert(error: error)
@@ -545,6 +562,7 @@ struct EditCommentBoxSheet: View {
         VStack {
           TextInputView(type: "回复", text: $content)
             .textInputStyle(bbcode: true)
+            .disabled(updating)
         }.padding()
       }
       .navigationTitle(title)
@@ -559,14 +577,18 @@ struct EditCommentBoxSheet: View {
           .disabled(updating)
         }
         ToolbarItem(placement: .confirmationAction) {
-          Button {
-            Task {
-              await editComment(content: content)
+          if updating {
+            ProgressView()
+          } else {
+            Button {
+              Task {
+                await editComment(content: content)
+              }
+            } label: {
+              Label("保存", systemImage: "checkmark")
             }
-          } label: {
-            Label("保存", systemImage: "checkmark")
+            .disabled(content.isEmpty)
           }
-          .disabled(content.isEmpty || updating)
         }
       }
     }

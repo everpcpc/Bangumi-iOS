@@ -108,8 +108,10 @@ struct BlogView: View {
           }
         }
         .sheet(isPresented: $showCommentBox) {
-          CreateCommentBoxSheet(type: .blog(blogId))
-            .presentationDetents([.medium, .large])
+          CreateCommentBoxSheet(type: .blog(blogId)) {
+            Task { await load() }
+          }
+          .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showIndexPicker) {
           IndexPickerSheet(

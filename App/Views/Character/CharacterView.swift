@@ -94,8 +94,10 @@ struct CharacterView: View {
           }
         }
         .sheet(isPresented: $showCommentBox) {
-          CreateCommentBoxSheet(type: .character(characterId))
-            .presentationDetents([.medium, .large])
+          CreateCommentBoxSheet(type: .character(characterId)) {
+            Task { await refresh() }
+          }
+          .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showIndexPicker) {
           IndexPickerSheet(

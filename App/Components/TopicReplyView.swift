@@ -384,6 +384,7 @@ struct CreateReplyBoxSheet: View {
   let topicId: Int
   let reply: ReplyDTO?
   let subreply: ReplyBaseDTO?
+  let onSuccess: (() -> Void)?
 
   @Environment(\.dismiss) private var dismiss
 
@@ -402,11 +403,15 @@ struct CreateReplyBoxSheet: View {
     }
   }
 
-  init(type: TopicParentType, topicId: Int, reply: ReplyDTO? = nil, subreply: ReplyBaseDTO? = nil) {
+  init(
+    type: TopicParentType, topicId: Int, reply: ReplyDTO? = nil, subreply: ReplyBaseDTO? = nil,
+    onSuccess: (() -> Void)? = nil
+  ) {
     self.type = type
     self.topicId = topicId
     self.reply = reply
     self.subreply = subreply
+    self.onSuccess = onSuccess
   }
 
   func postReply(content: String) async {
@@ -421,6 +426,7 @@ struct CreateReplyBoxSheet: View {
       }
       try await type.reply(topicId: topicId, content: content, replyTo: reply?.id, token: token)
       Notifier.shared.notify(message: "回复成功")
+      onSuccess?()
       dismiss()
     } catch {
       Notifier.shared.alert(error: error)
@@ -434,6 +440,7 @@ struct CreateReplyBoxSheet: View {
         VStack {
           TextInputView(type: "回复", text: $content)
             .textInputStyle(bbcode: true)
+            .disabled(updating)
             .sheet(isPresented: $showTurnstile) {
               TurnstileSheetView(
                 token: $token,
@@ -457,12 +464,16 @@ struct CreateReplyBoxSheet: View {
           .disabled(updating)
         }
         ToolbarItem(placement: .confirmationAction) {
-          Button {
-            showTurnstile = true
-          } label: {
-            Label("发送", systemImage: "paperplane")
+          if updating {
+            ProgressView()
+          } else {
+            Button {
+              showTurnstile = true
+            } label: {
+              Label("发送", systemImage: "paperplane")
+            }
+            .disabled(content.isEmpty)
           }
-          .disabled(content.isEmpty || updating)
         }
       }
     }
@@ -474,17 +485,22 @@ struct EditReplyBoxSheet: View {
   let topicId: Int
   let reply: ReplyDTO?
   let subreply: ReplyBaseDTO?
+  let onSuccess: (() -> Void)?
 
   @Environment(\.dismiss) private var dismiss
 
   @State private var content: String
   @State private var updating: Bool = false
 
-  init(type: TopicParentType, topicId: Int, reply: ReplyDTO? = nil, subreply: ReplyBaseDTO? = nil) {
+  init(
+    type: TopicParentType, topicId: Int, reply: ReplyDTO? = nil, subreply: ReplyBaseDTO? = nil,
+    onSuccess: (() -> Void)? = nil
+  ) {
     self.type = type
     self.topicId = topicId
     self.reply = reply
     self.subreply = subreply
+    self.onSuccess = onSuccess
     _content = State(initialValue: subreply?.content ?? reply?.content ?? "")
   }
 
@@ -502,6 +518,7 @@ struct EditReplyBoxSheet: View {
       }
       try await type.editPost(postId: postId, content: content)
       Notifier.shared.notify(message: "编辑成功")
+      onSuccess?()
       dismiss()
     } catch {
       Notifier.shared.alert(error: error)
@@ -525,6 +542,7 @@ struct EditReplyBoxSheet: View {
         VStack {
           TextInputView(type: "回复", text: $content)
             .textInputStyle(bbcode: true)
+            .disabled(updating)
         }.padding()
       }
       .navigationTitle(title)
@@ -539,14 +557,18 @@ struct EditReplyBoxSheet: View {
           .disabled(updating)
         }
         ToolbarItem(placement: .confirmationAction) {
-          Button {
-            Task {
-              await editReply(content: content)
+          if updating {
+            ProgressView()
+          } else {
+            Button {
+              Task {
+                await editReply(content: content)
+              }
+            } label: {
+              Label("保存", systemImage: "checkmark")
             }
-          } label: {
-            Label("保存", systemImage: "checkmark")
+            .disabled(content.isEmpty)
           }
-          .disabled(content.isEmpty || updating)
         }
       }
     }
@@ -555,6 +577,7 @@ struct EditReplyBoxSheet: View {
 
 struct CreateTopicBoxSheet: View {
   let type: TopicParentType
+  let onSuccess: (() -> Void)?
 
   @Environment(\.dismiss) private var dismiss
 
@@ -564,10 +587,16 @@ struct CreateTopicBoxSheet: View {
   @State private var showTurnstile: Bool = false
   @State private var updating: Bool = false
 
+  init(type: TopicParentType, onSuccess: (() -> Void)? = nil) {
+    self.type = type
+    self.onSuccess = onSuccess
+  }
+
   func createTopic(title: String, content: String, token: String) async {
     do {
       try await type.createTopic(title: title, content: content, token: token)
       Notifier.shared.notify(message: "创建成功")
+      onSuccess?()
       dismiss()
     } catch {
       Notifier.shared.alert(error: error)
@@ -591,9 +620,11 @@ struct CreateTopicBoxSheet: View {
             TextField("标题", text: $title)
               .textInputAutocapitalization(.never)
               .disableAutocorrection(true)
+              .disabled(updating)
           }
           TextInputView(type: "讨论", text: $content)
             .textInputStyle(bbcode: true)
+            .disabled(updating)
             .sheet(isPresented: $showTurnstile) {
               TurnstileSheetView(
                 token: $token,
@@ -617,12 +648,16 @@ struct CreateTopicBoxSheet: View {
           .disabled(updating)
         }
         ToolbarItem(placement: .confirmationAction) {
-          Button {
-            showTurnstile = true
-          } label: {
-            Label("发送", systemImage: "paperplane")
+          if updating {
+            ProgressView()
+          } else {
+            Button {
+              showTurnstile = true
+            } label: {
+              Label("发送", systemImage: "paperplane")
+            }
+            .disabled(title.isEmpty || content.isEmpty)
           }
-          .disabled(title.isEmpty || content.isEmpty || updating)
         }
       }
     }
@@ -633,6 +668,7 @@ struct EditTopicBoxSheet: View {
   let type: TopicParentType
   let topicId: Int
   let post: ReplyDTO?
+  let onSuccess: (() -> Void)?
 
   @Environment(\.dismiss) private var dismiss
 
@@ -640,9 +676,13 @@ struct EditTopicBoxSheet: View {
   @State private var content: String
   @State private var updating: Bool = false
 
-  init(type: TopicParentType, topicId: Int, title: String, post: ReplyDTO? = nil) {
+  init(
+    type: TopicParentType, topicId: Int, title: String, post: ReplyDTO? = nil,
+    onSuccess: (() -> Void)? = nil
+  ) {
     self.type = type
     self.topicId = topicId
+    self.onSuccess = onSuccess
     self._title = State(initialValue: title)
     if let post = post {
       self.post = post
@@ -658,6 +698,7 @@ struct EditTopicBoxSheet: View {
       updating = true
       try await type.editTopic(topicId: topicId, title: title, content: content)
       Notifier.shared.notify(message: "编辑成功")
+      onSuccess?()
       dismiss()
     } catch {
       Notifier.shared.alert(error: error)
@@ -678,7 +719,7 @@ struct EditTopicBoxSheet: View {
     if post == nil {
       return false
     }
-    return title.isEmpty || content.isEmpty || updating
+    return title.isEmpty || content.isEmpty
   }
 
   var body: some View {
@@ -701,9 +742,11 @@ struct EditTopicBoxSheet: View {
             TextField("标题", text: $title)
               .textInputAutocapitalization(.never)
               .disableAutocorrection(true)
+              .disabled(updating)
           }
           TextInputView(type: "讨论", text: $content)
             .textInputStyle(bbcode: true)
+            .disabled(updating)
         }.padding()
       }
       .navigationTitle(header)
@@ -718,14 +761,18 @@ struct EditTopicBoxSheet: View {
           .disabled(updating)
         }
         ToolbarItem(placement: .confirmationAction) {
-          Button {
-            Task {
-              await editTopic(title: title, content: content)
+          if updating {
+            ProgressView()
+          } else {
+            Button {
+              Task {
+                await editTopic(title: title, content: content)
+              }
+            } label: {
+              Label("保存", systemImage: "checkmark")
             }
-          } label: {
-            Label("保存", systemImage: "checkmark")
+            .disabled(submitDisabled)
           }
-          .disabled(submitDisabled)
         }
       }
     }
