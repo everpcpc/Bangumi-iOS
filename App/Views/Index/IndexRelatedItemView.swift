@@ -183,7 +183,7 @@ struct IndexRelatedItemView: View {
                   Image(systemName: item.cat.icon)
                     .foregroundStyle(.secondary)
                     .font(.footnote)
-                  Text(episode.title.withLink(episode.link))
+                  Text(episode.title(with: titlePreference).withLink(episode.link))
                     .lineLimit(1)
                   Spacer(minLength: 0)
                 }

@@ -662,8 +662,18 @@ struct EpisodeDTO: Codable, Identifiable, Hashable, Linkable {
   var collection: EpisodeCollectionStatus?
   var subject: SlimSubjectDTO?
 
-  var title: String {
-    return "\(self.type.name).\(self.sort.episodeDisplay) \(self.name)"
+  func title(with preference: TitlePreference) -> String {
+    return
+      "\(self.type.name).\(self.sort.episodeDisplay) \(preference.title(name: name, nameCN: nameCN))"
+  }
+
+  func subtitle(with preference: TitlePreference) -> String? {
+    switch preference {
+    case .chinese:
+      return nameCN.isEmpty ? nil : (name != nameCN ? name : nil)
+    case .original:
+      return name.isEmpty ? nil : (nameCN != name && !nameCN.isEmpty ? nameCN : nil)
+    }
   }
 
   var link: String {

@@ -4,6 +4,7 @@ import SwiftUI
 struct EpisodeInfoView: View {
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
   @AppStorage("isolationMode") var isolationMode: Bool = false
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   @Environment(Episode.self) var episode
 
@@ -18,7 +19,7 @@ struct EpisodeInfoView: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 5) {
       HStack(alignment: .bottom) {
-        Text(episode.title)
+        Text(episode.title(with: titlePreference))
           .font(.title3)
           .lineLimit(1)
         BorderView {

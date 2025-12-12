@@ -52,18 +52,27 @@ final class EpisodeV2: Linkable {
     }
   }
 
-  var title: AttributedString {
+  func title(with preference: TitlePreference) -> AttributedString {
     var text = AttributedString("\(self.typeEnum.name).\(self.sort.episodeDisplay)")
     text.foregroundColor = .secondary
-    text += AttributedString(" \(self.name)")
+    text += AttributedString(" \(preference.title(name: name, nameCN: nameCN))")
     return text
   }
 
-  var titleLink: AttributedString {
+  func titleLink(with preference: TitlePreference) -> AttributedString {
     var text = AttributedString("\(self.typeEnum.name).\(self.sort.episodeDisplay) ")
     text.foregroundColor = .secondary
-    text += self.name.withLink(self.link)
+    text += preference.title(name: name, nameCN: nameCN).withLink(self.link)
     return text
+  }
+
+  func subtitle(with preference: TitlePreference) -> String? {
+    switch preference {
+    case .chinese:
+      return nameCN.isEmpty ? nil : (name != nameCN ? name : nil)
+    case .original:
+      return name.isEmpty ? nil : (nameCN != name && !nameCN.isEmpty ? nameCN : nil)
+    }
   }
 
   var link: String {

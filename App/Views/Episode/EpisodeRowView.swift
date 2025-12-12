@@ -4,12 +4,13 @@ import SwiftUI
 struct EpisodeRowView: View {
   @AppStorage("isolationMode") var isolationMode: Bool = false
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   @Environment(Episode.self) var episode
 
   var body: some View {
     VStack(alignment: .leading) {
-      Text(episode.titleLink)
+      Text(episode.titleLink(with: titlePreference))
         .font(.headline)
         .lineLimit(1)
       HStack {
