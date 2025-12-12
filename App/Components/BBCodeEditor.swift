@@ -22,7 +22,8 @@ struct BBCodeEditor: View {
   @State private var inputURL = ""
   @State private var showingImageInput = false
   @State private var showingURLInput = false
-  @State private var showingEmojiInput = false
+
+  @State private var keyboardToolbarHostingController: UIHostingController<AnyView>?
 
   private func newSelection(_ bound: String.Index, _ offset: Int, _ length: Int = 0) {
     let cursorStartIndex =
@@ -214,7 +215,21 @@ struct BBCodeEditor: View {
       text += emoji
       newSelection(endIndex, emoji.count)
     }
-    showingEmojiInput = false
+  }
+
+  private func setupKeyboardToolbar() {
+    guard keyboardToolbarHostingController == nil else { return }
+    let toolbarView = ScrollView(.horizontal, showsIndicators: false) {
+      BBCodeToolbarContent(
+        onBasicInput: handleBasicInput,
+        onEmojiInput: handleEmojiInput,
+        onShowImageInput: { showingImageInput = true },
+        onShowURLInput: { showingURLInput = true },
+        onShowSizeInput: { showingSizeInput = true },
+        onShowColorInput: { showingColorInput = true }
+      )
+    }.frame(maxWidth: .infinity)
+    keyboardToolbarHostingController = UIHostingController(rootView: AnyView(toolbarView))
   }
 
   var body: some View {
@@ -237,127 +252,16 @@ struct BBCodeEditor: View {
           }
         }
       } else {
-        ScrollView(.horizontal, showsIndicators: false) {
-          HStack(spacing: 8) {
-            Button(action: { showingEmojiInput = true }) {
-              Image(systemName: BBCodeType.emoji.icon)
-                .frame(width: 12, height: 12)
-            }
-            .popover(isPresented: $showingEmojiInput) {
-              ScrollView {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 8)) {
-                  ForEach(24..<126) { index in
-                    Button {
-                      handleEmojiInput(index)
-                    } label: {
-                      Image("bgm\(index)")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 24, height: 24)
-                    }
-                  }
-                }
-              }
-              .padding()
-              .presentationCompactAdaptation(.popover)
-            }
-            Divider()
-            ForEach(BBCodeType.basic) { code in
-              Button(action: { handleBasicInput(code) }) {
-                Image(systemName: code.icon)
-                  .frame(width: 12, height: 12)
-              }
-            }
-            Divider()
-            Button(action: { showingImageInput = true }) {
-              Image(systemName: BBCodeType.image.icon)
-                .frame(width: 12, height: 12)
-            }
-            Button(action: { showingURLInput = true }) {
-              Image(systemName: BBCodeType.url.icon)
-                .frame(width: 12, height: 12)
-            }
-            Divider()
-            Button(action: { showingSizeInput = true }) {
-              Image(systemName: BBCodeType.size.icon)
-                .frame(width: 12, height: 12)
-            }
-            Button(action: { showingColorInput = true }) {
-              Image(systemName: BBCodeType.color.icon)
-                .frame(width: 12, height: 12)
-            }
-            Divider()
-            ForEach(BBCodeType.block) { code in
-              Button(action: { handleBasicInput(code) }) {
-                Image(systemName: code.icon)
-                  .frame(width: 12, height: 12)
-              }
-            }
-            Divider()
-            ForEach(BBCodeType.alignment) { code in
-              Button(action: { handleBasicInput(code) }) {
-                Image(systemName: code.icon)
-                  .frame(width: 12, height: 12)
-              }
-            }
-            Divider()
-          }.padding(.horizontal, 2)
-        }.buttonStyle(.bordered)
         BorderView(color: .secondary.opacity(0.2), padding: 0) {
-          BBCodeTextView(text: $text, selection: $textSelection)
-            .frame(height: height)
+          BBCodeTextView(
+            text: $text,
+            selection: $textSelection,
+            inputAccessoryViewController: keyboardToolbarHostingController
+          )
+          .frame(height: height)
         }
-        .toolbar {
-          ToolbarItem(placement: .keyboard) {
-            ScrollView(.horizontal, showsIndicators: false) {
-              HStack(spacing: 8) {
-                ForEach(BBCodeType.basic) { code in
-                  Button(action: { handleBasicInput(code) }) {
-                    Image(systemName: code.icon)
-                      .frame(width: 12, height: 12)
-                  }
-                }
-                Divider()
-                Button(action: { showingImageInput = true }) {
-                  Image(systemName: BBCodeType.image.icon)
-                    .frame(width: 12, height: 12)
-                }
-                Button(action: { showingURLInput = true }) {
-                  Image(systemName: BBCodeType.url.icon)
-                    .frame(width: 12, height: 12)
-                }
-                Divider()
-                Button(action: { showingSizeInput = true }) {
-                  Image(systemName: BBCodeType.size.icon)
-                    .frame(width: 12, height: 12)
-                }
-                Button(action: { showingColorInput = true }) {
-                  Image(systemName: BBCodeType.color.icon)
-                    .frame(width: 12, height: 12)
-                }
-                Divider()
-                ForEach(BBCodeType.block) { code in
-                  Button(action: { handleBasicInput(code) }) {
-                    Image(systemName: code.icon)
-                      .frame(width: 12, height: 12)
-                  }
-                }
-                Divider()
-                ForEach(BBCodeType.alignment) { code in
-                  Button(action: { handleBasicInput(code) }) {
-                    Image(systemName: code.icon)
-                      .frame(width: 12, height: 12)
-                  }
-                }
-                Divider()
-                Button(action: { showingEmojiInput = true }) {
-                  Image(systemName: BBCodeType.emoji.icon)
-                    .frame(width: 12, height: 12)
-                }
-                Divider()
-              }.padding(.horizontal, 2)
-            }.buttonStyle(.bordered)
-          }
+        .onAppear {
+          setupKeyboardToolbar()
         }
         Rectangle()
           .fill(.secondary.opacity(0.2))
@@ -431,10 +335,90 @@ struct BBCodeEditor: View {
   }
 }
 
+private struct BBCodeToolbarContent: View {
+  @State private var showingEmojiInput = false
+  let onBasicInput: (BBCodeType) -> Void
+  let onEmojiInput: (Int) -> Void
+  let onShowImageInput: () -> Void
+  let onShowURLInput: () -> Void
+  let onShowSizeInput: () -> Void
+  let onShowColorInput: () -> Void
+
+  var body: some View {
+    HStack(spacing: 8) {
+      Button(action: { showingEmojiInput = true }) {
+        Image(systemName: BBCodeType.emoji.icon)
+          .frame(width: 12, height: 12)
+      }
+      .popover(isPresented: $showingEmojiInput) {
+        ScrollView {
+          LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 8)) {
+            ForEach(24..<126) { index in
+              Button {
+                onEmojiInput(index)
+                showingEmojiInput = false
+              } label: {
+                Image("bgm\(index)")
+                  .resizable()
+                  .aspectRatio(contentMode: .fit)
+                  .frame(width: 24, height: 24)
+              }
+            }
+          }
+        }
+        .padding()
+        .presentationCompactAdaptation(.popover)
+      }
+      Divider()
+      ForEach(BBCodeType.basic) { code in
+        Button(action: { onBasicInput(code) }) {
+          Image(systemName: code.icon)
+            .frame(width: 12, height: 12)
+        }
+      }
+      Divider()
+      Button(action: onShowImageInput) {
+        Image(systemName: BBCodeType.image.icon)
+          .frame(width: 12, height: 12)
+      }
+      Button(action: onShowURLInput) {
+        Image(systemName: BBCodeType.url.icon)
+          .frame(width: 12, height: 12)
+      }
+      Divider()
+      Button(action: onShowSizeInput) {
+        Image(systemName: BBCodeType.size.icon)
+          .frame(width: 12, height: 12)
+      }
+      Button(action: onShowColorInput) {
+        Image(systemName: BBCodeType.color.icon)
+          .frame(width: 12, height: 12)
+      }
+      Divider()
+      ForEach(BBCodeType.block) { code in
+        Button(action: { onBasicInput(code) }) {
+          Image(systemName: code.icon)
+            .frame(width: 12, height: 12)
+        }
+      }
+      Divider()
+      ForEach(BBCodeType.alignment) { code in
+        Button(action: { onBasicInput(code) }) {
+          Image(systemName: code.icon)
+            .frame(width: 12, height: 12)
+        }
+      }
+    }
+    .padding(.horizontal)
+    .buttonStyle(.bordered)
+  }
+}
+
 /// UIKit-backed text view keeps IME marked text intact inside sheets.
 private struct BBCodeTextView: UIViewRepresentable {
   @Binding var text: String
   @Binding var selection: EditorSelection?
+  var inputAccessoryViewController: UIHostingController<AnyView>?
 
   func makeCoordinator() -> Coordinator {
     Coordinator(text: $text, selection: $selection)
@@ -456,6 +440,13 @@ private struct BBCodeTextView: UIViewRepresentable {
     textView.textColor = UIColor.label
     textView.textContainerInset = UIEdgeInsets(top: 8, left: 4, bottom: 8, right: 4)
     textView.textContainer.lineFragmentPadding = 0
+
+    if let hostingController = inputAccessoryViewController {
+      hostingController.view.frame = CGRect(
+        x: 0, y: 0, width: UIScreen.main.bounds.width, height: 44)
+      hostingController.view.autoresizingMask = [.flexibleWidth]
+      textView.inputAccessoryView = hostingController.view
+    }
     return textView
   }
 
@@ -473,6 +464,16 @@ private struct BBCodeTextView: UIViewRepresentable {
         textView.selectedRange = nsRange
         context.coordinator.updatingSelection = false
       }
+    }
+
+    if let hostingController = inputAccessoryViewController,
+      textView.inputAccessoryView !== hostingController.view
+    {
+      hostingController.view.frame = CGRect(
+        x: 0, y: 0, width: UIScreen.main.bounds.width, height: 44)
+      hostingController.view.autoresizingMask = [.flexibleWidth]
+      textView.inputAccessoryView = hostingController.view
+      textView.reloadInputViews()
     }
   }
 
