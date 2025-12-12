@@ -4,7 +4,13 @@ import SwiftUI
 struct SubjectTinyView: View {
   let subject: SlimSubjectDTO
 
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
+  var title: String {
+    if subject.nameCN.isEmpty {
+      return subject.name
+    } else {
+      return subject.nameCN
+    }
+  }
 
   var body: some View {
     BorderView(color: .secondary.opacity(0.2), padding: 4, paddingRatio: 1, cornerRadius: 8) {
@@ -13,7 +19,7 @@ struct SubjectTinyView: View {
           .imageStyle(width: 32, height: 32)
           .imageType(.subject)
         VStack(alignment: .leading) {
-          Text(subject.title(with: titlePreference))
+          Text(title)
             .lineLimit(1)
         }
         Spacer(minLength: 0)
@@ -29,7 +35,13 @@ struct SubjectTinyView: View {
 struct SubjectSmallView: View {
   let subject: SlimSubjectDTO
 
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
+  var title: String {
+    if subject.nameCN.isEmpty {
+      return subject.name
+    } else {
+      return subject.nameCN
+    }
+  }
 
   var ratingLine: Text {
     guard let rating = subject.rating else {
@@ -59,7 +71,7 @@ struct SubjectSmallView: View {
           .imageType(.subject)
           .imageNSFW(subject.nsfw)
         VStack(alignment: .leading) {
-          Text(subject.title(with: titlePreference))
+          Text(title)
           Text(subject.info ?? "")
             .font(.footnote)
             .foregroundStyle(.secondary)
