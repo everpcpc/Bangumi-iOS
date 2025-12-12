@@ -16,6 +16,7 @@ struct SettingsView: View {
   @AppStorage("autoCompleteProgress") var autoCompleteProgress: Bool = false
   @AppStorage("enableReactions") var enableReactions: Bool = true
   @AppStorage("replySortOrder") var replySortOrder: ReplySortOrder = .ascending
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
 
   @Environment(\.modelContext) var modelContext
 
@@ -101,6 +102,11 @@ struct SettingsView: View {
         Picker(selection: $replySortOrder, label: Text("话题回复排序")) {
           ForEach(ReplySortOrder.allCases, id: \.self) { order in
             Text(order.description).tag(order)
+          }
+        }
+        Picker(selection: $titlePreference, label: Text("条目标题显示")) {
+          ForEach(TitlePreference.allCases, id: \.self) { preference in
+            Text(preference.desc).tag(preference)
           }
         }
       }

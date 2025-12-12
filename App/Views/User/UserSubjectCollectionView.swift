@@ -106,7 +106,7 @@ struct UserSubjectCollectionView: View {
                     .imageLink(subject.link)
                     .subjectPreview(subject)
                     .shadow(radius: 2)
-                  Text(subject.name)
+                  Text(subject.title)
                     .font(.caption2)
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)

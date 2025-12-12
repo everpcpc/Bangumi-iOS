@@ -75,7 +75,7 @@ struct SubjectRelationsView: View {
               .imageLink(relation.subject.link)
               .padding(2)
               .shadow(radius: 2)
-            Text(relation.subject.name)
+            Text(relation.subject.title)
               .font(.caption)
               .multilineTextAlignment(.leading)
               .truncationMode(.middle)

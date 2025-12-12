@@ -11,12 +11,14 @@ struct UserSubjectCollectionRowView: View {
         .imageType(.subject)
         .imageLink(subject.link)
       VStack(alignment: .leading) {
-        Text(subject.name.withLink(subject.link))
+        Text(subject.title.withLink(subject.link))
           .lineLimit(1)
-        Text(subject.nameCN)
-          .lineLimit(1)
-          .font(.caption)
-          .foregroundStyle(.secondary.opacity(0.8))
+        if let subtitle = subject.subtitle {
+          Text(subtitle)
+            .lineLimit(1)
+            .font(.caption)
+            .foregroundStyle(.secondary.opacity(0.8))
+        }
         Text(subject.info ?? "")
           .lineLimit(1)
           .font(.footnote)

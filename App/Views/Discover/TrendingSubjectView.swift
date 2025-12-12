@@ -96,7 +96,7 @@ struct TrendingSubjectTypeView: View {
                       Text("\(item.count) 人关注")
                         .font(.caption)
                     }
-                    Text(item.subject.name)
+                    Text(item.subject.title)
                       .multilineTextAlignment(.leading)
                       .truncationMode(.middle)
                       .lineLimit(2)
@@ -123,7 +123,7 @@ struct TrendingSubjectTypeView: View {
                         Text("\(item.count) 人关注")
                           .font(.caption)
                       }
-                      Text(item.subject.name)
+                      Text(item.subject.title)
                         .multilineTextAlignment(.leading)
                         .truncationMode(.middle)
                         .lineLimit(2)

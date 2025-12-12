@@ -40,12 +40,14 @@ struct SubjectRelationListView: View {
             VStack(alignment: .leading) {
               HStack {
                 VStack(alignment: .leading) {
-                  Text(item.subject.name.withLink(item.subject.link))
+                  Text(item.subject.title.withLink(item.subject.link))
                     .lineLimit(1)
-                  Text(item.subject.nameCN)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                  if let subtitle = item.subject.subtitle {
+                    Text(subtitle)
+                      .font(.footnote)
+                      .foregroundStyle(.secondary)
+                      .lineLimit(1)
+                  }
                   Label(item.relation.cn, systemImage: item.subject.type.icon)
                     .font(.footnote)
                     .foregroundStyle(.secondary)

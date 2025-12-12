@@ -59,7 +59,7 @@ struct SubjectRecsView: View {
               .imageLink(rec.subject.link)
               .padding(2)
               .shadow(radius: 2)
-            Text(rec.subject.name)
+            Text(rec.subject.title)
               .multilineTextAlignment(.leading)
               .truncationMode(.middle)
               .lineLimit(2)

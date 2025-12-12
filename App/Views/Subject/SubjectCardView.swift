@@ -104,11 +104,11 @@ struct SubjectCardView: View {
           .imageType(.subject)
           .imageNSFW(subject.nsfw)
         VStack(alignment: .leading) {
-          Text(subject.name)
+          Text(subject.title)
             .font(.headline)
             .lineLimit(1)
-          if !subject.nameCN.isEmpty {
-            Text(subject.nameCN)
+          if let subtitle = subject.subtitle {
+            Text(subtitle)
               .font(.subheadline)
               .lineLimit(1)
           }

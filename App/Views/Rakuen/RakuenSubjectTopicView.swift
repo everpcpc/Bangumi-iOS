@@ -75,7 +75,7 @@ struct RakuenSubjectTopicItemView: View {
               .lineLimit(1)
             Spacer()
             NavigationLink(value: NavDestination.subject(topic.subject.id)) {
-              Text(topic.subject.name)
+              Text(topic.subject.title)
                 .font(.footnote)
                 .lineLimit(1)
             }.buttonStyle(.scale)

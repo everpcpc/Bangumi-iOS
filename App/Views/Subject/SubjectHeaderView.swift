@@ -23,7 +23,7 @@ struct SubjectHeaderView: View {
     if subject.locked {
       SubjectLockView()
     }
-    Text(subject.name)
+    Text(subject.title)
       .font(.title2.bold())
       .multilineTextAlignment(.leading)
       .textSelection(.enabled)
@@ -52,11 +52,13 @@ struct SubjectHeaderView: View {
         .foregroundStyle(.secondary)
 
         Spacer()
-        Text(subject.title)
-          .multilineTextAlignment(.leading)
-          .truncationMode(.middle)
-          .lineLimit(2)
-          .textSelection(.enabled)
+        if let subtitle = subject.subtitle {
+          Text(subtitle)
+            .multilineTextAlignment(.leading)
+            .truncationMode(.middle)
+            .lineLimit(2)
+            .textSelection(.enabled)
+        }
         Spacer()
 
         NavigationLink(value: NavDestination.subjectInfobox(subject.subjectId)) {

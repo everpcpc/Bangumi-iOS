@@ -197,7 +197,7 @@ struct CalendarWeekdayView: View {
                       Text("\(item.watchers)人追番")
                         .font(.caption)
                     }
-                    Text(item.subject.name)
+                    Text(item.subject.title)
                       .lineLimit(1)
                       .font(.footnote)
                       .bold()

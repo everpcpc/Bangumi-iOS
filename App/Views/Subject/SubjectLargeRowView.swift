@@ -24,7 +24,7 @@ struct SubjectLargeRowView: View {
                   .foregroundStyle(.secondary)
                   .font(.footnote)
               }
-              Text(subject.name.withLink(subject.link))
+              Text(subject.title.withLink(subject.link))
                 .font(.headline)
                 .lineLimit(1)
             }
@@ -37,14 +37,11 @@ struct SubjectLargeRowView: View {
           }
         }
 
-        // subtitle
-        HStack {
-          if !subject.nameCN.isEmpty {
-            Text(subject.nameCN)
-              .font(.subheadline)
-              .foregroundStyle(.secondary)
-              .lineLimit(1)
-          }
+        if let subtitle = subject.subtitle {
+          Text(subtitle)
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
         }
 
         Spacer()

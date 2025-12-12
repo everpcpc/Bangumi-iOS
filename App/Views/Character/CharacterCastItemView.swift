@@ -15,14 +15,13 @@ struct CharacterCastItemView: View {
           .imageLink(item.subject.link)
 
         VStack(alignment: .leading) {
-          Text(item.subject.name.withLink(item.subject.link))
-          if item.subject.nameCN.isEmpty {
-            Label(item.subject.type.description, systemImage: item.subject.type.icon)
-              .foregroundStyle(.secondary)
-          } else {
-            Label(item.subject.nameCN, systemImage: item.subject.type.icon)
+          Text(item.subject.title.withLink(item.subject.link))
+          if let subtitle = item.subject.subtitle {
+            Text(subtitle)
               .foregroundStyle(.secondary)
           }
+          Label(item.subject.type.description, systemImage: item.subject.type.icon)
+            .foregroundStyle(.secondary)
           Text(item.subject.info ?? "")
             .font(.caption)
             .foregroundStyle(.secondary)

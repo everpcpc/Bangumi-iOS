@@ -106,10 +106,10 @@ struct ProgressTileItemView: View {
       VStack(alignment: .leading, spacing: 4) {
         VStack(alignment: .leading) {
           NavigationLink(value: NavDestination.subject(subjectId)) {
-            Text(subject.name).font(.headline)
+            Text(subject.title).font(.headline)
           }.buttonStyle(.scale)
-          if !subject.nameCN.isEmpty {
-            Text(subject.nameCN)
+          if let subtitle = subject.subtitle {
+            Text(subtitle)
               .foregroundStyle(.secondary)
               .font(.subheadline)
           }

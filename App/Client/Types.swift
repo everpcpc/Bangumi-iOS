@@ -474,7 +474,17 @@ struct SlimSubjectDTO: Codable, Identifiable, Hashable, Linkable {
   }
 
   var title: String {
-    nameCN.isEmpty ? name : nameCN
+    TitlePreference.current.title(name: name, nameCN: nameCN)
+  }
+
+  var subtitle: String? {
+    let preference = TitlePreference.current
+    switch preference {
+    case .chinese:
+      return nameCN.isEmpty ? nil : (name != nameCN ? name : nil)
+    case .original:
+      return name.isEmpty ? nil : (nameCN != name && !nameCN.isEmpty ? nameCN : nil)
+    }
   }
 }
 

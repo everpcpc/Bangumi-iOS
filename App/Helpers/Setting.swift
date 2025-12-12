@@ -170,6 +170,44 @@ enum ProgressSortMode: String, CaseIterable {
   }
 }
 
+enum TitlePreference: String, CaseIterable {
+  case chinese = "chinese"
+  case original = "original"
+
+  init(_ label: String? = nil) {
+    switch label {
+    case "chinese":
+      self = .chinese
+    case "original":
+      self = .original
+    default:
+      self = .chinese
+    }
+  }
+
+  var desc: String {
+    switch self {
+    case .chinese:
+      "中文名优先"
+    case .original:
+      "原名优先"
+    }
+  }
+
+  static var current: TitlePreference {
+    TitlePreference(UserDefaults.standard.string(forKey: "titlePreference"))
+  }
+
+  func title(name: String, nameCN: String) -> String {
+    switch self {
+    case .chinese:
+      nameCN.isEmpty ? name : nameCN
+    case .original:
+      name.isEmpty ? nameCN : name
+    }
+  }
+}
+
 enum ChiiViewTab: String {
   case timeline = "timeline"
   case progress = "progress"

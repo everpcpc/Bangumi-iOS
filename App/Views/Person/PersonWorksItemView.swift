@@ -13,20 +13,19 @@ struct PersonWorksItemView: View {
           .imageLink(item.subject.link)
         VStack(alignment: .leading) {
           VStack(alignment: .leading) {
-            Text(item.subject.name.withLink(item.subject.link))
+            Text(item.subject.title.withLink(item.subject.link))
               .font(.callout)
               .lineLimit(1)
-            if item.subject.nameCN.isEmpty {
-              Label(item.subject.type.description, systemImage: item.subject.type.icon)
-                .lineLimit(1)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-            } else {
-              Label(item.subject.nameCN, systemImage: item.subject.type.icon)
+            if let subtitle = item.subject.subtitle {
+              Text(subtitle)
                 .lineLimit(1)
                 .font(.footnote)
                 .foregroundStyle(.secondary)
             }
+            Label(item.subject.type.description, systemImage: item.subject.type.icon)
+              .lineLimit(1)
+              .font(.footnote)
+              .foregroundStyle(.secondary)
             Text(item.subject.info ?? "")
               .font(.caption)
               .lineLimit(1)

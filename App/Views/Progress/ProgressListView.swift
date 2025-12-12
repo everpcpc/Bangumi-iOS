@@ -80,13 +80,15 @@ struct ProgressListItemView: View {
         VStack(alignment: .leading) {
           NavigationLink(value: NavDestination.subject(subjectId)) {
             VStack(alignment: .leading) {
-              Text(subject.name)
+              Text(subject.title)
                 .font(.headline)
                 .lineLimit(1)
-              Text(subject.nameCN)
-                .foregroundStyle(.secondary)
-                .font(.subheadline)
-                .lineLimit(1)
+              if let subtitle = subject.subtitle {
+                Text(subtitle)
+                  .foregroundStyle(.secondary)
+                  .font(.subheadline)
+                  .lineLimit(1)
+              }
             }
           }.buttonStyle(.scale)
 

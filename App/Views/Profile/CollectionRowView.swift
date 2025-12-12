@@ -13,12 +13,14 @@ struct CollectionRowView: View {
         .imageType(.subject)
         .imageLink(subject.link)
       VStack(alignment: .leading) {
-        Text(subject.name.withLink(subject.link))
+        Text(subject.title.withLink(subject.link))
           .lineLimit(1)
-        Text(subject.nameCN)
-          .lineLimit(1)
-          .font(.footnote)
-          .foregroundStyle(.secondary)
+        if let subtitle = subject.subtitle {
+          Text(subtitle)
+            .lineLimit(1)
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+        }
         Spacer()
         if let interest = subject.interest {
           HStack {

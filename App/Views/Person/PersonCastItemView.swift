@@ -26,17 +26,18 @@ struct PersonCastItemView: View {
           ForEach(item.relations) { relation in
             HStack(alignment: .top) {
               VStack(alignment: .trailing) {
-                Text(relation.subject.name.withLink(relation.subject.link))
+                Text(relation.subject.title.withLink(relation.subject.link))
                   .lineLimit(1)
                 HStack {
-                  if relation.subject.nameCN.isEmpty {
-                    Text(relation.subject.type.description)
+                  if let subtitle = relation.subject.subtitle {
+                    Text(subtitle)
                       .foregroundStyle(.secondary)
                       .lineLimit(1)
                   } else {
-                    Text(relation.subject.nameCN)
+                    Text(relation.subject.type.description)
+                      .font(.caption)
+                      .fixedSize(horizontal: true, vertical: true)
                       .foregroundStyle(.secondary)
-                      .lineLimit(1)
                   }
                   BorderView {
                     Text(relation.type.description)
