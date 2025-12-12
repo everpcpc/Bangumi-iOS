@@ -55,12 +55,11 @@ final class SubjectV2: Searchable, Linkable {
     return CollectionType(ctype)
   }
 
-  var title: String {
-    TitlePreference.current.title(name: name, nameCN: nameCN)
+  func title(with preference: TitlePreference) -> String {
+    preference.title(name: name, nameCN: nameCN)
   }
 
-  var subtitle: String? {
-    let preference = TitlePreference.current
+  func subtitle(with preference: TitlePreference) -> String? {
     switch preference {
     case .chinese:
       return nameCN.isEmpty ? nil : (name != nameCN ? name : nil)

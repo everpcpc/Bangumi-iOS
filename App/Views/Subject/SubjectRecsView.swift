@@ -6,6 +6,8 @@ struct SubjectRecsView: View {
   let subjectId: Int
   let recs: [SubjectRecDTO]
 
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+
   @Environment(\.modelContext) var modelContext
 
   @Query private var collects: [Subject]
@@ -59,7 +61,7 @@ struct SubjectRecsView: View {
               .imageLink(rec.subject.link)
               .padding(2)
               .shadow(radius: 2)
-            Text(rec.subject.title)
+            Text(rec.subject.title(with: titlePreference))
               .multilineTextAlignment(.leading)
               .truncationMode(.middle)
               .lineLimit(2)

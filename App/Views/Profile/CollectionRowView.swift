@@ -2,6 +2,8 @@ import SwiftData
 import SwiftUI
 
 struct CollectionRowView: View {
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+
   @Environment(Subject.self) var subject
 
   @Environment(\.modelContext) var modelContext
@@ -13,9 +15,9 @@ struct CollectionRowView: View {
         .imageType(.subject)
         .imageLink(subject.link)
       VStack(alignment: .leading) {
-        Text(subject.title.withLink(subject.link))
+        Text(subject.title(with: titlePreference).withLink(subject.link))
           .lineLimit(1)
-        if let subtitle = subject.subtitle {
+        if let subtitle = subject.subtitle(with: titlePreference) {
           Text(subtitle)
             .lineLimit(1)
             .font(.footnote)

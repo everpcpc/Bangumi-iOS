@@ -65,6 +65,8 @@ struct ProgressListView: View {
 struct ProgressListItemView: View {
   let subjectId: Int
 
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+
   @Environment(Subject.self) var subject
 
   var body: some View {
@@ -80,10 +82,10 @@ struct ProgressListItemView: View {
         VStack(alignment: .leading) {
           NavigationLink(value: NavDestination.subject(subjectId)) {
             VStack(alignment: .leading) {
-              Text(subject.title)
+              Text(subject.title(with: titlePreference))
                 .font(.headline)
                 .lineLimit(1)
-              if let subtitle = subject.subtitle {
+              if let subtitle = subject.subtitle(with: titlePreference) {
                 Text(subtitle)
                   .foregroundStyle(.secondary)
                   .font(.subheadline)

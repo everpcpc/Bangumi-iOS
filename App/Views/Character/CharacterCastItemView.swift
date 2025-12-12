@@ -3,6 +3,8 @@ import SwiftUI
 struct CharacterCastItemView: View {
   let item: CharacterCastDTO
 
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+
   var body: some View {
     CardView {
       HStack(alignment: .top) {
@@ -15,8 +17,8 @@ struct CharacterCastItemView: View {
           .imageLink(item.subject.link)
 
         VStack(alignment: .leading) {
-          Text(item.subject.title.withLink(item.subject.link))
-          if let subtitle = item.subject.subtitle {
+          Text(item.subject.title(with: titlePreference).withLink(item.subject.link))
+          if let subtitle = item.subject.subtitle(with: titlePreference) {
             Text(subtitle)
               .foregroundStyle(.secondary)
           }

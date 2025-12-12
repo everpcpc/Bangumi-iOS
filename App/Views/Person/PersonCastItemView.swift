@@ -3,6 +3,8 @@ import SwiftUI
 struct PersonCastItemView: View {
   let item: PersonCastDTO
 
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+
   var body: some View {
     CardView {
       HStack(alignment: .top) {
@@ -26,10 +28,10 @@ struct PersonCastItemView: View {
           ForEach(item.relations) { relation in
             HStack(alignment: .top) {
               VStack(alignment: .trailing) {
-                Text(relation.subject.title.withLink(relation.subject.link))
+                Text(relation.subject.title(with: titlePreference).withLink(relation.subject.link))
                   .lineLimit(1)
                 HStack {
-                  if let subtitle = relation.subject.subtitle {
+                  if let subtitle = relation.subject.subtitle(with: titlePreference) {
                     Text(subtitle)
                       .foregroundStyle(.secondary)
                       .lineLimit(1)

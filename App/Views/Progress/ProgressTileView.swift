@@ -85,6 +85,7 @@ struct ProgressTileItemView: View {
   let width: CGFloat
 
   @AppStorage("subjectImageQuality") var subjectImageQuality: ImageQuality = .high
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
 
   @Environment(Subject.self) var subject
   @Environment(\.modelContext) var modelContext
@@ -106,9 +107,9 @@ struct ProgressTileItemView: View {
       VStack(alignment: .leading, spacing: 4) {
         VStack(alignment: .leading) {
           NavigationLink(value: NavDestination.subject(subjectId)) {
-            Text(subject.title).font(.headline)
+            Text(subject.title(with: titlePreference)).font(.headline)
           }.buttonStyle(.scale)
-          if let subtitle = subject.subtitle {
+          if let subtitle = subject.subtitle(with: titlePreference) {
             Text(subtitle)
               .foregroundStyle(.secondary)
               .font(.subheadline)

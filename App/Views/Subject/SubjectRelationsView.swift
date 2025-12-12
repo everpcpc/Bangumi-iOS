@@ -6,6 +6,8 @@ struct SubjectRelationsView: View {
   let subjectId: Int
   let relations: [SubjectRelationDTO]
 
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+
   @Environment(\.modelContext) var modelContext
 
   @Query private var collects: [Subject]
@@ -75,7 +77,7 @@ struct SubjectRelationsView: View {
               .imageLink(relation.subject.link)
               .padding(2)
               .shadow(radius: 2)
-            Text(relation.subject.title)
+            Text(relation.subject.title(with: titlePreference))
               .font(.caption)
               .multilineTextAlignment(.leading)
               .truncationMode(.middle)

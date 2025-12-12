@@ -5,6 +5,8 @@ struct IndexRelatedItemView: View {
   let item: IndexRelatedDTO
   let isOwner: Bool
 
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+
   @State private var showEditRelated = false
   @State private var showDeleteRelated = false
 
@@ -35,11 +37,11 @@ struct IndexRelatedItemView: View {
                   Image(systemName: subject.type.icon)
                     .foregroundStyle(.secondary)
                     .font(.footnote)
-                  Text(subject.title.withLink(subject.link))
+                  Text(subject.title(with: titlePreference).withLink(subject.link))
                     .lineLimit(1)
                   Spacer(minLength: 0)
                 }
-                if let subtitle = subject.subtitle {
+                if let subtitle = subject.subtitle(with: titlePreference) {
                   Text(subtitle)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
@@ -181,7 +183,7 @@ struct IndexRelatedItemView: View {
                     .lineLimit(1)
                   Spacer(minLength: 0)
                 }
-                Text(subject.title)
+                Text(subject.title(with: titlePreference))
                   .font(.footnote)
                   .foregroundStyle(.secondary)
                   .lineLimit(1)
@@ -320,7 +322,7 @@ struct IndexRelatedItemView: View {
                   Image(systemName: topic.subject.type.icon)
                     .foregroundStyle(.secondary)
                     .font(.footnote)
-                  Text(topic.subject.title)
+                  Text(topic.subject.title(with: titlePreference))
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)

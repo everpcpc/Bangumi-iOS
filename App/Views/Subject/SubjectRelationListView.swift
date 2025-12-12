@@ -4,6 +4,8 @@ import SwiftUI
 struct SubjectRelationListView: View {
   let subjectId: Int
 
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+
   @State private var subjectType: SubjectType = .none
   @State private var reloader = false
 
@@ -40,9 +42,9 @@ struct SubjectRelationListView: View {
             VStack(alignment: .leading) {
               HStack {
                 VStack(alignment: .leading) {
-                  Text(item.subject.title.withLink(item.subject.link))
+                  Text(item.subject.title(with: titlePreference).withLink(item.subject.link))
                     .lineLimit(1)
-                  if let subtitle = item.subject.subtitle {
+                  if let subtitle = item.subject.subtitle(with: titlePreference) {
                     Text(subtitle)
                       .font(.footnote)
                       .foregroundStyle(.secondary)

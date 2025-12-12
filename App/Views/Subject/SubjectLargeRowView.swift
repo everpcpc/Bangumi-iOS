@@ -3,6 +3,8 @@ import SwiftData
 import SwiftUI
 
 struct SubjectLargeRowView: View {
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+
   @Environment(\.modelContext) var modelContext
 
   @Environment(Subject.self) var subject
@@ -24,7 +26,7 @@ struct SubjectLargeRowView: View {
                   .foregroundStyle(.secondary)
                   .font(.footnote)
               }
-              Text(subject.title.withLink(subject.link))
+              Text(subject.title(with: titlePreference).withLink(subject.link))
                 .font(.headline)
                 .lineLimit(1)
             }
@@ -37,7 +39,7 @@ struct SubjectLargeRowView: View {
           }
         }
 
-        if let subtitle = subject.subtitle {
+        if let subtitle = subject.subtitle(with: titlePreference) {
           Text(subtitle)
             .font(.subheadline)
             .foregroundStyle(.secondary)

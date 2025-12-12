@@ -4,6 +4,8 @@ import SwiftUI
 struct TrendingSubjectView: View {
   let width: CGFloat
 
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+
   @State private var loaded: Bool = false
 
   func load() async {
@@ -33,6 +35,7 @@ struct TrendingSubjectTypeView: View {
   let width: CGFloat
 
   @AppStorage("subjectImageQuality") var subjectImageQuality: ImageQuality = .high
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
 
   @Query private var trending: [TrendingSubject]
   var items: [TrendingSubjectDTO] { trending.first?.items ?? [] }
@@ -96,7 +99,7 @@ struct TrendingSubjectTypeView: View {
                       Text("\(item.count) 人关注")
                         .font(.caption)
                     }
-                    Text(item.subject.title)
+                    Text(item.subject.title(with: titlePreference))
                       .multilineTextAlignment(.leading)
                       .truncationMode(.middle)
                       .lineLimit(2)
@@ -123,7 +126,7 @@ struct TrendingSubjectTypeView: View {
                         Text("\(item.count) 人关注")
                           .font(.caption)
                       }
-                      Text(item.subject.title)
+                      Text(item.subject.title(with: titlePreference))
                         .multilineTextAlignment(.leading)
                         .truncationMode(.middle)
                         .lineLimit(2)

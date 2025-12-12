@@ -4,6 +4,8 @@ import SwiftUI
 struct UserSubjectCollectionRowView: View {
   let subject: SlimSubjectDTO
 
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+
   var body: some View {
     HStack(alignment: .top) {
       ImageView(img: subject.images?.resize(.r200))
@@ -11,9 +13,9 @@ struct UserSubjectCollectionRowView: View {
         .imageType(.subject)
         .imageLink(subject.link)
       VStack(alignment: .leading) {
-        Text(subject.title.withLink(subject.link))
+        Text(subject.title(with: titlePreference).withLink(subject.link))
           .lineLimit(1)
-        if let subtitle = subject.subtitle {
+        if let subtitle = subject.subtitle(with: titlePreference) {
           Text(subtitle)
             .lineLimit(1)
             .font(.caption)

@@ -194,10 +194,6 @@ enum TitlePreference: String, CaseIterable {
     }
   }
 
-  static var current: TitlePreference {
-    TitlePreference(UserDefaults.standard.string(forKey: "titlePreference"))
-  }
-
   func title(name: String, nameCN: String) -> String {
     switch self {
     case .chinese:

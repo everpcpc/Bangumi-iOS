@@ -4,6 +4,8 @@ import SwiftUI
 struct PersonWorksItemView: View {
   let item: PersonWorkDTO
 
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+
   var body: some View {
     CardView {
       HStack(alignment: .top) {
@@ -13,10 +15,10 @@ struct PersonWorksItemView: View {
           .imageLink(item.subject.link)
         VStack(alignment: .leading) {
           VStack(alignment: .leading) {
-            Text(item.subject.title.withLink(item.subject.link))
+            Text(item.subject.title(with: titlePreference).withLink(item.subject.link))
               .font(.callout)
               .lineLimit(1)
-            if let subtitle = item.subject.subtitle {
+            if let subtitle = item.subject.subtitle(with: titlePreference) {
               Text(subtitle)
                 .lineLimit(1)
                 .font(.footnote)

@@ -9,6 +9,7 @@ struct SubjectTopicDetailView: View {
   @AppStorage("replySortOrder") var replySortOrder: ReplySortOrder = .ascending
   @AppStorage("friendlist") var friendlist: [Int] = []
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
 
   @State private var topic: SubjectTopicDTO?
   @State private var refreshed = false
@@ -118,7 +119,7 @@ struct SubjectTopicDetailView: View {
                   .imageStyle(width: 20, height: 20)
                   .imageType(.subject)
                   .imageLink(topic.subject.link)
-                Text(topic.subject.title.withLink(topic.subject.link))
+                Text(topic.subject.title(with: titlePreference).withLink(topic.subject.link))
                   .font(.subheadline)
                 Spacer()
                 BorderView {

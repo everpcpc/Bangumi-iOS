@@ -4,6 +4,8 @@ struct UserSubjectCollectionView: View {
   let stype: SubjectType
   let ctypes: [CollectionType: Int]
 
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+
   @Environment(User.self) var user
 
   @State private var ctype: CollectionType
@@ -106,7 +108,7 @@ struct UserSubjectCollectionView: View {
                     .imageLink(subject.link)
                     .subjectPreview(subject)
                     .shadow(radius: 2)
-                  Text(subject.title)
+                  Text(subject.title(with: titlePreference))
                     .font(.caption2)
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)

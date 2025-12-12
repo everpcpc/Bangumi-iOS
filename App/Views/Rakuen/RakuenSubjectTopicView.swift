@@ -3,6 +3,8 @@ import SwiftUI
 struct RakuenSubjectTopicView: View {
   let mode: SubjectTopicFilterMode
 
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+
   @State private var reloader = false
 
   var body: some View {
@@ -53,6 +55,8 @@ struct RakuenSubjectTopicListView: View {
 struct RakuenSubjectTopicItemView: View {
   let topic: SubjectTopicDTO
 
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+
   var body: some View {
     CardView {
       HStack(alignment: .top) {
@@ -75,7 +79,7 @@ struct RakuenSubjectTopicItemView: View {
               .lineLimit(1)
             Spacer()
             NavigationLink(value: NavDestination.subject(topic.subject.id)) {
-              Text(topic.subject.title)
+              Text(topic.subject.title(with: titlePreference))
                 .font(.footnote)
                 .lineLimit(1)
             }.buttonStyle(.scale)
