@@ -6,7 +6,7 @@ struct SubjectCharacterListView: View {
   let subjectId: Int
 
   @AppStorage("isolationMode") var isolationMode: Bool = false
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   @State private var castType: CastType = .none
   @State private var reloader = false

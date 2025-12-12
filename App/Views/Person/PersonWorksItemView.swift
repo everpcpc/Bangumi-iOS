@@ -4,7 +4,7 @@ import SwiftUI
 struct PersonWorksItemView: View {
   let item: PersonWorkDTO
 
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   var body: some View {
     CardView {

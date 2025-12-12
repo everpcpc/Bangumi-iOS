@@ -3,7 +3,7 @@ import SwiftData
 import SwiftUI
 
 struct SubjectLargeRowView: View {
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   @Environment(\.modelContext) var modelContext
 

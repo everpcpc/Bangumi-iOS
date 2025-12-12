@@ -9,7 +9,7 @@ struct PersonView: View {
   @AppStorage("shareDomain") var shareDomain: ShareDomain = .chii
   @AppStorage("isolationMode") var isolationMode: Bool = false
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   @State private var refreshed: Bool = false
 

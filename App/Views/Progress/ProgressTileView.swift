@@ -85,7 +85,7 @@ struct ProgressTileItemView: View {
   let width: CGFloat
 
   @AppStorage("subjectImageQuality") var subjectImageQuality: ImageQuality = .high
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   @Environment(Subject.self) var subject
   @Environment(\.modelContext) var modelContext

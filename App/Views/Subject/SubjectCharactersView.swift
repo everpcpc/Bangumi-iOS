@@ -6,7 +6,7 @@ struct SubjectCharactersView: View {
   let characters: [SubjectCharacterDTO]
 
   @AppStorage("isolationMode") var isolationMode: Bool = false
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   var body: some View {
     VStack(spacing: 2) {
@@ -51,7 +51,7 @@ struct CharacterCard: View {
   let item: SubjectCharacterDTO
   let isolationMode: Bool
 
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   var body: some View {
     VStack(alignment: .leading, spacing: 2) {

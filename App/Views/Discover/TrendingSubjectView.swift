@@ -4,7 +4,7 @@ import SwiftUI
 struct TrendingSubjectView: View {
   let width: CGFloat
 
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   @State private var loaded: Bool = false
 
@@ -35,7 +35,7 @@ struct TrendingSubjectTypeView: View {
   let width: CGFloat
 
   @AppStorage("subjectImageQuality") var subjectImageQuality: ImageQuality = .high
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   @Query private var trending: [TrendingSubject]
   var items: [TrendingSubjectDTO] { trending.first?.items ?? [] }

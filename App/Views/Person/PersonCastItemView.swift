@@ -3,7 +3,7 @@ import SwiftUI
 struct PersonCastItemView: View {
   let item: PersonCastDTO
 
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   var body: some View {
     CardView {

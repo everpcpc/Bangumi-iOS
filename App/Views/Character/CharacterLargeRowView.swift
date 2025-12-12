@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct CharacterLargeRowView: View {
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   @Environment(Character.self) private var character
 

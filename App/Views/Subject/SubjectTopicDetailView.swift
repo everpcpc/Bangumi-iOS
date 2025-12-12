@@ -9,7 +9,7 @@ struct SubjectTopicDetailView: View {
   @AppStorage("replySortOrder") var replySortOrder: ReplySortOrder = .ascending
   @AppStorage("friendlist") var friendlist: [Int] = []
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   @State private var topic: SubjectTopicDTO?
   @State private var refreshed = false

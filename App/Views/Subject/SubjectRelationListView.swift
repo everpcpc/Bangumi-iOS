@@ -4,7 +4,7 @@ import SwiftUI
 struct SubjectRelationListView: View {
   let subjectId: Int
 
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   @State private var subjectType: SubjectType = .none
   @State private var reloader = false

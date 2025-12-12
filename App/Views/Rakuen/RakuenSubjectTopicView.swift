@@ -3,7 +3,7 @@ import SwiftUI
 struct RakuenSubjectTopicView: View {
   let mode: SubjectTopicFilterMode
 
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   @State private var reloader = false
 
@@ -55,7 +55,7 @@ struct RakuenSubjectTopicListView: View {
 struct RakuenSubjectTopicItemView: View {
   let topic: SubjectTopicDTO
 
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   var body: some View {
     CardView {

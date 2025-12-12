@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct UserCharacterCollectionView: View {
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   @Environment(User.self) var user
 

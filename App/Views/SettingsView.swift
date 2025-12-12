@@ -16,7 +16,7 @@ struct SettingsView: View {
   @AppStorage("autoCompleteProgress") var autoCompleteProgress: Bool = false
   @AppStorage("enableReactions") var enableReactions: Bool = true
   @AppStorage("replySortOrder") var replySortOrder: ReplySortOrder = .ascending
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   @Environment(\.modelContext) var modelContext
 

@@ -4,7 +4,7 @@ import SwiftUI
 struct SubjectTinyView: View {
   let subject: SlimSubjectDTO
 
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   var body: some View {
     BorderView(color: .secondary.opacity(0.2), padding: 4, paddingRatio: 1, cornerRadius: 8) {
@@ -29,7 +29,7 @@ struct SubjectTinyView: View {
 struct SubjectSmallView: View {
   let subject: SlimSubjectDTO
 
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   var ratingLine: Text {
     guard let rating = subject.rating else {
@@ -80,7 +80,7 @@ struct SubjectSmallView: View {
 struct SubjectCardView: View {
   let subject: SlimSubjectDTO
 
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   var ratingLine: Text {
     guard let rating = subject.rating else {

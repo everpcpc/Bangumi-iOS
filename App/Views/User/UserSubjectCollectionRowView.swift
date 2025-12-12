@@ -4,7 +4,7 @@ import SwiftUI
 struct UserSubjectCollectionRowView: View {
   let subject: SlimSubjectDTO
 
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   var body: some View {
     HStack(alignment: .top) {

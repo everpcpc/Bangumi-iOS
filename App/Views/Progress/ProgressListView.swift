@@ -65,7 +65,7 @@ struct ProgressListView: View {
 struct ProgressListItemView: View {
   let subjectId: Int
 
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   @Environment(Subject.self) var subject
 

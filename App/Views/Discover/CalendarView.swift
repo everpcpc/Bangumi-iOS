@@ -65,7 +65,7 @@ enum WeekDay: Int, CaseIterable {
 
 struct CalendarView: View {
 
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   @State private var refreshed: Bool = false
   @State private var width: CGFloat = 0
@@ -157,7 +157,7 @@ struct CalendarWeekdayView: View {
 
   @Environment(BangumiCalendar.self) var calendar
 
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   var weekday: WeekDay {
     WeekDay(calendar.weekday)

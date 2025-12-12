@@ -6,7 +6,7 @@ struct SubjectRelationsView: View {
   let subjectId: Int
   let relations: [SubjectRelationDTO]
 
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   @Environment(\.modelContext) var modelContext
 

@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct PersonLargeRowView: View {
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   @Environment(Person.self) private var person
 

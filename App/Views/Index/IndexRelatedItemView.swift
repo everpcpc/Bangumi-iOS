@@ -5,7 +5,7 @@ struct IndexRelatedItemView: View {
   let item: IndexRelatedDTO
   let isOwner: Bool
 
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   @State private var showEditRelated = false
   @State private var showDeleteRelated = false

@@ -3,7 +3,7 @@ import SwiftUI
 struct CharacterCastItemView: View {
   let item: CharacterCastDTO
 
-  @AppStorage("titlePreference") var titlePreference: TitlePreference = .chinese
+  @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   var body: some View {
     CardView {
