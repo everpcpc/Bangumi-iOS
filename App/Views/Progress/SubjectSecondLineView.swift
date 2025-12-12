@@ -4,8 +4,18 @@ struct ProgressSecondLineView: View {
   @AppStorage("progressSecondLineMode") var progressSecondLineMode: ProgressSecondLineMode =
     .subtitle
   @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
+  @AppStorage("progressViewMode") var progressViewMode: ProgressViewMode = .tile
 
   @Environment(Subject.self) var subject
+
+  var tagsCount: Int {
+    switch progressViewMode {
+    case .tile:
+      return 3
+    case .list:
+      return 5
+    }
+  }
 
   var body: some View {
     switch progressSecondLineMode {
@@ -13,13 +23,13 @@ struct ProgressSecondLineView: View {
       if let subtitle = subject.subtitle(with: titlePreference) {
         Text(subtitle)
           .foregroundStyle(.secondary)
-          .font(.subheadline)
+          .font(.footnote)
           .lineLimit(1)
       }
     case .category:
       Text(subject.category)
         .foregroundStyle(.secondary)
-        .font(.subheadline)
+        .font(.footnote)
     case .watching:
       let doing = subject.collection.doing
       let collect = subject.collection.collect
@@ -33,7 +43,7 @@ struct ProgressSecondLineView: View {
       let score = subject.rating.score
       let total = subject.rating.total
       if rank > 0 || score > 0 {
-        HStack(alignment: .bottom, spacing: 12) {
+        HStack(spacing: 12) {
           if rank > 0 {
             Text("#\(rank)")
               .foregroundStyle(.secondary)
@@ -57,7 +67,7 @@ struct ProgressSecondLineView: View {
       if !subject.airtime.date.isEmpty {
         Text(subject.airtime.date)
           .foregroundStyle(.secondary)
-          .font(.subheadline)
+          .font(.footnote)
       }
     case .info:
       if !subject.info.isEmpty {
@@ -67,7 +77,7 @@ struct ProgressSecondLineView: View {
           .lineLimit(2)
       }
     case .metaTag:
-      let tags = subject.metaTags.prefix(4)
+      let tags = subject.metaTags.prefix(tagsCount)
       if !tags.isEmpty {
         HStack(spacing: 4) {
           ForEach(tags, id: \.self) { tag in

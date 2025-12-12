@@ -192,6 +192,7 @@ struct ChiiProgressView: View {
           .animation(.default, value: counts)
           .animation(.default, value: progressLimit)
           .animation(.default, value: progressViewMode)
+          .animation(.default, value: secondLineMode)
           .refreshable {
             if refreshing {
               return
@@ -213,23 +214,21 @@ struct ChiiProgressView: View {
                   Label("显示模式", systemImage: progressViewMode.icon)
                 }
                 .pickerStyle(.menu)
-                Divider()
-
-                Picker(selection: $progressLimit) {
-                  Text("50").tag(50)
-                  Text("无限制").tag(0)
-                } label: {
-                  Label("显示数量", systemImage: progressLimitIcon)
-                }
-                .pickerStyle(.menu)
-                Divider()
 
                 Picker(selection: $secondLineMode) {
                   ForEach(ProgressSecondLineMode.allCases, id: \.self) { mode in
                     Label(mode.desc, systemImage: mode.icon).tag(mode)
                   }
                 } label: {
-                  Label("第二行显示", systemImage: secondLineMode.icon)
+                  Label("第二行内容", systemImage: secondLineMode.icon)
+                }
+                .pickerStyle(.menu)
+
+                Picker(selection: $progressLimit) {
+                  Text("50").tag(50)
+                  Text("无限制").tag(0)
+                } label: {
+                  Label("显示数量", systemImage: progressLimitIcon)
                 }
                 .pickerStyle(.menu)
                 Divider()

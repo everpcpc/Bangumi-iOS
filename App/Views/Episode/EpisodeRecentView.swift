@@ -131,7 +131,7 @@ struct EpisodeNextView: View {
   @State private var updating: Bool = false
 
   var buttonText: String {
-    return "EP.\(episode.sort.episodeDisplay) 看过"
+    return "EP.\(episode.sort.episodeDisplay)"
   }
 
   func updateSingle(episode: Episode, type: EpisodeCollectionType) {
