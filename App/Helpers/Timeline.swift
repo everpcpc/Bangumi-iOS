@@ -116,7 +116,7 @@ extension TimelineDTO {
       case 1, 2, 3:
         if let episode = self.memo.progress?.single?.episode {
           text += AttributedString("\(EpisodeCollectionType(self.type).description) ")
-          text += episode.title.withLink(episode.link)
+          text += episode.name.withLink(episode.link)
         } else {
           text += self.unknown("剧集")
         }

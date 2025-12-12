@@ -18,6 +18,8 @@ struct SettingsView: View {
   @AppStorage("enableShakeTitleToggle") var enableShakeTitleToggle: Bool = false
   @AppStorage("replySortOrder") var replySortOrder: ReplySortOrder = .ascending
   @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
+  @AppStorage("progressSecondLineMode") var progressSecondLineMode: ProgressSecondLineMode =
+    .subtitle
 
   @Environment(\.modelContext) var modelContext
 
@@ -90,6 +92,16 @@ struct SettingsView: View {
             Text(appearance.desc).tag(appearance)
           }
         }
+        Picker(selection: $titlePreference, label: Text("条目标题显示")) {
+          ForEach(TitlePreference.allCases, id: \.self) { preference in
+            Text(preference.desc).tag(preference)
+          }
+        }
+        Picker(selection: $progressSecondLineMode, label: Text("进度管理第二行显示")) {
+          ForEach(ProgressSecondLineMode.allCases, id: \.self) { mode in
+            Text(mode.desc).tag(mode)
+          }
+        }
         Picker(selection: $progressSortMode, label: Text("进度管理排序")) {
           ForEach(ProgressSortMode.allCases, id: \.self) { mode in
             Text(mode.desc).tag(mode)
@@ -103,11 +115,6 @@ struct SettingsView: View {
         Picker(selection: $replySortOrder, label: Text("话题回复排序")) {
           ForEach(ReplySortOrder.allCases, id: \.self) { order in
             Text(order.description).tag(order)
-          }
-        }
-        Picker(selection: $titlePreference, label: Text("条目标题显示")) {
-          ForEach(TitlePreference.allCases, id: \.self) { preference in
-            Text(preference.desc).tag(preference)
           }
         }
       }

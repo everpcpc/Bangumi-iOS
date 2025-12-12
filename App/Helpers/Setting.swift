@@ -204,6 +204,56 @@ enum TitlePreference: String, CaseIterable {
   }
 }
 
+enum ProgressSecondLineMode: String, CaseIterable {
+  case subtitle = "subtitle"
+  case category = "category"
+  case watching = "watching"
+  case ratingRank = "ratingRank"
+  case airTime = "airTime"
+  case info = "info"
+  case metaTag = "metaTag"
+
+  init(_ label: String? = nil) {
+    switch label {
+    case "subtitle":
+      self = .subtitle
+    case "category":
+      self = .category
+    case "watching":
+      self = .watching
+    case "ratingRank":
+      self = .ratingRank
+    case "airTime":
+      self = .airTime
+    case "info":
+      self = .info
+    case "metaTag":
+      self = .metaTag
+    default:
+      self = .subtitle
+    }
+  }
+
+  var desc: String {
+    switch self {
+    case .subtitle:
+      "副标题"
+    case .category:
+      "分类信息"
+    case .watching:
+      "关注人数"
+    case .ratingRank:
+      "评分排名"
+    case .airTime:
+      "放送时间"
+    case .info:
+      "制作信息"
+    case .metaTag:
+      "标签"
+    }
+  }
+}
+
 enum ChiiViewTab: String {
   case timeline = "timeline"
   case progress = "progress"

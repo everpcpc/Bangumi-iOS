@@ -105,15 +105,12 @@ struct ProgressTileItemView: View {
         .imageLink(subject.link)
 
       VStack(alignment: .leading, spacing: 4) {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 4) {
           NavigationLink(value: NavDestination.subject(subjectId)) {
             Text(subject.title(with: titlePreference)).font(.headline)
           }.buttonStyle(.scale)
-          if let subtitle = subject.subtitle(with: titlePreference) {
-            Text(subtitle)
-              .foregroundStyle(.secondary)
-              .font(.subheadline)
-          }
+
+          ProgressSecondLineView()
         }
 
         Spacer()
