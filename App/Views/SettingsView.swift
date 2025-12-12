@@ -130,11 +130,11 @@ struct SettingsView: View {
         Button {
           showEULA = true
         } label: {
-          Text("社区指导原则")
+          Label("社区指导原则", systemImage: "doc.text")
         }
         Link(destination: URL(string: privacyPolicyURL)!) {
           HStack {
-            Text("隐私政策")
+            Label("隐私政策", systemImage: "hand.raised")
             Spacer()
             Image(systemName: "arrow.up.right.square")
               .foregroundColor(.secondary)
@@ -143,7 +143,16 @@ struct SettingsView: View {
         }
         Link(destination: URL(string: "https://discord.gg/nZPTwzXxAX")!) {
           HStack {
-            Text("问题反馈(Discord)")
+            Label("问题反馈", systemImage: "exclamationmark.bubble")
+            Spacer()
+            Image(systemName: "arrow.up.right.square")
+              .foregroundColor(.secondary)
+              .font(.caption)
+          }
+        }
+        Link(destination: URL(string: "https://testflight.apple.com/join/qq79EyFs")!) {
+          HStack {
+            Label("加入 Beta", systemImage: "sparkles")
             Spacer()
             Image(systemName: "arrow.up.right.square")
               .foregroundColor(.secondary)
@@ -152,7 +161,7 @@ struct SettingsView: View {
         }
         Link(destination: URL(string: "https://github.com/bangumi/Bangumi-iOS")!) {
           HStack {
-            Text("查看源码(GitHub)")
+            Label("查看源码", systemImage: "chevron.left.forwardslash.chevron.right")
             Spacer()
             Image(systemName: "arrow.up.right.square")
               .foregroundColor(.secondary)
