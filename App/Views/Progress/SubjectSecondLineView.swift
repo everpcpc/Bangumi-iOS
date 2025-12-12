@@ -33,7 +33,7 @@ struct ProgressSecondLineView: View {
       let score = subject.rating.score
       let total = subject.rating.total
       if rank > 0 || score > 0 {
-        HStack(spacing: 12) {
+        HStack(alignment: .bottom, spacing: 12) {
           if rank > 0 {
             Text("#\(rank)")
               .foregroundStyle(.secondary)
@@ -43,13 +43,13 @@ struct ProgressSecondLineView: View {
             if score > 0 {
               StarsView(score: score, size: 12)
               Text("\(score.rateDisplay)")
-                .font(.caption)
+                .font(.footnote)
                 .foregroundStyle(.orange)
             }
           } else {
             Text("(少于10人评分)")
               .foregroundStyle(.secondary)
-              .font(.caption)
+              .font(.footnote)
           }
         }
       }
@@ -67,12 +67,11 @@ struct ProgressSecondLineView: View {
           .lineLimit(2)
       }
     case .metaTag:
-      let tags = subject.metaTags.prefix(5)
+      let tags = subject.metaTags.prefix(4)
       if !tags.isEmpty {
         HStack(spacing: 4) {
           ForEach(tags, id: \.self) { tag in
             Text(tag)
-              .fixedSize()
               .padding(2)
               .background(.secondary.opacity(0.1))
               .clipShape(RoundedRectangle(cornerRadius: 5))
