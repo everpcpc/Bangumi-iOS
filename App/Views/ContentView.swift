@@ -90,6 +90,11 @@ struct ContentView: View {
         }
       }
     }
+    .overlay(
+      ShakeHandler()
+        .allowsHitTesting(false)
+        .frame(width: 0, height: 0)
+    )
     .task {
       await refreshProfile()
       await refreshRelationships()

@@ -101,5 +101,6 @@ struct MainView: View {
       }
 
     }.tabBarMinimizeBehaviorIfAvailable()
+
   }
 }
