@@ -7,6 +7,7 @@ struct ChiiProgressView: View {
   @AppStorage("collectionsUpdatedAt") var collectionsUpdatedAt: Int = 0
   @AppStorage("progressViewMode") var progressViewMode: ProgressViewMode = .tile
   @AppStorage("progressLimit") var progressLimit: Int = 50
+  @AppStorage("progressSecondLineMode") var secondLineMode: ProgressSecondLineMode = .subtitle
   @AppStorage("progressTab") var progressTab: SubjectType = .none
 
   @Environment(\.modelContext) var modelContext
@@ -219,6 +220,16 @@ struct ChiiProgressView: View {
                   Text("无限制").tag(0)
                 } label: {
                   Label("显示数量", systemImage: progressLimitIcon)
+                }
+                .pickerStyle(.menu)
+                Divider()
+
+                Picker(selection: $secondLineMode) {
+                  ForEach(ProgressSecondLineMode.allCases, id: \.self) { mode in
+                    Label(mode.desc, systemImage: mode.icon).tag(mode)
+                  }
+                } label: {
+                  Label("第二行显示", systemImage: secondLineMode.icon)
                 }
                 .pickerStyle(.menu)
                 Divider()

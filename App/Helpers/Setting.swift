@@ -252,6 +252,25 @@ enum ProgressSecondLineMode: String, CaseIterable {
       "标签"
     }
   }
+
+  var icon: String {
+    switch self {
+    case .subtitle:
+      "text.book.closed"
+    case .category:
+      "list.bullet"
+    case .watching:
+      "eyes"
+    case .ratingRank:
+      "chart.bar.xaxis"
+    case .airTime:
+      "calendar"
+    case .info:
+      "info.circle"
+    case .metaTag:
+      "tag"
+    }
+  }
 }
 
 enum ChiiViewTab: String {
