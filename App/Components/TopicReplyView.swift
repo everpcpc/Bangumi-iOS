@@ -69,9 +69,9 @@ struct ReplyItemView: View {
       ReplyItemNormalView(type: type, topicId: topicId, idx: idx, reply: reply, author: author)
         .blocklistFilter(reply.creatorID)
     case .userDelete:
-      PostUserDeleteStateView(reply.creatorID, reply.creator, reply.createdAt, author)
+      PostUserDeleteStateView(topicId, reply.creatorID, reply.creator, reply.createdAt, author)
     case .adminOffTopic:
-      PostAdminOffTopicStateView(reply.creatorID, reply.creator, reply.createdAt, author)
+      PostAdminOffTopicStateView(topicId, reply.creatorID, reply.creator, reply.createdAt, author)
     default:
       PostStateView(reply.state)
     }
@@ -88,6 +88,7 @@ struct ReplyItemNormalView: View {
   @AppStorage("profile") var profile: Profile = Profile()
   @AppStorage("friendlist") var friendlist: [Int] = []
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
+  @AppStorage("anonymizeTopicUsers") var anonymizeTopicUsers: Bool = false
 
   @State private var showReplyBox: Bool = false
   @State private var showEditBox: Bool = false
@@ -106,10 +107,31 @@ struct ReplyItemNormalView: View {
     self._reactions = State(initialValue: reply.reactions ?? [])
   }
 
+  var anonymizedHash: String {
+    AnonymizationHelper.generateHash(topicId: topicId, userId: reply.creatorID)
+  }
+
+  var anonymizedColor: Color {
+    AnonymizationHelper.generateColor(from: anonymizedHash)
+  }
+
   var body: some View {
     VStack(alignment: .leading) {
       HStack(alignment: .top) {
-        if let creator = reply.creator {
+        if anonymizeTopicUsers {
+          if let creator = reply.creator {
+            Rectangle()
+              .fill(anonymizedColor)
+              .frame(width: 40, height: 40)
+              .clipShape(Circle())
+              .imageLink(creator.link)
+          } else {
+            Rectangle()
+              .fill(anonymizedColor)
+              .frame(width: 40, height: 40)
+              .clipShape(Circle())
+          }
+        } else if let creator = reply.creator {
           ImageView(img: creator.avatar?.large)
             .imageStyle(width: 40, height: 40)
             .imageType(.avatar)
@@ -123,8 +145,14 @@ struct ReplyItemNormalView: View {
               HStack(spacing: 4) {
                 PosterLabel(uid: reply.creatorID, poster: author?.id)
                 FriendLabel(uid: reply.creatorID)
-                if let creator = reply.creator {
-                  Text(creator.header).lineLimit(1)
+                if anonymizeTopicUsers {
+                  if let creator = reply.creator {
+                    Text(anonymizedHash.withLink(creator.link)).lineLimit(1)
+                  } else {
+                    Text(anonymizedHash).lineLimit(1)
+                  }
+                } else if let creator = reply.creator {
+                  Text(creator.nickname.withLink(creator.link)).lineLimit(1)
                 } else {
                   Text("用户 \(reply.creatorID)")
                     .lineLimit(1)
@@ -178,10 +206,10 @@ struct ReplyItemNormalView: View {
                   author: author, topicId: topicId)
               case .userDelete:
                 PostUserDeleteStateView(
-                  subreply.creatorID, subreply.creator, subreply.createdAt, author)
+                  topicId, subreply.creatorID, subreply.creator, subreply.createdAt, author)
               case .adminOffTopic:
                 PostAdminOffTopicStateView(
-                  subreply.creatorID, subreply.creator, subreply.createdAt, author)
+                  topicId, subreply.creatorID, subreply.creator, subreply.createdAt, author)
               default:
                 PostStateView(subreply.state)
               }
@@ -246,6 +274,7 @@ struct SubReplyNormalView: View {
   @AppStorage("profile") var profile: Profile = Profile()
   @AppStorage("friendlist") var friendlist: [Int] = []
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
+  @AppStorage("anonymizeTopicUsers") var anonymizeTopicUsers: Bool = false
 
   @State private var showReplyBox: Bool = false
   @State private var showEditBox: Bool = false
@@ -271,9 +300,30 @@ struct SubReplyNormalView: View {
     self._reactions = State(initialValue: subreply.reactions ?? [])
   }
 
+  var anonymizedHash: String {
+    AnonymizationHelper.generateHash(topicId: topicId, userId: subreply.creatorID)
+  }
+
+  var anonymizedColor: Color {
+    AnonymizationHelper.generateColor(from: anonymizedHash)
+  }
+
   var body: some View {
     HStack(alignment: .top) {
-      if let creator = subreply.creator {
+      if anonymizeTopicUsers {
+        if let creator = subreply.creator {
+          Rectangle()
+            .fill(anonymizedColor)
+            .frame(width: 40, height: 40)
+            .clipShape(Circle())
+            .imageLink(creator.link)
+        } else {
+          Rectangle()
+            .fill(anonymizedColor)
+            .frame(width: 40, height: 40)
+            .clipShape(Circle())
+        }
+      } else if let creator = subreply.creator {
         ImageView(img: creator.avatar?.large)
           .imageStyle(width: 40, height: 40)
           .imageType(.avatar)
@@ -287,7 +337,13 @@ struct SubReplyNormalView: View {
             HStack(spacing: 4) {
               PosterLabel(uid: subreply.creatorID, poster: author?.id)
               FriendLabel(uid: subreply.creatorID)
-              if let creator = subreply.creator {
+              if anonymizeTopicUsers {
+                if let creator = subreply.creator {
+                  Text(anonymizedHash.withLink(creator.link)).lineLimit(1)
+                } else {
+                  Text(anonymizedHash).lineLimit(1)
+                }
+              } else if let creator = subreply.creator {
                 Text(creator.nickname.withLink(creator.link))
                   .lineLimit(1)
               } else {
@@ -788,6 +844,7 @@ struct MainPostContentView: View {
   @Binding var reactions: [ReactionDTO]
 
   @AppStorage("friendlist") var friendlist: [Int] = []
+  @AppStorage("anonymizeTopicUsers") var anonymizeTopicUsers: Bool = false
 
   init(
     type: TopicParentType, topicId: Int, idx: Int, reply: ReplyDTO, author: SlimUserDTO?,
@@ -801,10 +858,31 @@ struct MainPostContentView: View {
     self._reactions = reactions
   }
 
+  var anonymizedHash: String {
+    AnonymizationHelper.generateHash(topicId: topicId, userId: reply.creatorID)
+  }
+
+  var anonymizedColor: Color {
+    AnonymizationHelper.generateColor(from: anonymizedHash)
+  }
+
   var body: some View {
     VStack(alignment: .leading) {
       HStack(alignment: .top) {
-        if let creator = reply.creator {
+        if anonymizeTopicUsers {
+          if let creator = reply.creator {
+            Rectangle()
+              .fill(anonymizedColor)
+              .frame(width: 40, height: 40)
+              .clipShape(Circle())
+              .imageLink(creator.link)
+          } else {
+            Rectangle()
+              .fill(anonymizedColor)
+              .frame(width: 40, height: 40)
+              .clipShape(Circle())
+          }
+        } else if let creator = reply.creator {
           ImageView(img: creator.avatar?.large)
             .imageStyle(width: 40, height: 40)
             .imageType(.avatar)
@@ -817,8 +895,14 @@ struct MainPostContentView: View {
             HStack(spacing: 4) {
               PosterLabel(uid: reply.creatorID, poster: author?.id)
               FriendLabel(uid: reply.creatorID)
-              if let creator = reply.creator {
-                Text(creator.header).lineLimit(1)
+              if anonymizeTopicUsers {
+                if let creator = reply.creator {
+                  Text(anonymizedHash.withLink(creator.link)).lineLimit(1)
+                } else {
+                  Text(anonymizedHash).lineLimit(1)
+                }
+              } else if let creator = reply.creator {
+                Text(creator.nickname.withLink(creator.link)).lineLimit(1)
               } else {
                 Text("用户 \(reply.creatorID)")
                   .lineLimit(1)
@@ -851,10 +935,10 @@ struct MainPostContentView: View {
                   author: author, topicId: topicId)
               case .userDelete:
                 PostUserDeleteStateView(
-                  subreply.creatorID, subreply.creator, subreply.createdAt, author)
+                  topicId, subreply.creatorID, subreply.creator, subreply.createdAt, author)
               case .adminOffTopic:
                 PostAdminOffTopicStateView(
-                  subreply.creatorID, subreply.creator, subreply.createdAt, author)
+                  topicId, subreply.creatorID, subreply.creator, subreply.createdAt, author)
               default:
                 PostStateView(subreply.state)
               }

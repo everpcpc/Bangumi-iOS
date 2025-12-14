@@ -18,6 +18,7 @@ struct SettingsView: View {
   @AppStorage("enableShakeTitleToggle") var enableShakeTitleToggle: Bool = false
   @AppStorage("replySortOrder") var replySortOrder: ReplySortOrder = .ascending
   @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
+  @AppStorage("anonymizeTopicUsers") var anonymizeTopicUsers: Bool = false
 
   @Environment(\.modelContext) var modelContext
 
@@ -116,11 +117,17 @@ struct SettingsView: View {
         Toggle(isOn: $isolationMode) {
           Text("单机模式")
         }
+        Toggle(isOn: $anonymizeTopicUsers) {
+          Text("匿名化讨论")
+        }
         Toggle(isOn: $hideBlocklist) {
           Text("屏蔽绝交用户言论")
         }
         Toggle(isOn: $showNSFWBadge) {
           Text("显示 NSFW 标记")
+        }
+        Toggle(isOn: $enableShakeTitleToggle) {
+          Text("摇一摇切换标题显示")
         }
         Toggle(isOn: $showEpisodeTrends) {
           Text("显示章节热度")
@@ -130,9 +137,6 @@ struct SettingsView: View {
         }
         Toggle(isOn: $enableReactions) {
           Text("启用贴贴")
-        }
-        Toggle(isOn: $enableShakeTitleToggle) {
-          Text("摇一摇切换标题显示")
         }
       }
 

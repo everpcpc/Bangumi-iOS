@@ -26,6 +26,23 @@ enum CommentParentType {
     }
   }
 
+  var parentId: Int {
+    switch self {
+    case .blog(let id):
+      return id
+    case .character(let id):
+      return id
+    case .person(let id):
+      return id
+    case .episode(let id):
+      return id
+    case .timeline(let id):
+      return id
+    case .index(let id):
+      return id
+    }
+  }
+
   func shareLink(commentId: Int) -> URL {
     @AppStorage("shareDomain") var shareDomain: ShareDomain = .chii
     switch self {
@@ -87,9 +104,9 @@ struct CommentItemView: View {
       CommentItemNormalView(type: type, comment: comment, idx: idx)
         .blocklistFilter(comment.creatorID)
     case .userDelete:
-      PostUserDeleteStateView(comment.creatorID, comment.user, comment.createdAt)
+      PostUserDeleteStateView(type.parentId, comment.creatorID, comment.user, comment.createdAt)
     case .adminOffTopic:
-      PostAdminOffTopicStateView(comment.creatorID, comment.user, comment.createdAt)
+      PostAdminOffTopicStateView(type.parentId, comment.creatorID, comment.user, comment.createdAt)
     default:
       PostStateView(comment.state)
     }
@@ -104,6 +121,7 @@ struct CommentItemNormalView: View {
   @AppStorage("profile") var profile: Profile = Profile()
   @AppStorage("friendlist") var friendlist: [Int] = []
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
+  @AppStorage("anonymizeTopicUsers") var anonymizeTopicUsers: Bool = false
 
   @State private var showReplyBox: Bool = false
   @State private var showEditBox: Bool = false
@@ -120,19 +138,39 @@ struct CommentItemNormalView: View {
     self._reactions = State(initialValue: comment.reactions ?? [])
   }
 
+  var anonymizedHash: String {
+    AnonymizationHelper.generateHash(topicId: type.parentId, userId: comment.creatorID)
+  }
+
+  var anonymizedColor: Color {
+    AnonymizationHelper.generateColor(from: anonymizedHash)
+  }
+
   var body: some View {
     VStack(alignment: .leading) {
       HStack(alignment: .top) {
-        ImageView(img: comment.user.avatar?.large)
-          .imageStyle(width: 40, height: 40)
-          .imageType(.avatar)
-          .imageLink(comment.user.link)
+        if anonymizeTopicUsers {
+          Rectangle()
+            .fill(anonymizedColor)
+            .frame(width: 40, height: 40)
+            .clipShape(Circle())
+            .imageLink(comment.user.link)
+        } else {
+          ImageView(img: comment.user.avatar?.large)
+            .imageStyle(width: 40, height: 40)
+            .imageType(.avatar)
+            .imageLink(comment.user.link)
+        }
         VStack(alignment: .leading) {
           HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 0) {
               HStack(spacing: 4) {
                 FriendLabel(uid: comment.creatorID)
-                Text(comment.user.header).lineLimit(1)
+                if anonymizeTopicUsers {
+                  Text(anonymizedHash.withLink(comment.user.link)).lineLimit(1)
+                } else {
+                  Text(comment.user.nickname.withLink(comment.user.link)).lineLimit(1)
+                }
               }
               Text("#\(idx+1) - \(comment.createdAt.datetimeDisplay)")
                 .lineLimit(1)
@@ -174,9 +212,10 @@ struct CommentItemNormalView: View {
                   type: type, comment: comment,
                   reply: reply, idx: idx, subidx: subidx)
               case .userDelete:
-                PostUserDeleteStateView(reply.creatorID, reply.user, reply.createdAt)
+                PostUserDeleteStateView(type.parentId, reply.creatorID, reply.user, reply.createdAt)
               case .adminOffTopic:
-                PostAdminOffTopicStateView(reply.creatorID, reply.user, reply.createdAt)
+                PostAdminOffTopicStateView(
+                  type.parentId, reply.creatorID, reply.user, reply.createdAt)
               default:
                 PostStateView(reply.state)
               }
@@ -261,6 +300,7 @@ struct CommentSubReplyNormalView: View {
   @AppStorage("profile") var profile: Profile = Profile()
   @AppStorage("friendlist") var friendlist: [Int] = []
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
+  @AppStorage("anonymizeTopicUsers") var anonymizeTopicUsers: Bool = false
 
   @State private var showReplyBox: Bool = false
   @State private var showEditBox: Bool = false
@@ -279,9 +319,30 @@ struct CommentSubReplyNormalView: View {
     self._reactions = State(initialValue: reply.reactions ?? [])
   }
 
+  var anonymizedHash: String {
+    AnonymizationHelper.generateHash(topicId: type.parentId, userId: reply.creatorID)
+  }
+
+  var anonymizedColor: Color {
+    AnonymizationHelper.generateColor(from: anonymizedHash)
+  }
+
   var body: some View {
     HStack(alignment: .top) {
-      if let user = reply.user {
+      if anonymizeTopicUsers {
+        if let user = reply.user {
+          Rectangle()
+            .fill(anonymizedColor)
+            .frame(width: 40, height: 40)
+            .clipShape(Circle())
+            .imageLink(user.link)
+        } else {
+          Rectangle()
+            .fill(anonymizedColor)
+            .frame(width: 40, height: 40)
+            .clipShape(Circle())
+        }
+      } else if let user = reply.user {
         ImageView(img: user.avatar?.large)
           .imageStyle(width: 40, height: 40)
           .imageType(.avatar)
@@ -294,7 +355,13 @@ struct CommentSubReplyNormalView: View {
           VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 4) {
               FriendLabel(uid: reply.creatorID)
-              if let user = reply.user {
+              if anonymizeTopicUsers {
+                if let user = reply.user {
+                  Text(anonymizedHash.withLink(user.link)).lineLimit(1)
+                } else {
+                  Text(anonymizedHash).lineLimit(1)
+                }
+              } else if let user = reply.user {
                 Text(user.nickname.withLink(user.link))
                   .lineLimit(1)
               } else {
