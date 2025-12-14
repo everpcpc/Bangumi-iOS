@@ -124,7 +124,6 @@ struct SubjectDetailView: View {
             subject.subjectId, offprints: false, social: true)
         }
       }
-      .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showIndexPicker) {
       IndexPickerSheet(
@@ -132,7 +131,6 @@ struct SubjectDetailView: View {
         itemId: subject.subjectId,
         itemTitle: subject.title(with: titlePreference)
       )
-      .presentationDetents([.medium, .large])
     }
     .navigationTitle(subject.name)
     .navigationBarTitleDisplayMode(.inline)

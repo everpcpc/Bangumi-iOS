@@ -225,7 +225,6 @@ struct SubjectTopicDetailView: View {
           CreateReplyBoxSheet(type: .subject(topic.subject.id), topicId: topicId) {
             Task { await refresh() }
           }
-          .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showEditBox) {
           EditTopicBoxSheet(
@@ -234,7 +233,6 @@ struct SubjectTopicDetailView: View {
           ) {
             Task { await refresh() }
           }
-          .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showIndexPicker) {
           IndexPickerSheet(
@@ -242,13 +240,11 @@ struct SubjectTopicDetailView: View {
             itemId: topicId,
             itemTitle: title
           )
-          .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showReportView) {
           ReportSheet(
             reportType: .subjectTopic, itemId: topicId, itemTitle: title, user: topic.creator
           )
-          .presentationDetents([.medium, .large])
         }
       } else if refreshed {
         NotFoundView()

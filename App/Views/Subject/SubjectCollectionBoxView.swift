@@ -218,7 +218,7 @@ struct SubjectCollectionBoxView: View {
       .animation(.default, value: priv)
       .animation(.default, value: rate)
       .padding()
-    }
+    }.presentationDetents(.init([.medium, .large]))
   }
 }
 

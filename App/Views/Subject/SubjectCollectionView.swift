@@ -88,7 +88,6 @@ struct SubjectCollectionView: View {
       SubjectCollectionBoxView()
         .environment(subject)
         .presentationDragIndicator(.visible)
-        .presentationDetents(.init([.medium, .large]))
     }
   }
 }

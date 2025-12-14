@@ -219,11 +219,9 @@ struct ReplyItemNormalView: View {
       }
       .sheet(isPresented: $showReplyBox) {
         CreateReplyBoxSheet(type: type, topicId: topicId, reply: idx == 0 ? nil : reply)
-          .presentationDetents([.medium, .large])
       }
       .sheet(isPresented: $showEditBox) {
         EditReplyBoxSheet(type: type, topicId: topicId, reply: reply)
-          .presentationDetents([.medium, .large])
       }
       .sheet(isPresented: $showReportView) {
         switch type {
@@ -232,13 +230,11 @@ struct ReplyItemNormalView: View {
             reportType: .groupReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)",
             user: reply.creator
           )
-          .presentationDetents([.medium, .large])
         case .subject:
           ReportSheet(
             reportType: .subjectReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)",
             user: reply.creator
           )
-          .presentationDetents([.medium, .large])
         }
       }
       .alert("确认删除", isPresented: $showDeleteConfirm) {
@@ -393,11 +389,9 @@ struct SubReplyNormalView: View {
     }
     .sheet(isPresented: $showReplyBox) {
       CreateReplyBoxSheet(type: type, topicId: topicId, reply: reply, subreply: subreply)
-        .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showEditBox) {
       EditReplyBoxSheet(type: type, topicId: topicId, reply: reply, subreply: subreply)
-        .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showReportView) {
       switch type {
@@ -406,13 +400,11 @@ struct SubReplyNormalView: View {
           reportType: .groupReply, itemId: subreply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
           user: subreply.creator
         )
-        .presentationDetents([.medium, .large])
       case .subject:
         ReportSheet(
           reportType: .subjectReply, itemId: subreply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
           user: subreply.creator
         )
-        .presentationDetents([.medium, .large])
       }
     }
     .alert("确认删除", isPresented: $showDeleteConfirm) {

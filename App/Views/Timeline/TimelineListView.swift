@@ -112,7 +112,6 @@ struct TimelineListView: View {
             .disabled(showInput)
             .sheet(isPresented: $showInput) {
               TimelineSayView()
-                .presentationDetents(.init([.large]))
             }
           }
         } else {

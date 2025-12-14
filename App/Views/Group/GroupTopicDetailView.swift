@@ -223,7 +223,6 @@ struct GroupTopicDetailView: View {
           CreateReplyBoxSheet(type: .group(topic.group.name), topicId: topicId) {
             Task { await refresh() }
           }
-          .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showEditBox) {
           EditTopicBoxSheet(
@@ -232,7 +231,6 @@ struct GroupTopicDetailView: View {
           ) {
             Task { await refresh() }
           }
-          .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showIndexPicker) {
           IndexPickerSheet(
@@ -240,13 +238,11 @@ struct GroupTopicDetailView: View {
             itemId: topicId,
             itemTitle: title
           )
-          .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showReportView) {
           ReportSheet(
             reportType: .groupTopic, itemId: topicId, itemTitle: title, user: topic.creator
           )
-          .presentationDetents([.medium, .large])
         }
       } else if refreshed {
         NotFoundView()

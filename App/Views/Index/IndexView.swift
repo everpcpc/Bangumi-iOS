@@ -336,7 +336,6 @@ struct IndexView: View {
         CreateCommentBoxSheet(type: .index(indexId)) {
           Task { await loadComments() }
         }
-        .presentationDetents([.medium, .large])
       }
     }
     .sheet(isPresented: $showReportView) {

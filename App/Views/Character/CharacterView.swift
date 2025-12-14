@@ -98,7 +98,6 @@ struct CharacterView: View {
           CreateCommentBoxSheet(type: .character(characterId)) {
             Task { await refresh() }
           }
-          .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showIndexPicker) {
           IndexPickerSheet(
@@ -106,7 +105,6 @@ struct CharacterView: View {
             itemId: characterId,
             itemTitle: title
           )
-          .presentationDetents([.medium, .large])
         }
       } else if refreshed {
         NotFoundView()

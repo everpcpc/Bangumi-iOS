@@ -120,7 +120,6 @@ struct UserView: View {
         ReportSheet(
           reportType: .user, itemId: user.userId, itemTitle: user.nickname, user: user.slim
         )
-        .presentationDetents([.medium, .large])
       }
     }
     .toolbar {

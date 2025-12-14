@@ -40,7 +40,6 @@ struct SubjectTopicsView: View {
           try? await Chii.shared.loadSubjectDetails(subjectId, offprints: false, social: true)
         }
       }
-      .presentationDetents([.medium, .large])
     }
     if topics.count == 0 {
       HStack {

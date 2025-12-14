@@ -116,6 +116,6 @@ struct ReportSheet: View {
           .disabled(submitting || comment.count > 2000)
         }
       }
-    }
+    }.presentationDetents([.medium, .large])
   }
 }

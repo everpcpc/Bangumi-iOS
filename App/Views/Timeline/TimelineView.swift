@@ -92,7 +92,6 @@ struct TimelineView: View {
       CreateCommentBoxSheet(type: .timeline(item.id)) {
         Task { await load() }
       }
-      .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showReportView) {
       ReportSheet(

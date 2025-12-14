@@ -226,11 +226,9 @@ struct CommentItemNormalView: View {
     }
     .sheet(isPresented: $showReplyBox) {
       CreateCommentBoxSheet(type: type, comment: comment)
-        .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showEditBox) {
       EditCommentBoxSheet(type: type, comment: comment)
-        .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showReportView) {
       switch type {
@@ -239,35 +237,29 @@ struct CommentItemNormalView: View {
           reportType: .episodeReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)",
           user: comment.user
         )
-        .presentationDetents([.medium, .large])
       case .character:
         ReportSheet(
           reportType: .characterReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)",
           user: comment.user
         )
-        .presentationDetents([.medium, .large])
       case .person:
         ReportSheet(
           reportType: .personReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)",
           user: comment.user
         )
-        .presentationDetents([.medium, .large])
       case .blog:
         ReportSheet(
           reportType: .blogReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)", user: comment.user
         )
-        .presentationDetents([.medium, .large])
       case .timeline:
         ReportSheet(
           reportType: .timelineReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)",
           user: comment.user
         )
-        .presentationDetents([.medium, .large])
       case .index:
         ReportSheet(
           reportType: .indexReply, itemId: comment.id, itemTitle: "评论 #\(idx+1)", user: comment.user
         )
-        .presentationDetents([.medium, .large])
       }
     }
     .alert("确认删除", isPresented: $showDeleteConfirm) {
@@ -404,11 +396,9 @@ struct CommentSubReplyNormalView: View {
     }
     .sheet(isPresented: $showReplyBox) {
       CreateCommentBoxSheet(type: type, comment: comment, reply: reply)
-        .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showEditBox) {
       EditCommentBoxSheet(type: type, comment: comment, reply: reply)
-        .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showReportView) {
       switch type {
@@ -417,37 +407,31 @@ struct CommentSubReplyNormalView: View {
           reportType: .episodeReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
           user: reply.user
         )
-        .presentationDetents([.medium, .large])
       case .character:
         ReportSheet(
           reportType: .characterReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
           user: reply.user
         )
-        .presentationDetents([.medium, .large])
       case .person:
         ReportSheet(
           reportType: .personReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
           user: reply.user
         )
-        .presentationDetents([.medium, .large])
       case .blog:
         ReportSheet(
           reportType: .blogReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
           user: reply.user
         )
-        .presentationDetents([.medium, .large])
       case .timeline:
         ReportSheet(
           reportType: .timelineReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
           user: reply.user
         )
-        .presentationDetents([.medium, .large])
       case .index:
         ReportSheet(
           reportType: .indexReply, itemId: reply.id, itemTitle: "回复 #\(idx+1)-\(subidx+1)",
           user: reply.user
         )
-        .presentationDetents([.medium, .large])
       }
     }
     .alert("确认删除", isPresented: $showDeleteConfirm) {

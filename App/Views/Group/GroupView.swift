@@ -152,7 +152,6 @@ struct GroupDetailView: View {
           try? await Chii.shared.loadGroupDetails(group.name)
         }
       }
-      .presentationDetents([.medium, .large])
     }
     .toolbar {
       ToolbarItem(placement: .topBarTrailing) {
@@ -293,7 +292,6 @@ struct GroupRecentTopicView: View {
             try? await Chii.shared.loadGroupDetails(group.name)
           }
         }
-        .presentationDetents([.medium, .large])
       }
       VStack {
         ForEach(group.recentTopics) { topic in

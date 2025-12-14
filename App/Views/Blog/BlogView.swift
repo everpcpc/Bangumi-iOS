@@ -111,7 +111,6 @@ struct BlogView: View {
           CreateCommentBoxSheet(type: .blog(blogId)) {
             Task { await load() }
           }
-          .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showIndexPicker) {
           IndexPickerSheet(
@@ -119,7 +118,6 @@ struct BlogView: View {
             itemId: blogId,
             itemTitle: title
           )
-          .presentationDetents([.medium, .large])
         }
       } else if refreshed {
         NotFoundView()

@@ -110,6 +110,7 @@ struct IndexPickerSheet: View {
         }
       }
     }
+    .presentationDetents([.medium, .large])
     .task {
       await loadUserIndexes()
     }

@@ -125,7 +125,6 @@ struct EpisodeView: View {
       CreateCommentBoxSheet(type: .episode(episodeId)) {
         Task { await load() }
       }
-      .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showIndexPicker) {
       IndexPickerSheet(
@@ -133,7 +132,6 @@ struct EpisodeView: View {
         itemId: episodeId,
         itemTitle: "章节详情"
       )
-      .presentationDetents([.medium, .large])
     }
     .handoff(url: shareLink, title: "章节详情")
   }

@@ -228,8 +228,13 @@ struct BBCodeEditor: View {
         onShowSizeInput: { showingSizeInput = true },
         onShowColorInput: { showingColorInput = true }
       )
-    }.frame(maxWidth: .infinity)
-    keyboardToolbarHostingController = UIHostingController(rootView: AnyView(toolbarView))
+    }
+    .frame(maxWidth: .infinity)
+    .background(.clear)
+
+    let hostingController = UIHostingController(rootView: AnyView(toolbarView))
+    hostingController.view.backgroundColor = .clear
+    keyboardToolbarHostingController = hostingController
   }
 
   var body: some View {
@@ -350,7 +355,7 @@ private struct BBCodeToolbarContent: View {
         Image(systemName: BBCodeType.emoji.icon)
           .frame(width: 12, height: 12)
       }
-      .popover(isPresented: $showingEmojiInput) {
+      .sheet(isPresented: $showingEmojiInput) {
         ScrollView {
           LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 8)) {
             ForEach(24..<126) { index in
@@ -367,7 +372,7 @@ private struct BBCodeToolbarContent: View {
           }
         }
         .padding()
-        .presentationCompactAdaptation(.popover)
+        .presentationDetents([.medium])
       }
       Divider()
       ForEach(BBCodeType.basic) { code in
