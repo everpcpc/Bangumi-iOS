@@ -53,12 +53,11 @@ struct GroupView: View {
 }
 
 struct GroupDetailView: View {
+  @Bindable var group: Group
   let width: CGFloat
 
   @AppStorage("shareDomain") var shareDomain: ShareDomain = .chii
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
-
-  @Bindable var group: Group
 
   @State private var showCreateTopic: Bool = false
 

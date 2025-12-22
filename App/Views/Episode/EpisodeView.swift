@@ -58,7 +58,7 @@ struct EpisodeView: View {
             SubjectTinyView(subject: subject.slim)
               .padding(.vertical, 8)
           }
-          EpisodeInfoView().environment(episode)
+          EpisodeInfoView(episode: episode)
         }
         Divider()
         if let desc = episode?.desc, !desc.isEmpty {
