@@ -51,8 +51,7 @@ struct ProgressListView: View {
     LazyVStack(alignment: .leading) {
       ForEach(sortedSubjects) { subject in
         CardView {
-          ProgressListItemView(subjectId: subject.subjectId)
-            .environment(subject)
+          ProgressListItemView(subject: subject, subjectId: subject.subjectId)
         }
       }
     }
@@ -63,11 +62,10 @@ struct ProgressListView: View {
 }
 
 struct ProgressListItemView: View {
+  @Bindable var subject: Subject
   let subjectId: Int
 
   @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
-
-  @Environment(Subject.self) var subject
 
   var body: some View {
     VStack(alignment: .leading, spacing: 4) {
@@ -85,7 +83,7 @@ struct ProgressListItemView: View {
               Text(subject.title(with: titlePreference))
                 .font(.headline)
                 .lineLimit(1)
-              ProgressSecondLineView()
+              ProgressSecondLineView(subject: subject)
             }
           }.buttonStyle(.scale)
 
@@ -93,12 +91,10 @@ struct ProgressListItemView: View {
 
           switch subject.typeEnum {
           case .anime, .real:
-            EpisodeRecentView(subjectId: subjectId, mode: .list)
-              .environment(subject)
+            EpisodeRecentView(subject: subject, mode: .list)
 
           case .book:
-            SubjectBookChaptersView(mode: .row)
-              .environment(subject)
+            SubjectBookChaptersView(subject: subject, mode: .row)
 
           default:
             Label(
@@ -151,8 +147,7 @@ struct ProgressListItemView: View {
 
   return ScrollView {
     LazyVStack(alignment: .leading) {
-      ProgressListItemView(subjectId: subject.subjectId)
-        .environment(subject)
+      ProgressListItemView(subject: subject, subjectId: subject.subjectId)
         .modelContainer(container)
     }.padding()
   }

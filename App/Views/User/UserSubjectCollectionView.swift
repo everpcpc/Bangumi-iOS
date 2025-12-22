@@ -1,18 +1,18 @@
 import SwiftUI
 
 struct UserSubjectCollectionView: View {
+  @Bindable var user: User
   let stype: SubjectType
   let ctypes: [CollectionType: Int]
 
   @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
-  @Environment(User.self) var user
-
   @State private var ctype: CollectionType
   @State private var refreshing = false
   @State private var subjects: [SlimSubjectDTO] = []
 
-  init(_ stype: SubjectType, _ ctypes: [CollectionType: Int]) {
+  init(user: User, stype: SubjectType, ctypes: [CollectionType: Int]) {
+    self.user = user
     self.stype = stype
     self.ctypes = ctypes
     self._ctype = State(initialValue: .collect)

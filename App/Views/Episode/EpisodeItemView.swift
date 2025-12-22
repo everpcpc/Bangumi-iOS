@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct EpisodeItemView: View {
-  @Environment(Episode.self) var episode
+  @Bindable var episode: Episode
 
   var body: some View {
     Text("\(episode.sort.episodeDisplay)")
@@ -20,10 +20,9 @@ struct EpisodeItemView: View {
       .episodeTrend(episode)
       .padding(2)
       .contextMenu {
-        EpisodeUpdateMenu().environment(episode)
+        EpisodeUpdateMenu(episode: episode)
       } preview: {
-        EpisodeInfoView()
-          .environment(episode)
+        EpisodeInfoView(episode: episode)
           .padding()
           .frame(idealWidth: 360)
       }
@@ -43,7 +42,7 @@ struct EpisodeItemView: View {
 
   return ScrollView {
     LazyVStack {
-      EpisodeItemView().environment(episodes.first!)
+      EpisodeItemView(episode: episodes.first!)
         .modelContainer(container)
     }.padding()
   }

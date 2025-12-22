@@ -6,7 +6,7 @@ struct EpisodeRowView: View {
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
   @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
-  @Environment(Episode.self) var episode
+  @Bindable var episode: Episode
 
   var body: some View {
     VStack(alignment: .leading) {
@@ -27,7 +27,7 @@ struct EpisodeRowView: View {
           }
         } else {
           Menu {
-            EpisodeUpdateMenu().environment(episode)
+            EpisodeUpdateMenu(episode: episode)
           } label: {
             if episode.typeEnum == .main {
               if episode.aired {
@@ -89,7 +89,7 @@ struct EpisodeRowView: View {
 
   return ScrollView {
     LazyVStack {
-      EpisodeRowView().environment(episodes.first!)
+      EpisodeRowView(episode: episodes.first!)
         .modelContainer(container)
     }.padding()
   }

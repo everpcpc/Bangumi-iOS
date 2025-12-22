@@ -7,7 +7,7 @@ struct SubjectLargeRowView: View {
 
   @Environment(\.modelContext) var modelContext
 
-  @Environment(Subject.self) var subject
+  @Bindable var subject: Subject
 
   var body: some View {
     HStack {
@@ -132,8 +132,9 @@ struct SubjectItemView: View {
 
   var body: some View {
     CardView {
-      SubjectLargeRowView()
-        .environment(subject)
+      if let subject = subject {
+        SubjectLargeRowView(subject: subject)
+      }
     }
   }
 }
@@ -150,8 +151,7 @@ struct SubjectItemView: View {
 
   return ScrollView {
     LazyVStack(alignment: .leading) {
-      SubjectLargeRowView()
-        .environment(subject)
+      SubjectLargeRowView(subject: subject)
     }.padding()
   }.modelContainer(container)
 }

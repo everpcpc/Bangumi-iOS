@@ -2,7 +2,7 @@ import SwiftUI
 
 struct UserIndexesView: View {
 
-  @Environment(User.self) var user
+  @Bindable var user: User
 
   @State private var indexes: [SlimIndexDTO] = []
 

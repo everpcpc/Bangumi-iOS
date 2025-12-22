@@ -2,7 +2,7 @@ import SwiftUI
 
 struct UserBlogsView: View {
 
-  @Environment(User.self) var user
+  @Bindable var user: User
 
   @State private var blogs: [SlimBlogEntryDTO] = []
 

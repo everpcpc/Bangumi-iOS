@@ -49,8 +49,9 @@ struct SearchCharacterItemView: View {
 
   var body: some View {
     CardView {
-      CharacterLargeRowView()
-        .environment(character)
+      if let character = character {
+        CharacterLargeRowView(character: character)
+      }
     }
   }
 }
@@ -76,8 +77,7 @@ struct SearchCharacterLocalView: View {
     LazyVStack {
       ForEach(characters) { character in
         CardView {
-          CharacterLargeRowView()
-            .environment(character)
+          CharacterLargeRowView(character: character)
         }
       }
     }

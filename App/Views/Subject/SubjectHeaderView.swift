@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct SubjectHeaderView: View {
-  @Environment(Subject.self) var subject
+  @Bindable var subject: Subject
 
   var type: SubjectType {
     subject.typeEnum
@@ -159,8 +159,7 @@ struct SubjectRankView: View {
 #Preview {
   ScrollView {
     LazyVStack(alignment: .leading) {
-      SubjectHeaderView()
-        .environment(Subject.previewBook)
+      SubjectHeaderView(subject: Subject.previewBook)
     }.padding()
   }
 }

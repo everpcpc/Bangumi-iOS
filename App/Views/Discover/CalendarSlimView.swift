@@ -76,8 +76,7 @@ struct CalendarSlimView: View {
               .padding(5)
               .background(item.weekday.color)
               .foregroundStyle(.white)
-              CalendarWeekdaySlimView()
-                .environment(item.calendar)
+              CalendarWeekdaySlimView(calendar: item.calendar)
             }
           }
           Text("今日上映 \(todayTotal) 部。共 \(todayWatchers) 人收看今日番组。")
@@ -91,7 +90,7 @@ struct CalendarSlimView: View {
 }
 
 struct CalendarWeekdaySlimView: View {
-  @Environment(BangumiCalendar.self) var calendar
+  @Bindable var calendar: BangumiCalendar
 
   var body: some View {
     HFlow(spacing: 0) {

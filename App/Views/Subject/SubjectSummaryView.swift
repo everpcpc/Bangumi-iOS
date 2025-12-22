@@ -4,7 +4,7 @@ import SwiftData
 import SwiftUI
 
 struct SubjectSummaryView: View {
-  @Environment(Subject.self) var subject
+  @Bindable var subject: Subject
 
   var metaTags: [Tag] {
     var result: [Tag] = []

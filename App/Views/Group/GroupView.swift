@@ -35,8 +35,7 @@ struct GroupView: View {
       if let group = group {
         GeometryReader { geometry in
           ScrollView {
-            GroupDetailView(width: geometry.size.width)
-              .environment(group)
+            GroupDetailView(group: group, width: geometry.size.width)
           }
         }
       } else if refreshed {
@@ -59,7 +58,7 @@ struct GroupDetailView: View {
   @AppStorage("shareDomain") var shareDomain: ShareDomain = .chii
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
 
-  @Environment(Group.self) var group
+  @Bindable var group: Group
 
   @State private var showCreateTopic: Bool = false
 
@@ -138,10 +137,8 @@ struct GroupDetailView: View {
           }
         }
       }
-      GroupRecentMemberView(width)
-        .environment(group)
-      GroupRecentTopicView()
-        .environment(group)
+      GroupRecentMemberView(group: group, width: width)
+      GroupRecentTopicView(group: group)
     }
     .padding(.horizontal, 8)
     .navigationTitle(group.title)
@@ -198,11 +195,11 @@ struct GroupDetailView: View {
 }
 
 struct GroupRecentMemberView: View {
+  @Bindable var group: Group
   let width: CGFloat
 
-  @Environment(Group.self) var group
-
-  init(_ width: CGFloat) {
+  init(group: Group, width: CGFloat) {
+    self.group = group
     self.width = width
   }
 
@@ -257,7 +254,7 @@ struct GroupRecentMemberView: View {
 }
 
 struct GroupRecentTopicView: View {
-  @Environment(Group.self) var group
+  @Bindable var group: Group
 
   @AppStorage("hideBlocklist") var hideBlocklist: Bool = false
   @AppStorage("blocklist") var blocklist: [Int] = []

@@ -63,8 +63,7 @@ struct CharacterView: View {
       if let character = character {
         ScrollView {
           VStack(alignment: .leading) {
-            CharacterDetailView()
-              .environment(character)
+            CharacterDetailView(character: character)
 
             /// comments
             if !isolationMode {
@@ -144,7 +143,7 @@ struct CharacterView: View {
 }
 
 struct CharacterDetailView: View {
-  @Environment(Character.self) var character
+  @Bindable var character: Character
 
   @State private var updating: Bool = false
 

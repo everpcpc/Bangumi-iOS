@@ -7,7 +7,7 @@ struct SubjectCollectionBoxView: View {
 
   @Environment(\.modelContext) var modelContext
   @Environment(\.dismiss) private var dismiss
-  @Environment(Subject.self) var subject
+  @Bindable var subject: Subject
 
   @State private var ctype: CollectionType = .none
   @State private var rate: Int = 0
@@ -228,7 +228,6 @@ struct SubjectCollectionBoxView: View {
   let subject = Subject.previewBook
   container.mainContext.insert(subject)
 
-  return SubjectCollectionBoxView()
-    .environment(subject)
+  return SubjectCollectionBoxView(subject: subject)
     .modelContainer(container)
 }

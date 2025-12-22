@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct UserGroupsView: View {
-  @Environment(User.self) var user
+  @Bindable var user: User
 
   @State private var refreshing = false
   @State private var groups: [SlimGroupDTO] = []

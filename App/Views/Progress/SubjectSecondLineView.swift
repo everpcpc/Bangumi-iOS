@@ -6,7 +6,7 @@ struct ProgressSecondLineView: View {
   @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
   @AppStorage("progressViewMode") var progressViewMode: ProgressViewMode = .tile
 
-  @Environment(Subject.self) var subject
+  @Bindable var subject: Subject
 
   var tagsCount: Int {
     switch progressViewMode {

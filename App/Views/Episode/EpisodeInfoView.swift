@@ -6,7 +6,7 @@ struct EpisodeInfoView: View {
   @AppStorage("isolationMode") var isolationMode: Bool = false
   @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
-  @Environment(Episode.self) var episode
+  @Bindable var episode: Episode
 
   func field(name: String, value: String) -> AttributedString {
     var text = AttributedString(name + ": ")
@@ -85,7 +85,7 @@ struct EpisodeInfoView: View {
   }
 
   return ScrollView {
-    EpisodeInfoView().environment(episodes.first!)
+    EpisodeInfoView(episode: episodes.first!)
       .modelContainer(container)
   }
 }

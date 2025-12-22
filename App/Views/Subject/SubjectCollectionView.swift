@@ -4,7 +4,7 @@ import SwiftData
 import SwiftUI
 
 struct SubjectCollectionView: View {
-  @Environment(Subject.self) var subject
+  @Bindable var subject: Subject
 
   @State private var edit: Bool = false
 
@@ -63,8 +63,7 @@ struct SubjectCollectionView: View {
           }
 
           if subject.typeEnum == .book {
-            SubjectBookChaptersView(mode: .large)
-              .environment(subject)
+            SubjectBookChaptersView(subject: subject, mode: .large)
           }
         }
       } else {
@@ -85,8 +84,7 @@ struct SubjectCollectionView: View {
       }
     }
     .sheet(isPresented: $edit) {
-      SubjectCollectionBoxView()
-        .environment(subject)
+      SubjectCollectionBoxView(subject: subject)
         .presentationDragIndicator(.visible)
     }
   }
@@ -100,8 +98,7 @@ struct SubjectCollectionView: View {
 
   return ScrollView {
     LazyVStack(alignment: .leading) {
-      SubjectCollectionView()
-        .environment(subject)
+      SubjectCollectionView(subject: subject)
     }.padding()
   }.modelContainer(container)
 }

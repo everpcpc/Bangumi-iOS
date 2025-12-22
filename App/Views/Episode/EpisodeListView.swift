@@ -140,7 +140,7 @@ struct EpisodeListDetailView: View {
     ScrollView {
       LazyVStack(spacing: 10) {
         ForEach(episodes) { item in
-          EpisodeRowView().environment(item)
+          EpisodeRowView(episode: item)
         }
       }.padding(.horizontal, 8)
     }.animation(.default, value: episodes)

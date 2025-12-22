@@ -106,7 +106,7 @@ struct UserView: View {
   var body: some View {
     Section {
       if let user = user {
-        UserDetailView().environment(user)
+        UserDetailView(user: user)
       } else if refreshed {
         NotFoundView()
       } else {
@@ -205,7 +205,7 @@ struct UserDetailView: View {
   @AppStorage("friendlist") var friendlist: [Int] = []
   @AppStorage("blocklist") var blocklist: [Int] = []
 
-  @Environment(User.self) var user
+  @Bindable var user: User
 
   var body: some View {
     ScrollView {
@@ -301,7 +301,7 @@ struct UserDetailView: View {
           }
         }
 
-        UserHomeView().environment(user)
+        UserHomeView(user: user)
       }.padding(.horizontal, 8)
     }
   }

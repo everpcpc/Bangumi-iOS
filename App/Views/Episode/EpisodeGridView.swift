@@ -71,8 +71,7 @@ struct EpisodeGridView: View {
     }.padding(.top, 5)
     HFlow(alignment: .center, spacing: 2) {
       ForEach(episodeMains) { episode in
-        EpisodeItemView()
-          .environment(episode)
+        EpisodeItemView(episode: episode)
       }
       if !episodeSps.isEmpty {
         Text("SP")
@@ -89,8 +88,7 @@ struct EpisodeGridView: View {
           .padding(2)
           .bold()
         ForEach(episodeSps) { episode in
-          EpisodeItemView()
-            .environment(episode)
+          EpisodeItemView(episode: episode)
         }
       }
     }

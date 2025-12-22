@@ -32,9 +32,8 @@ struct ChapterActions {
 }
 
 struct SubjectBookChaptersView: View {
+  @Bindable var subject: Subject
   let mode: BookChapterMode
-
-  @Environment(Subject.self) var subject
 
   @State private var inputEps: String = ""
   @State private var eps: Int? = nil
@@ -399,16 +398,12 @@ struct TileChapterView: View {
 
   return ScrollView {
     LazyVStack(alignment: .leading) {
-      SubjectBookChaptersView(mode: .large)
-        .environment(subject)
-      SubjectBookChaptersView(mode: .row)
-        .environment(subject)
+      SubjectBookChaptersView(subject: subject, mode: .large)
+      SubjectBookChaptersView(subject: subject, mode: .row)
       HStack(spacing: 8) {
-        SubjectBookChaptersView(mode: .tile)
-          .environment(subject)
+        SubjectBookChaptersView(subject: subject, mode: .tile)
         Spacer()
-        SubjectBookChaptersView(mode: .tile)
-          .environment(subject)
+        SubjectBookChaptersView(subject: subject, mode: .tile)
       }
     }.padding()
   }.modelContainer(container)

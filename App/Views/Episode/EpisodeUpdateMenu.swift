@@ -5,7 +5,7 @@ struct EpisodeUpdateMenu: View {
   @AppStorage("isolationMode") var isolationMode: Bool = false
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
 
-  @Environment(Episode.self) var episode
+  @Bindable var episode: Episode
 
   func updateSingle(episode: Episode, type: EpisodeCollectionType) {
     Task {

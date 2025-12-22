@@ -4,7 +4,7 @@ import SwiftUI
 struct PersonLargeRowView: View {
   @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
-  @Environment(Person.self) private var person
+  @Bindable var person: Person
 
   var body: some View {
     HStack(spacing: 8) {

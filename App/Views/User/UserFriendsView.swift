@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct UserFriendsView: View {
-  @Environment(User.self) var user
+  @Bindable var user: User
 
   @State private var refreshing = false
   @State private var users: [SlimUserDTO] = []

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct UserHomeView: View {
-  @Environment(User.self) var user
+  @Bindable var user: User
 
   func ctypes(_ stype: SubjectType) -> [CollectionType: Int] {
     var result: [CollectionType: Int] = [:]
@@ -23,47 +23,47 @@ struct UserHomeView: View {
             EmptyView()
 
           case .anime:
-            UserSubjectCollectionView(.anime, ctypes(.anime))
+            UserSubjectCollectionView(user: user, stype: .anime, ctypes: ctypes(.anime))
 
           case .blog:
             if let count = user.stats?.blog, count > 0 {
-              UserBlogsView()
+              UserBlogsView(user: user)
             }
 
           case .book:
-            UserSubjectCollectionView(.book, ctypes(.book))
+            UserSubjectCollectionView(user: user, stype: .book, ctypes: ctypes(.book))
 
           case .friend:
             if let count = user.stats?.friend, count > 0 {
-              UserFriendsView()
+              UserFriendsView(user: user)
             }
 
           case .game:
-            UserSubjectCollectionView(.game, ctypes(.game))
+            UserSubjectCollectionView(user: user, stype: .game, ctypes: ctypes(.game))
 
           case .group:
             if let count = user.stats?.group, count > 0 {
-              UserGroupsView()
+              UserGroupsView(user: user)
             }
 
           case .index:
             if let count = user.stats?.index.create, count > 0 {
-              UserIndexesView()
+              UserIndexesView(user: user)
             }
 
           case .mono:
             if let count = user.stats?.mono.character, count > 0 {
-              UserCharacterCollectionView()
+              UserCharacterCollectionView(user: user)
             }
             if let count = user.stats?.mono.person, count > 0 {
-              UserPersonCollectionView()
+              UserPersonCollectionView(user: user)
             }
 
           case .music:
-            UserSubjectCollectionView(.music, ctypes(.music))
+            UserSubjectCollectionView(user: user, stype: .music, ctypes: ctypes(.music))
 
           case .real:
-            UserSubjectCollectionView(.real, ctypes(.real))
+            UserSubjectCollectionView(user: user, stype: .real, ctypes: ctypes(.real))
           }
         }
       }

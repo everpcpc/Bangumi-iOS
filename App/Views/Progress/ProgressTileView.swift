@@ -67,8 +67,7 @@ struct ProgressTileView: View {
     LazyVGrid(columns: columns) {
       ForEach(sortedSubjects) { subject in
         CardView(padding: 8) {
-          ProgressTileItemView(subjectId: subject.subjectId, width: cardWidth)
-            .environment(subject)
+          ProgressTileItemView(subject: subject, subjectId: subject.subjectId, width: cardWidth)
             .frame(width: cardWidth)
         }.frame(width: cardWidth + 16)
       }
@@ -81,13 +80,13 @@ struct ProgressTileView: View {
 }
 
 struct ProgressTileItemView: View {
+  @Bindable var subject: Subject
   let subjectId: Int
   let width: CGFloat
 
   @AppStorage("subjectImageQuality") var subjectImageQuality: ImageQuality = .high
   @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
-  @Environment(Subject.self) var subject
   @Environment(\.modelContext) var modelContext
 
   var imageHeight: CGFloat {
@@ -110,18 +109,16 @@ struct ProgressTileItemView: View {
             Text(subject.title(with: titlePreference)).font(.headline)
           }.buttonStyle(.scale)
 
-          ProgressSecondLineView()
+          ProgressSecondLineView(subject: subject)
         }
 
         Spacer()
 
         switch subject.typeEnum {
         case .anime, .real:
-          EpisodeRecentView(subjectId: subjectId, mode: .tile)
-            .environment(subject)
+          EpisodeRecentView(subject: subject, mode: .tile)
         case .book:
-          SubjectBookChaptersView(mode: .tile)
-            .environment(subject)
+          SubjectBookChaptersView(subject: subject, mode: .tile)
 
         default:
           Label(
@@ -169,8 +166,7 @@ struct ProgressTileItemView: View {
   return ScrollView {
     LazyVStack(alignment: .leading) {
       CardView(padding: 8) {
-        ProgressTileItemView(subjectId: subject.subjectId, width: 320)
-          .environment(subject)
+        ProgressTileItemView(subject: subject, subjectId: subject.subjectId, width: 320)
           .modelContainer(container)
       }
     }.padding()

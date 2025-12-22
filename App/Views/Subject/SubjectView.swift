@@ -43,7 +43,7 @@ struct SubjectView: View {
   var body: some View {
     Section {
       if let subject = subject {
-        SubjectDetailView().environment(subject)
+        SubjectDetailView(subject: subject)
       } else if refreshed {
         NotFoundView()
       } else {
@@ -64,7 +64,7 @@ struct SubjectDetailView: View {
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
   @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
-  @Environment(Subject.self) var subject
+  @Bindable var subject: Subject
 
   @State private var showCreateTopic: Bool = false
   @State private var showIndexPicker: Bool = false
@@ -76,19 +76,17 @@ struct SubjectDetailView: View {
   var body: some View {
     ScrollView(showsIndicators: false) {
       VStack(alignment: .leading) {
-        SubjectHeaderView()
+        SubjectHeaderView(subject: subject)
 
         if isAuthenticated {
-          SubjectCollectionView()
-            .environment(subject)
+          SubjectCollectionView(subject: subject)
         }
 
         if subject.typeEnum == .anime || subject.typeEnum == .real {
           EpisodeGridView(subjectId: subject.subjectId)
         }
 
-        SubjectSummaryView()
-          .environment(subject)
+        SubjectSummaryView(subject: subject)
 
         if subject.typeEnum == .music {
           EpisodeDiscView(subjectId: subject.subjectId)
@@ -107,7 +105,7 @@ struct SubjectDetailView: View {
         SubjectIndexsView(subjectId: subject.subjectId, indexes: subject.indexes)
 
         if !isolationMode {
-          SubjectCollectsView().environment(subject)
+          SubjectCollectsView(subject: subject)
           SubjectReviewsView(subjectId: subject.subjectId, reviews: subject.reviews)
           SubjectTopicsView(subjectId: subject.subjectId, topics: subject.topics)
           SubjectCommentsView(

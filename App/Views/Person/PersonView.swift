@@ -63,8 +63,7 @@ struct PersonView: View {
       if let person = person {
         ScrollView {
           VStack(alignment: .leading) {
-            PersonDetailView()
-              .environment(person)
+            PersonDetailView(person: person)
 
             /// comments
             if !isolationMode {
@@ -144,7 +143,7 @@ struct PersonView: View {
 }
 
 struct PersonDetailView: View {
-  @Environment(Person.self) var person
+  @Bindable var person: Person
 
   @State private var updating: Bool = false
 

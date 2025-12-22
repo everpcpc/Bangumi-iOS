@@ -134,8 +134,7 @@ struct CalendarView: View {
           }.padding(.horizontal, 8)
           LazyVStack {
             ForEach(sortedCalendars) { calendar in
-              CalendarWeekdayView(width: geometry.size.width - 16)
-                .environment(calendar)
+              CalendarWeekdayView(width: geometry.size.width - 16, calendar: calendar)
                 .padding(.vertical, 10)
             }
           }.padding(.horizontal, 8)
@@ -154,8 +153,7 @@ struct CalendarView: View {
 
 struct CalendarWeekdayView: View {
   let width: CGFloat
-
-  @Environment(BangumiCalendar.self) var calendar
+  @Bindable var calendar: BangumiCalendar
 
   @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 

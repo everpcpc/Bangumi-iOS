@@ -3,7 +3,7 @@ import SwiftUI
 struct UserPersonCollectionView: View {
   @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
-  @Environment(User.self) var user
+  @Bindable var user: User
 
   @State private var refreshing = false
   @State private var persons: [SlimPersonDTO] = []

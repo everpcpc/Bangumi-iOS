@@ -113,8 +113,7 @@ struct CollectionListView: View {
           ScrollView {
             LazyVStack(alignment: .leading, spacing: 10) {
               ForEach(subjects, id: \.inner) { item in
-                CollectionRowView()
-                  .environment(item.inner)
+                CollectionRowView(subject: item.inner)
                   .onAppear {
                     Task {
                       await loadNextPage(idx: item.idx)

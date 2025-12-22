@@ -9,10 +9,9 @@ enum EpisodeRecentMode {
 }
 
 struct EpisodeRecentView: View {
-  let subjectId: Int
+  @Bindable var subject: Subject
   let mode: EpisodeRecentMode
 
-  @Environment(Subject.self) var subject
   @Environment(\.modelContext) var modelContext
 
   @Query private var episodes: [Episode] = []
@@ -52,9 +51,10 @@ struct EpisodeRecentView: View {
     }
   }
 
-  init(subjectId: Int, mode: EpisodeRecentMode) {
-    self.subjectId = subjectId
+  init(subject: Subject, mode: EpisodeRecentMode) {
+    self.subject = subject
     self.mode = mode
+    let subjectId = subject.subjectId
 
     let descriptor = FetchDescriptor<Episode>(
       predicate: #Predicate<Episode> {
@@ -71,18 +71,16 @@ struct EpisodeRecentView: View {
         if !recentEpisodes.isEmpty {
           HStack(spacing: 2) {
             ForEach(recentEpisodes) { episode in
-              EpisodeItemView()
-                .environment(episode)
+              EpisodeItemView(episode: episode)
             }
           }.font(.footnote)
         }
         HStack {
           Spacer()
           if let episode = nextEpisode {
-            EpisodeNextView()
-              .environment(episode)
+            EpisodeNextView(episode: episode)
           } else {
-            NavigationLink(value: NavDestination.subject(subjectId)) {
+            NavigationLink(value: NavDestination.subject(subject.subjectId)) {
               Label(progressText, systemImage: progressIcon)
                 .labelStyle(.compact)
                 .foregroundStyle(.secondary)
@@ -97,23 +95,21 @@ struct EpisodeRecentView: View {
         if !recentEpisodes.isEmpty {
           HStack(spacing: 2) {
             ForEach(recentEpisodes) { episode in
-              EpisodeItemView()
-                .environment(episode)
+              EpisodeItemView(episode: episode)
             }
           }.font(.footnote)
           Spacer(minLength: 0)
           if let episode = nextEpisode {
-            EpisodeNextView()
-              .environment(episode)
+            EpisodeNextView(episode: episode)
           } else {
-            NavigationLink(value: NavDestination.subject(subjectId)) {
+            NavigationLink(value: NavDestination.subject(subject.subjectId)) {
               Label(progressText, systemImage: progressIcon)
                 .labelStyle(.compact)
                 .foregroundStyle(.secondary)
             }.buttonStyle(.scale)
           }
         } else {
-          NavigationLink(value: NavDestination.subject(subjectId)) {
+          NavigationLink(value: NavDestination.subject(subject.subjectId)) {
             Label(progressText, systemImage: progressIcon)
               .foregroundStyle(.secondary)
           }.buttonStyle(.scale)
@@ -126,7 +122,7 @@ struct EpisodeRecentView: View {
 }
 
 struct EpisodeNextView: View {
-  @Environment(Episode.self) var episode
+  @Bindable var episode: Episode
 
   @State private var updating: Bool = false
 

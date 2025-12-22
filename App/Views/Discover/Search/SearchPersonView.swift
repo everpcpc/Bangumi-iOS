@@ -49,8 +49,9 @@ struct SearchPersonItemView: View {
 
   var body: some View {
     CardView {
-      PersonLargeRowView()
-        .environment(person)
+      if let person = person {
+        PersonLargeRowView(person: person)
+      }
     }
   }
 }
@@ -76,8 +77,7 @@ struct SearchPersonLocalView: View {
     LazyVStack {
       ForEach(persons) { person in
         CardView {
-          PersonLargeRowView()
-            .environment(person)
+          PersonLargeRowView(person: person)
         }
       }
     }

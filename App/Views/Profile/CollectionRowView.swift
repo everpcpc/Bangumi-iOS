@@ -4,7 +4,7 @@ import SwiftUI
 struct CollectionRowView: View {
   @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
-  @Environment(Subject.self) var subject
+  @Bindable var subject: Subject
 
   @Environment(\.modelContext) var modelContext
 
@@ -65,8 +65,7 @@ struct CollectionRowView: View {
 
   return ScrollView {
     LazyVStack(alignment: .leading) {
-      CollectionRowView()
-        .environment(subject)
+      CollectionRowView(subject: subject)
     }.padding().modelContainer(container)
   }
 }

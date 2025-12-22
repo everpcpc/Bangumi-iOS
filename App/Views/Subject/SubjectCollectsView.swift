@@ -4,7 +4,7 @@ struct SubjectCollectsView: View {
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
   @AppStorage("subjectCollectsFilterMode") var subjectCollectsFilterMode: FilterMode = .all
 
-  @Environment(Subject.self) var subject
+  @Bindable var subject: Subject
 
   @State private var isLoading: Bool = false
 
@@ -151,7 +151,7 @@ struct SubjectCollectsView: View {
 #Preview {
   ScrollView {
     LazyVStack(alignment: .leading) {
-      SubjectCollectsView().environment(Subject.previewAnime)
+      SubjectCollectsView(subject: Subject.previewAnime)
     }.padding()
   }
 }

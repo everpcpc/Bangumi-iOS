@@ -68,8 +68,7 @@ struct SubjectInfoboxView: View {
   var body: some View {
     ScrollView {
       if let subject = subject {
-        SubjectInfoboxDetailView()
-          .environment(subject)
+        SubjectInfoboxDetailView(subject: subject)
       }
     }
     .task {
@@ -89,7 +88,7 @@ struct SubjectInfoboxView: View {
 }
 
 struct SubjectInfoboxDetailView: View {
-  @Environment(Subject.self) private var subject
+  @Bindable var subject: Subject
 
   @State private var showVersion: [String: Bool] = [:]
   @State private var showFolded: Bool = false

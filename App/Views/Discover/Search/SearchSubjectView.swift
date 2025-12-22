@@ -61,8 +61,7 @@ struct SearchSubjectLocalView: View {
     LazyVStack {
       ForEach(subjects) { subject in
         CardView {
-          SubjectLargeRowView()
-            .environment(subject)
+          SubjectLargeRowView(subject: subject)
         }
       }
     }
