@@ -1,52 +1,113 @@
 import SwiftUI
 
 enum RakuenListMode: String, CaseIterable {
-  case trendingSubjectTopics = "trending_subject_topics"
-  case groupTopics = "group_topics"
+  case subjectTrending
+  case subjectLatest
+  case groupAll
+  case groupJoined
+  case groupCreated
+  case groupReplied
 
   var description: String {
     switch self {
-    case .trendingSubjectTopics:
-      return "热门条目讨论"
-    case .groupTopics:
+    case .subjectTrending:
+      return "热门"
+    case .subjectLatest:
+      return "最新"
+    case .groupAll:
+      return "全部"
+    case .groupJoined:
+      return "参加的"
+    case .groupCreated:
+      return "发表的"
+    case .groupReplied:
+      return "回复的"
+    }
+  }
+
+  var category: RakuenCategory {
+    switch self {
+    case .subjectTrending, .subjectLatest:
+      return .subject
+    case .groupAll, .groupJoined, .groupCreated, .groupReplied:
+      return .group
+    }
+  }
+
+  var subjectTopicMode: SubjectTopicFilterMode? {
+    switch self {
+    case .subjectTrending:
+      return .trending
+    case .subjectLatest:
+      return .latest
+    default:
+      return nil
+    }
+  }
+
+  var groupTopicMode: GroupTopicFilterMode? {
+    switch self {
+    case .groupAll:
+      return .all
+    case .groupJoined:
+      return .joined
+    case .groupCreated:
+      return .created
+    case .groupReplied:
+      return .replied
+    default:
+      return nil
+    }
+  }
+
+  var requiresLogin: Bool {
+    switch self {
+    case .groupJoined, .groupCreated, .groupReplied:
+      return true
+    default:
+      return false
+    }
+  }
+}
+
+enum RakuenCategory: String, CaseIterable {
+  case subject
+  case group
+
+  var description: String {
+    switch self {
+    case .subject:
+      return "条目讨论"
+    case .group:
       return "小组话题"
+    }
+  }
+
+  var modes: [RakuenListMode] {
+    switch self {
+    case .subject:
+      return [.subjectTrending, .subjectLatest]
+    case .group:
+      return [.groupAll, .groupJoined, .groupCreated, .groupReplied]
     }
   }
 }
 
 struct ChiiRakuenView: View {
-  @AppStorage("rakuenListMode") var rakuenListMode: RakuenListMode = .trendingSubjectTopics
+  @AppStorage("rakuenListMode") var rakuenListMode: RakuenListMode = .subjectTrending
+  @AppStorage("isAuthenticated") var isAuthenticated = false
 
   @State private var reloader = false
 
   var body: some View {
     ScrollView {
-      VStack {
+      VStack(spacing: 0) {
         HotGroupsView()
-        VStack(alignment: .leading, spacing: 5) {
-          HStack {
-            HStack(spacing: 2) {
-              Picker("", selection: $rakuenListMode) {
-                ForEach(RakuenListMode.allCases, id: \.self) { mode in
-                  Text(mode.description).tag(mode)
-                }
-              }
-              .pickerStyle(.segmented)
-            }
-            Spacer()
-          }.padding(.top, 8)
-          ZStack(alignment: .topLeading) {
-            RakuenSubjectTopicListView(mode: .trending, reloader: $reloader)
-              .opacity(rakuenListMode == .trendingSubjectTopics ? 1 : 0)
-              .allowsHitTesting(rakuenListMode == .trendingSubjectTopics)
-              .frame(maxWidth: .infinity, alignment: .leading)
-            RakuenGroupTopicListView(mode: .joined, reloader: $reloader)
-              .opacity(rakuenListMode == .groupTopics ? 1 : 0)
-              .allowsHitTesting(rakuenListMode == .groupTopics)
-              .frame(maxWidth: .infinity, alignment: .leading)
-          }
-          .frame(maxWidth: .infinity, alignment: .leading)
+        VStack(alignment: .leading, spacing: 8) {
+          modeSelectorView.padding(4)
+          contentView
         }
+        .padding(.top, 8)
       }.padding(.horizontal, 8)
     }
     .refreshable {
@@ -70,8 +131,10 @@ struct ChiiRakuenView: View {
 
           Menu {
             ForEach(GroupTopicFilterMode.allCases, id: \.self) { mode in
-              NavigationLink(value: NavDestination.rakuenGroupTopics(mode)) {
-                Text(mode.description)
+              if isAuthenticated || mode == .all {
+                NavigationLink(value: NavDestination.rakuenGroupTopics(mode)) {
+                  Text(mode.description)
+                }
               }
             }
           } label: {
@@ -81,8 +144,10 @@ struct ChiiRakuenView: View {
 
           Menu {
             ForEach(GroupFilterMode.allCases, id: \.self) { mode in
-              NavigationLink(value: NavDestination.groupList(mode)) {
-                Text(mode.description)
+              if isAuthenticated || mode == .all {
+                NavigationLink(value: NavDestination.groupList(mode)) {
+                  Text(mode.description)
+                }
               }
             }
           } label: {
@@ -91,6 +156,57 @@ struct ChiiRakuenView: View {
         } label: {
           Image(systemName: "ellipsis.circle")
         }
+      }
+    }
+    .onAppear {
+      if !isAuthenticated && rakuenListMode.requiresLogin {
+        rakuenListMode = .subjectTrending
+      }
+    }
+  }
+
+  private var modeSelectorView: some View {
+    ScrollView(.horizontal, showsIndicators: false) {
+      HStack(spacing: 16) {
+        ForEach(RakuenCategory.allCases, id: \.self) { category in
+          categorySection(category)
+        }
+      }
+    }.scrollClipDisabled()
+  }
+
+  private func categorySection(_ category: RakuenCategory) -> some View {
+    let availableModes = category.modes.filter { isAuthenticated || !$0.requiresLogin }
+    if availableModes.isEmpty {
+      return AnyView(EmptyView())
+    }
+    return AnyView(
+      HStack(spacing: 8) {
+        Text(category.description)
+          .font(.footnote)
+          .foregroundStyle(.secondary)
+          .padding(.trailing, 4)
+
+        ForEach(availableModes, id: \.self) { mode in
+          Button {
+            rakuenListMode = mode
+          } label: {
+            Text(mode.description)
+          }.adaptiveButtonStyle(rakuenListMode == mode ? .borderedProminent : .bordered)
+        }
+      })
+  }
+
+  @ViewBuilder
+  private var contentView: some View {
+    switch rakuenListMode.category {
+    case .subject:
+      if let mode = rakuenListMode.subjectTopicMode {
+        CachedSubjectTopicListView(mode: mode, reloader: $reloader)
+      }
+    case .group:
+      if let mode = rakuenListMode.groupTopicMode {
+        CachedGroupTopicListView(mode: mode, reloader: $reloader)
       }
     }
   }
