@@ -23,9 +23,10 @@ struct TrendingSubjectView: View {
   var body: some View {
     LazyVStack(spacing: 24) {
       ForEach(SubjectType.allTypes) { st in
-        TrendingSubjectTypeView(type: st, width: width)
+        TrendingSubjectTypeView(type: st, width: width - 16)
       }
     }
+    .padding(.horizontal, 8)
     .task(load)
   }
 }
@@ -139,8 +140,8 @@ struct TrendingSubjectTypeView: View {
                 .imageNavLink(item.subject.link)
                 .subjectPreview(item.subject)
             }
-          }
-        }
+          }.scrollTargetLayout()
+        }.scrollTargetBehavior(.viewAligned)
       }
     }.animation(.default, value: items)
   }

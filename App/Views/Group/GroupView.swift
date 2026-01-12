@@ -1,4 +1,5 @@
 import BBCode
+import OSLog
 import SwiftData
 import SwiftUI
 
@@ -7,15 +8,15 @@ struct GroupView: View {
 
   @State private var refreshed: Bool = false
 
-  @Query private var groups: [Group]
-  var group: Group? { groups.first }
+  @Query private var groups: [ChiiGroup]
+  var group: ChiiGroup? { groups.first }
 
   init(name: String) {
     self.name = name
-    let predicate = #Predicate<Group> {
+    let predicate = #Predicate<ChiiGroup> {
       $0.name == name
     }
-    _groups = Query(filter: predicate, sort: \Group.groupId)
+    _groups = Query(filter: predicate, sort: \ChiiGroup.groupId)
   }
 
   func refresh() async {
@@ -53,7 +54,7 @@ struct GroupView: View {
 }
 
 struct GroupDetailView: View {
-  @Bindable var group: Group
+  @Bindable var group: ChiiGroup
   let width: CGFloat
 
   @AppStorage("shareDomain") var shareDomain: ShareDomain = .chii
@@ -79,24 +80,13 @@ struct GroupDetailView: View {
   }
 
   private func togglePin() {
-    if isPinned {
-      // Unpin
-      if let cache = pinCache {
-        cache.items.removeAll { $0.id == group.groupId }
-        cache.updatedAt = Date()
-        try? modelContext.save()
+    Task {
+      do {
+        let db = try await Chii.shared.getDB()
+        try await db.togglePinRakuenGroupCache(group: group.slim)
+      } catch {
+        Logger.app.error("Failed to toggle pin: \(error)")
       }
-    } else {
-      // Pin
-      let slimGroup = group.slim
-      if let cache = pinCache {
-        cache.items.insert(slimGroup, at: 0)
-        cache.updatedAt = Date()
-      } else {
-        let cache = RakuenGroupCache(id: "pin", items: [slimGroup])
-        modelContext.insert(cache)
-      }
-      try? modelContext.save()
     }
   }
 
@@ -104,7 +94,9 @@ struct GroupDetailView: View {
     Task {
       do {
         try await Chii.shared.joinGroup(group.name)
-        group.joinedAt = Int(Date().timeIntervalSince1970)
+        let joinedAt = Int(Date().timeIntervalSince1970)
+        let db = try await Chii.shared.getDB()
+        try await db.updateGroupJoinStatus(name: group.name, joinedAt: joinedAt)
       } catch {
         Notifier.shared.alert(error: error)
       }
@@ -115,7 +107,8 @@ struct GroupDetailView: View {
     Task {
       do {
         try await Chii.shared.leaveGroup(group.name)
-        group.joinedAt = 0
+        let db = try await Chii.shared.getDB()
+        try await db.updateGroupJoinStatus(name: group.name, joinedAt: 0)
       } catch {
         Notifier.shared.alert(error: error)
       }
@@ -238,10 +231,10 @@ struct GroupDetailView: View {
 }
 
 struct GroupRecentMemberView: View {
-  @Bindable var group: Group
+  @Bindable var group: ChiiGroup
   let width: CGFloat
 
-  init(group: Group, width: CGFloat) {
+  init(group: ChiiGroup, width: CGFloat) {
     self.group = group
     self.width = width
   }
@@ -297,7 +290,7 @@ struct GroupRecentMemberView: View {
 }
 
 struct GroupRecentTopicView: View {
-  @Bindable var group: Group
+  @Bindable var group: ChiiGroup
 
   @AppStorage("hideBlocklist") var hideBlocklist: Bool = false
   @AppStorage("blocklist") var blocklist: [Int] = []

@@ -4,11 +4,27 @@ import SwiftData
 
 @ModelActor
 actor DatabaseOperator {
+  private var pendingCommitTask: Task<Void, Never>?
 }
 
 // MARK: - basic
 extension DatabaseOperator {
-  public func commit() throws {
+  public func commit() {
+    pendingCommitTask?.cancel()
+    pendingCommitTask = Task {
+      try? await Task.sleep(for: .milliseconds(500))
+      guard !Task.isCancelled else { return }
+      do {
+        try modelContext.save()
+      } catch {
+        Logger.app.error("Failed to commit: \(error)")
+      }
+    }
+  }
+
+  public func commitImmediately() throws {
+    pendingCommitTask?.cancel()
+    pendingCommitTask = nil
     try modelContext.save()
   }
 
@@ -95,9 +111,9 @@ extension DatabaseOperator {
     return person
   }
 
-  public func getGroup(_ name: String) throws -> Group? {
+  public func getGroup(_ name: String) throws -> ChiiGroup? {
     let group = try self.fetchOne(
-      predicate: #Predicate<Group> {
+      predicate: #Predicate<ChiiGroup> {
         $0.name == name
       }
     )
@@ -182,6 +198,51 @@ extension DatabaseOperator {
     return try modelContext.fetchCount(descriptor)
   }
 
+  public func fetchProgressCounts() throws -> [SubjectType: Int] {
+    var counts: [SubjectType: Int] = [:]
+    let doingType = CollectionType.doing.rawValue
+    for type in SubjectType.progressTypes {
+      let tvalue = type.rawValue
+      let desc = FetchDescriptor<Subject>(
+        predicate: #Predicate<Subject> {
+          (tvalue == 0 || $0.type == tvalue) && $0.ctype == doingType
+        })
+      counts[type] = try modelContext.fetchCount(desc)
+    }
+    return counts
+  }
+
+  public func fetchProgressSubjectIds(
+    progressTab: SubjectType,
+    progressSortMode: ProgressSortMode,
+    search: String
+  ) throws -> [Int] {
+    let stype = progressTab.rawValue
+    let doingType = CollectionType.doing.rawValue
+    let descriptor = FetchDescriptor<Subject>(
+      predicate: #Predicate<Subject> {
+        (stype == 0 || $0.type == stype) && $0.ctype == doingType
+          && (search == "" || $0.name.localizedStandardContains(search)
+            || $0.alias.localizedStandardContains(search))
+      },
+      sortBy: [
+        SortDescriptor(\.collectedAt, order: .reverse)
+      ])
+
+    let subjects = try modelContext.fetch(descriptor)
+
+    switch progressSortMode {
+    case .airTime:
+      return subjects.sorted { subject1, subject2 in
+        let days1 = subject1.nextEpisodeDays(context: modelContext)
+        let days2 = subject2.nextEpisodeDays(context: modelContext)
+        return Subject.compareDays(days1, days2, subject1, subject2)
+      }.map(\.subjectId)
+    case .collectedAt:
+      return subjects.map(\.subjectId)
+    }
+  }
+
   public func exportSubjectsToCSV(
     subjectType: SubjectType?,
     collectionType: CollectionType?,
@@ -251,7 +312,7 @@ extension DatabaseOperator {
       break
     }
 
-    try self.commit()
+    self.commit()
   }
 
   public func updateSubjectCollection(
@@ -311,7 +372,7 @@ extension DatabaseOperator {
     }
     subject.interest?.updatedAt = now - 1
     subject.collectedAt = now - 1
-    try self.commit()
+    self.commit()
   }
 
   public func updateEpisodeCollection(
@@ -347,7 +408,7 @@ extension DatabaseOperator {
     }
     episode.subject?.interest?.updatedAt = now - 1
     episode.subject?.collectedAt = now - 1
-    try self.commit()
+    self.commit()
   }
 
   public func updateCharacterCollection(characterId: Int, collectedAt: Int) throws {
@@ -360,7 +421,7 @@ extension DatabaseOperator {
       return
     }
     character.collectedAt = collectedAt
-    try self.commit()
+    self.commit()
   }
 
   public func updatePersonCollection(personId: Int, collectedAt: Int) throws {
@@ -373,13 +434,13 @@ extension DatabaseOperator {
       return
     }
     person.collectedAt = collectedAt
-    try self.commit()
+    self.commit()
   }
 }
 
 // MARK: - ensure
 extension DatabaseOperator {
-  public func ensureUser(_ item: UserDTO) throws -> User {
+  public func ensureUser(_ item: UserDTO) throws -> (User, Bool) {
     let uid = item.id
     let fetched = try self.fetchOne(
       predicate: #Predicate<User> {
@@ -387,11 +448,11 @@ extension DatabaseOperator {
       })
     if let user = fetched {
       user.update(item)
-      return user
+      return (user, false)
     }
     let user = User(item)
     modelContext.insert(user)
-    return user
+    return (user, true)
   }
 
   public func ensureCalendarItem(_ weekday: Int, items: [BangumiCalendarItemDTO])
@@ -430,7 +491,7 @@ extension DatabaseOperator {
     return trending
   }
 
-  public func ensureSubject(_ item: SubjectDTO) throws -> Subject {
+  public func ensureSubject(_ item: SubjectDTO) throws -> (Subject, Bool) {
     let sid = item.id
     let fetched = try self.fetchOne(
       predicate: #Predicate<Subject> {
@@ -438,14 +499,14 @@ extension DatabaseOperator {
       })
     if let subject = fetched {
       subject.update(item)
-      return subject
+      return (subject, false)
     }
     let subject = Subject(item)
     modelContext.insert(subject)
-    return subject
+    return (subject, true)
   }
 
-  public func ensureSubject(_ item: SlimSubjectDTO) throws -> Subject {
+  public func ensureSubject(_ item: SlimSubjectDTO) throws -> (Subject, Bool) {
     let sid = item.id
     let fetched = try self.fetchOne(
       predicate: #Predicate<Subject> {
@@ -453,14 +514,14 @@ extension DatabaseOperator {
       })
     if let subject = fetched {
       subject.update(item)
-      return subject
+      return (subject, false)
     }
     let subject = Subject(item)
     modelContext.insert(subject)
-    return subject
+    return (subject, true)
   }
 
-  public func ensureEpisode(_ item: EpisodeDTO) throws -> Episode {
+  public func ensureEpisode(_ item: EpisodeDTO) throws -> (Episode, Bool) {
     let eid = item.id
     let fetched = try self.fetchOne(
       predicate: #Predicate<Episode> {
@@ -470,35 +531,35 @@ extension DatabaseOperator {
       episode.update(item)
       if let slim = item.subject {
         if let old = episode.subject, old.subjectId == slim.id {
-          return episode
+          return (episode, false)
         }
-        let subject = try self.ensureSubject(slim)
+        let (subject, _) = try self.ensureSubject(slim)
         episode.subject = subject
       } else {
         let subject = try self.getSubject(item.subjectID)
         if let new = subject {
           if let old = episode.subject, old.subjectId == new.subjectId {
-            return episode
+            return (episode, false)
           }
           episode.subject = new
         }
       }
-      return episode
+      return (episode, false)
     } else {
       let episode = Episode(item)
       modelContext.insert(episode)
       if let slim = item.subject {
-        let subject = try self.ensureSubject(slim)
+        let (subject, _) = try self.ensureSubject(slim)
         episode.subject = subject
       } else {
         let subject = try self.getSubject(item.subjectID)
         episode.subject = subject
       }
-      return episode
+      return (episode, true)
     }
   }
 
-  public func ensureCharacter(_ item: CharacterDTO) throws -> Character {
+  public func ensureCharacter(_ item: CharacterDTO) throws -> (Character, Bool) {
     let cid = item.id
     let fetched = try self.fetchOne(
       predicate: #Predicate<Character> {
@@ -506,14 +567,14 @@ extension DatabaseOperator {
       })
     if let character = fetched {
       character.update(item)
-      return character
+      return (character, false)
     }
     let character = Character(item)
     modelContext.insert(character)
-    return character
+    return (character, true)
   }
 
-  public func ensureCharacter(_ item: SlimCharacterDTO) throws -> Character {
+  public func ensureCharacter(_ item: SlimCharacterDTO) throws -> (Character, Bool) {
     let cid = item.id
     let fetched = try self.fetchOne(
       predicate: #Predicate<Character> {
@@ -521,14 +582,14 @@ extension DatabaseOperator {
       })
     if let character = fetched {
       character.update(item)
-      return character
+      return (character, false)
     }
     let character = Character(item)
     modelContext.insert(character)
-    return character
+    return (character, true)
   }
 
-  public func ensurePerson(_ item: PersonDTO) throws -> Person {
+  public func ensurePerson(_ item: PersonDTO) throws -> (Person, Bool) {
     let pid = item.id
     let fetched = try self.fetchOne(
       predicate: #Predicate<Person> {
@@ -536,14 +597,14 @@ extension DatabaseOperator {
       })
     if let person = fetched {
       person.update(item)
-      return person
+      return (person, false)
     }
     let person = Person(item)
     modelContext.insert(person)
-    return person
+    return (person, true)
   }
 
-  public func ensurePerson(_ item: SlimPersonDTO) throws -> Person {
+  public func ensurePerson(_ item: SlimPersonDTO) throws -> (Person, Bool) {
     let pid = item.id
     let fetched = try self.fetchOne(
       predicate: #Predicate<Person> {
@@ -551,33 +612,35 @@ extension DatabaseOperator {
       })
     if let person = fetched {
       person.update(item)
-      return person
+      return (person, false)
     }
     let person = Person(item)
     modelContext.insert(person)
-    return person
+    return (person, true)
   }
 
-  public func ensureGroup(_ item: GroupDTO) throws -> Group {
+  public func ensureGroup(_ item: GroupDTO) throws -> (ChiiGroup, Bool) {
     let gid = item.id
     let fetched = try self.fetchOne(
-      predicate: #Predicate<Group> {
+      predicate: #Predicate<ChiiGroup> {
         $0.groupId == gid
       })
     if let group = fetched {
       group.update(item)
-      return group
+      return (group, false)
     }
-    let group = Group(item)
+    let group = ChiiGroup(item)
     modelContext.insert(group)
-    return group
+    return (group, true)
   }
 }
 
 // MARK: - save
 extension DatabaseOperator {
-  public func saveUser(_ item: UserDTO) throws {
-    let _ = try self.ensureUser(item)
+  @discardableResult
+  public func saveUser(_ item: UserDTO) throws -> Bool {
+    let (_, created) = try self.ensureUser(item)
+    return created
   }
 
   public func saveCalendarItem(weekday: Int, items: [BangumiCalendarItemDTO]) throws {
@@ -588,8 +651,10 @@ extension DatabaseOperator {
     _ = try self.ensureTrendingSubject(type, items: items)
   }
 
-  public func saveEpisode(_ item: EpisodeDTO) throws {
-    let _ = try self.ensureEpisode(item)
+  @discardableResult
+  public func saveEpisode(_ item: EpisodeDTO) throws -> Bool {
+    let (_, created) = try self.ensureEpisode(item)
+    return created
   }
 
   public func deleteEpisode(_ episodeId: Int) throws {
@@ -602,12 +667,16 @@ extension DatabaseOperator {
 
 // MARK: - save subject
 extension DatabaseOperator {
-  public func saveSubject(_ item: SubjectDTO) throws {
-    let _ = try self.ensureSubject(item)
+  @discardableResult
+  public func saveSubject(_ item: SubjectDTO) throws -> Bool {
+    let (_, created) = try self.ensureSubject(item)
+    return created
   }
 
-  public func saveSubject(_ item: SlimSubjectDTO) throws {
-    let _ = try self.ensureSubject(item)
+  @discardableResult
+  public func saveSubject(_ item: SlimSubjectDTO) throws -> Bool {
+    let (_, created) = try self.ensureSubject(item)
+    return created
   }
 
   public func saveSubjectCharacters(subjectId: Int, items: [SubjectCharacterDTO]) throws {
@@ -683,12 +752,16 @@ extension DatabaseOperator {
 
 // MARK: - save character
 extension DatabaseOperator {
-  public func saveCharacter(_ item: CharacterDTO) throws {
-    let _ = try self.ensureCharacter(item)
+  @discardableResult
+  public func saveCharacter(_ item: CharacterDTO) throws -> Bool {
+    let (_, created) = try self.ensureCharacter(item)
+    return created
   }
 
-  public func saveCharacter(_ item: SlimCharacterDTO) throws {
-    let _ = try self.ensureCharacter(item)
+  @discardableResult
+  public func saveCharacter(_ item: SlimCharacterDTO) throws -> Bool {
+    let (_, created) = try self.ensureCharacter(item)
+    return created
   }
 
   public func saveCharacterCasts(characterId: Int, items: [CharacterCastDTO]) throws {
@@ -708,12 +781,16 @@ extension DatabaseOperator {
 
 // MARK: - save person
 extension DatabaseOperator {
-  public func savePerson(_ item: PersonDTO) throws {
-    let _ = try self.ensurePerson(item)
+  @discardableResult
+  public func savePerson(_ item: PersonDTO) throws -> Bool {
+    let (_, created) = try self.ensurePerson(item)
+    return created
   }
 
-  public func savePerson(_ item: SlimPersonDTO) throws {
-    let _ = try self.ensurePerson(item)
+  @discardableResult
+  public func savePerson(_ item: SlimPersonDTO) throws -> Bool {
+    let (_, created) = try self.ensurePerson(item)
+    return created
   }
 
   public func savePersonCasts(personId: Int, items: [PersonCastDTO]) throws {
@@ -740,8 +817,10 @@ extension DatabaseOperator {
 
 // MARK: - save group
 extension DatabaseOperator {
-  public func saveGroup(_ item: GroupDTO) throws {
-    let _ = try self.ensureGroup(item)
+  @discardableResult
+  public func saveGroup(_ item: GroupDTO) throws -> Bool {
+    let (_, created) = try self.ensureGroup(item)
+    return created
   }
 
   public func saveGroupRecentMembers(groupName: String, items: [GroupMemberDTO]) throws {
@@ -762,6 +841,110 @@ extension DatabaseOperator {
     let group = try self.getGroup(groupName)
     if group?.recentTopics != items {
       group?.recentTopics = items
+    }
+  }
+}
+
+// MARK: - Draft & Cache
+extension DatabaseOperator {
+  public func saveDraft(type: String, content: String, id: PersistentIdentifier? = nil) throws
+    -> PersistentIdentifier
+  {
+    if let id = id, let draft = modelContext.model(for: id) as? Draft {
+      draft.update(content: content)
+      self.commit()
+      return id
+    }
+
+    let fetched = try self.fetchOne(
+      predicate: #Predicate<Draft> {
+        $0.type == type && $0.content == content
+      })
+    if let draft = fetched {
+      return draft.id
+    }
+
+    let draft = Draft(type: type, content: content)
+    modelContext.insert(draft)
+    self.commit()
+    return draft.persistentModelID
+  }
+
+  public func deleteDraft(_ draft: Draft) {
+    modelContext.delete(draft)
+    self.commit()
+  }
+
+  public func clearDrafts() throws {
+    try modelContext.delete(model: Draft.self)
+    self.commit()
+  }
+
+  public func saveRakuenSubjectTopicCache(mode: String, items: [SubjectTopicDTO]) throws {
+    let fetched = try self.fetchOne(
+      predicate: #Predicate<RakuenSubjectTopicCache> { $0.mode == mode }
+    )
+    if let cache = fetched {
+      cache.items = items
+      cache.updatedAt = Date()
+    } else {
+      let cache = RakuenSubjectTopicCache(mode: mode, items: items)
+      modelContext.insert(cache)
+    }
+    self.commit()
+  }
+
+  public func saveRakuenGroupTopicCache(mode: String, items: [GroupTopicDTO]) throws {
+    let fetched = try self.fetchOne(
+      predicate: #Predicate<RakuenGroupTopicCache> { $0.mode == mode }
+    )
+    if let cache = fetched {
+      cache.items = items
+      cache.updatedAt = Date()
+    } else {
+      let cache = RakuenGroupTopicCache(mode: mode, items: items)
+      modelContext.insert(cache)
+    }
+    self.commit()
+  }
+
+  public func saveRakuenGroupCache(id: String, items: [SlimGroupDTO]) throws {
+    let fetched = try self.fetchOne(
+      predicate: #Predicate<RakuenGroupCache> { $0.id == id }
+    )
+    if let cache = fetched {
+      cache.items = items
+      cache.updatedAt = Date()
+    } else {
+      let cache = RakuenGroupCache(id: id, items: items)
+      modelContext.insert(cache)
+    }
+    self.commit()
+  }
+
+  public func togglePinRakuenGroupCache(group: SlimGroupDTO) throws {
+    let fetched = try self.fetchOne(
+      predicate: #Predicate<RakuenGroupCache> { $0.id == "pin" }
+    )
+    if let cache = fetched {
+      if cache.items.contains(where: { $0.id == group.id }) {
+        cache.items.removeAll { $0.id == group.id }
+      } else {
+        cache.items.insert(group, at: 0)
+      }
+      cache.updatedAt = Date()
+    } else {
+      let cache = RakuenGroupCache(id: "pin", items: [group])
+      modelContext.insert(cache)
+    }
+    self.commit()
+  }
+
+  public func updateGroupJoinStatus(name: String, joinedAt: Int) throws {
+    let group = try self.getGroup(name)
+    if let group = group {
+      group.joinedAt = joinedAt
+      self.commit()
     }
   }
 }

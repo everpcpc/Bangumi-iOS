@@ -53,41 +53,29 @@ struct ContentView: View {
   }
 
   var body: some View {
-    ZStack {
+    Group {
       if #available(iOS 18.0, *) {
         MainView()
       } else {
         OldTabView()
       }
-
-      VStack(alignment: .center) {
-        Spacer()
-        ForEach($notifier.notifications, id: \.self) { $notification in
-          Text(notification)
-            .padding(8)
-            .foregroundStyle(.white)
-            .background(.accent)
-            .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 10)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-        }
+    }
+    .overlay {
+      NotificationOverlayView()
+    }
+    .alert("ERROR", isPresented: $notifier.hasAlert) {
+      Button("OK") {
+        Notifier.shared.vanishError()
       }
-      .animation(.default, value: notifier.notifications)
-      .padding(.horizontal, 8)
-      .padding(.bottom, 64)
-      .alert("ERROR", isPresented: $notifier.hasAlert) {
-        Button("OK") {
-          Notifier.shared.vanishError()
-        }
-        Button("Copy") {
-          UIPasteboard.general.string = notifier.currentError?.description
-          Notifier.shared.notify(message: "已复制")
-        }
-      } message: {
-        if let error = notifier.currentError {
-          Text(verbatim: String(describing: error))
-        } else {
-          Text("Unknown Error")
-        }
+      Button("Copy") {
+        UIPasteboard.general.string = notifier.currentError?.description
+        Notifier.shared.notify(message: "已复制")
+      }
+    } message: {
+      if let error = notifier.currentError {
+        Text(verbatim: String(describing: error))
+      } else {
+        Text("Unknown Error")
       }
     }
     .overlay(
