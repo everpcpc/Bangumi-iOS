@@ -40,8 +40,6 @@ struct ProgressTileItemContentView: View {
   @AppStorage("subjectImageQuality") var subjectImageQuality: ImageQuality = .high
   @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
-  @Environment(\.modelContext) var modelContext
-
   var body: some View {
     let subjectId = subject.subjectId
     VStack(alignment: .leading, spacing: 4) {
@@ -61,8 +59,7 @@ struct ProgressTileItemContentView: View {
           NavigationLink(value: NavDestination.subject(subjectId)) {
             Text(subject.title(with: titlePreference))
               .font(.headline)
-              .lineLimit(2)
-              .fixedSize(horizontal: false, vertical: true)
+              .lineLimit(1)
           }.buttonStyle(.scale)
 
           ProgressSecondLineView(subject: subject)
