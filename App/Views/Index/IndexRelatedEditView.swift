@@ -7,13 +7,23 @@ struct IndexRelatedAddSheet: View {
   let onSave: () -> Void
 
   @State private var selectedCategory: IndexRelatedCategory = .subject
-  @State private var subjectId: String = ""
+  @State private var relatedId: String = ""
   @State private var order: String = ""
   @State private var comment: String = ""
   @State private var isSubmitting = false
+  @State private var showSearch = false
+
+  private var supportsSearch: Bool {
+    switch selectedCategory {
+    case .subject, .character, .person:
+      return true
+    default:
+      return false
+    }
+  }
 
   func submit() async {
-    guard let sid = Int(subjectId), !subjectId.isEmpty else {
+    guard let rid = Int(relatedId), !relatedId.isEmpty else {
       Notifier.shared.alert(message: "请输入有效的 ID")
       return
     }
@@ -23,7 +33,7 @@ struct IndexRelatedAddSheet: View {
       _ = try await Chii.shared.putIndexRelated(
         indexId: indexId,
         cat: selectedCategory,
-        sid: sid,
+        sid: rid,
         order: order.isEmpty ? nil : Int(order),
         comment: comment.isEmpty ? nil : comment,
       )
@@ -45,8 +55,17 @@ struct IndexRelatedAddSheet: View {
               Text(cat.title).tag(cat)
             }
           }
-          TextField("ID", text: $subjectId)
-            .keyboardType(.numberPad)
+          HStack {
+            TextField("ID", text: $relatedId)
+              .keyboardType(.numberPad)
+            if supportsSearch {
+              Button {
+                showSearch = true
+              } label: {
+                Image(systemName: "magnifyingglass")
+              }
+            }
+          }
         } header: {
           Text("必填")
         }
@@ -66,6 +85,14 @@ struct IndexRelatedAddSheet: View {
             }
         } header: {
           Text("可选")
+        }
+
+        if let rid = Int(relatedId), !relatedId.isEmpty {
+          Section {
+            IndexRelatedPreviewView(category: selectedCategory, relatedId: rid)
+          } header: {
+            Text("预览")
+          }
         }
       }
       .navigationTitle("添加关联内容")
@@ -87,7 +114,25 @@ struct IndexRelatedAddSheet: View {
           } label: {
             Label("添加", systemImage: "plus")
           }
-          .disabled(isSubmitting || subjectId.isEmpty)
+          .disabled(isSubmitting || relatedId.isEmpty)
+        }
+      }
+      .sheet(isPresented: $showSearch) {
+        switch selectedCategory {
+        case .subject:
+          SearchSubjectPickerView { selectedId in
+            relatedId = String(selectedId)
+          }
+        case .character:
+          SearchCharacterPickerView { selectedId in
+            relatedId = String(selectedId)
+          }
+        case .person:
+          SearchPersonPickerView { selectedId in
+            relatedId = String(selectedId)
+          }
+        default:
+          EmptyView()
         }
       }
     }

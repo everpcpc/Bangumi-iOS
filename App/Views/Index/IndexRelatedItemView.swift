@@ -219,6 +219,7 @@ struct IndexRelatedItemView: View {
             }
             Spacer(minLength: 0)
           }
+
         case .groupTopic:
           HStack(alignment: .top) {
             if let topic = item.groupTopic, let creator = topic.creator {
@@ -269,6 +270,7 @@ struct IndexRelatedItemView: View {
             }
             Spacer(minLength: 0)
           }
+
         case .subjectTopic:
           HStack(alignment: .top) {
             if let topic = item.subjectTopic, let creator = topic.creator {
@@ -325,6 +327,7 @@ struct IndexRelatedItemView: View {
             Spacer(minLength: 0)
           }
         }
+
         if isOwner {
           Divider()
           HStack {
