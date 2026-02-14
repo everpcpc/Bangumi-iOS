@@ -53,6 +53,7 @@ echo "Project: $PROJECT"
 echo "SDK: $SDK"
 echo "Destination: $DESTINATION"
 echo "Archive path: $ARCHIVE_PATH"
+echo -e "${GREEN}Using signing settings from project configuration${NC}"
 
 declare -a AUTH_ARGS=()
 if [ -n "${APP_STORE_CONNECT_API_KEY_PATH:-}" ] && [ -n "${APP_STORE_CONNECT_API_KEY_ID:-}" ] && [ -n "${APP_STORE_CONNECT_API_ISSUER_ID:-}" ]; then
