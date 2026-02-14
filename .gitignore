@@ -14,3 +14,13 @@ Package.resolved
 
 .vscode/
 .claude/
+
+misc/exportOptions.plist
+archives/
+exports/
+artifacts/
+
+*.p8
+AuthKey_*.p8
+.env
+.env.local

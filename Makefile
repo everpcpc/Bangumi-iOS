@@ -1,8 +1,10 @@
-.PHONY: help build update_preview_date bump major minor format
+.PHONY: help build build-ci release release-ios artifact-ios update_preview_date bump major minor format
 
 SCHEME = Bangumi
 PROJECT = Bangumi.xcodeproj
 MISC_DIR = misc
+ARCHIVES_DIR = archives
+EXPORTS_DIR = exports
 
 # Colors
 GREEN = \033[0;32m
@@ -17,6 +19,10 @@ help: ## Show this help message
 	@echo "  make bump             - Increment CURRENT_PROJECT_VERSION in project.pbxproj"
 	@echo "  make major            - Increment major version (MARKETING_VERSION)"
 	@echo "  make minor            - Increment minor version (MARKETING_VERSION)"
+	@echo ""
+	@echo "Release commands:"
+	@echo "  make release-ios      - Archive, export and upload to App Store Connect"
+	@echo "  make artifact-ios     - Prepare iOS IPA artifact for GitHub Release"
 	@echo ""
 	@echo "Format commands:"
 	@echo "  make format           - Format Swift files with swift-format"
@@ -33,6 +39,16 @@ build: ## Build for iOS
 build-ci: ## Build for iOS (CI, uses simulator, no code signing)
 	@echo "Building for iOS..."
 	@xcodebuild -project $(PROJECT) -scheme $(SCHEME) -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' build -quiet CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+
+release: release-ios ## Release alias
+
+release-ios: ## Archive, export and upload iOS build to App Store Connect
+	@echo "Releasing iOS build..."
+	@$(MISC_DIR)/release.sh
+
+artifact-ios: ## Prepare iOS artifact for GitHub Release
+	@echo "Preparing iOS artifact for GitHub Release..."
+	@$(MISC_DIR)/artifacts.sh $(EXPORTS_DIR) artifacts ios
 
 UID ?= 873244
 PREVIEW_PATH ?= App/Preview Content
