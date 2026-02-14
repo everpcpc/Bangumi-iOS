@@ -1,0 +1,181 @@
+name: Publish
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      marketing_version: ${{ steps.version.outputs.marketing }}
+      build_number: ${{ steps.version.outputs.build }}
+      build_changed: ${{ steps.changed.outputs.build_changed }}
+      marketing_changed: ${{ steps.changed.outputs.marketing_changed }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read versions
+        id: version
+        run: |
+          set -euo pipefail
+          FILE="Bangumi.xcodeproj/project.pbxproj"
+          if [ ! -f "$FILE" ]; then
+            echo "project.pbxproj not found at $FILE" >&2
+            exit 1
+          fi
+
+          MARKETING=$(awk 'match($0,/MARKETING_VERSION = ([^;]+);/,a){gsub(/"/,"",a[1]); print a[1]; exit}' "$FILE")
+          BUILD=$(awk 'match($0,/CURRENT_PROJECT_VERSION = ([^;]+);/,a){gsub(/"/,"",a[1]); print a[1]; exit}' "$FILE")
+
+          if [ -z "$MARKETING" ]; then
+            echo "MARKETING_VERSION not found in $FILE" >&2
+            exit 1
+          fi
+          if [ -z "$BUILD" ]; then
+            echo "CURRENT_PROJECT_VERSION not found in $FILE" >&2
+            exit 1
+          fi
+
+          echo "Detected MARKETING_VERSION: $MARKETING"
+          echo "Detected CURRENT_PROJECT_VERSION: $BUILD"
+          {
+            echo "marketing=$MARKETING"
+            echo "build=$BUILD"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Detect version changes
+        id: changed
+        run: |
+          set -euo pipefail
+          FILE="Bangumi.xcodeproj/project.pbxproj"
+          BASE="${{ github.event.before }}"
+          HEAD="${{ github.sha }}"
+
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+            if git rev-parse "${HEAD}^" >/dev/null 2>&1; then
+              BASE="$(git rev-parse "${HEAD}^")"
+            else
+              BASE=""
+            fi
+          fi
+
+          BUILD_CHANGED=false
+          MARKETING_CHANGED=false
+          if [ -n "$BASE" ] && git cat-file -e "$BASE"^{commit} 2>/dev/null; then
+            DIFF=$(git diff "$BASE" "$HEAD" -- "$FILE" || true)
+            if echo "$DIFF" | grep -q 'CURRENT_PROJECT_VERSION'; then
+              BUILD_CHANGED=true
+            fi
+            if echo "$DIFF" | grep -q 'MARKETING_VERSION'; then
+              MARKETING_CHANGED=true
+            fi
+          else
+            BUILD_CHANGED=true
+            MARKETING_CHANGED=true
+          fi
+
+          echo "build_changed=$BUILD_CHANGED" >> "$GITHUB_OUTPUT"
+          echo "marketing_changed=$MARKETING_CHANGED" >> "$GITHUB_OUTPUT"
+
+  release:
+    runs-on: ubuntu-latest
+    needs: detect
+    if: needs.detect.outputs.marketing_changed == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure GitHub release exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.detect.outputs.marketing_version }}
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists."
+          else
+            echo "Creating release: $TAG"
+            gh release create "$TAG" --target "$GITHUB_SHA" --title "$TAG" --generate-notes
+          fi
+
+  upload:
+    runs-on: macos-latest
+    needs: [detect, release]
+    if: always() && needs.detect.outputs.build_changed == 'true' && (needs.release.result == 'success' || needs.release.result == 'skipped')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "latest-stable"
+
+      - name: Prepare App Store Connect API key
+        id: prepare
+        env:
+          APP_STORE_CONNECT_API_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${APP_STORE_CONNECT_API_PRIVATE_KEY}" ]; then
+            echo "APP_STORE_CONNECT_API_PRIVATE_KEY is not set." >&2
+            exit 1
+          fi
+          umask 077
+          KEY_PATH="$RUNNER_TEMP/appstoreconnect_key.p8"
+          printf "%s" "$APP_STORE_CONNECT_API_PRIVATE_KEY" > "$KEY_PATH"
+          echo "APP_STORE_CONNECT_API_KEY_PATH=$KEY_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Import codesign certs
+        uses: apple-actions/import-codesign-certs@v3
+        with:
+          p12-file-base64: ${{ secrets.APPSTORE_CERTIFICATES_FILE_BASE64 }}
+          p12-password: ${{ secrets.APPSTORE_CERTIFICATES_PASSWORD }}
+
+      - name: Import provisioning profiles
+        run: misc/import_profiles.sh
+        env:
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 || '' }}
+
+      - name: Verify certificates and profiles
+        run: |
+          set -euo pipefail
+          echo "Current build number: ${{ needs.detect.outputs.build_number }}"
+
+          echo "Available signing certificates:"
+          security find-identity -v -p codesigning | grep "Apple Distribution" || echo "No Apple Distribution certificate found"
+
+          PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          echo ""
+          echo "Available provisioning profiles:"
+          ls -lh "$PROFILES_DIR" 2>/dev/null | tail -n +2 || echo "No profiles found"
+
+      - name: Build and upload to App Store Connect
+        env:
+          APP_STORE_CONNECT_API_KEY_PATH: ${{ steps.prepare.outputs.APP_STORE_CONNECT_API_KEY_PATH }}
+          APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+        run: make release-ios
+
+      - name: Create artifact
+        if: needs.detect.outputs.marketing_changed == 'true'
+        run: make artifact-ios
+
+      - name: Upload artifact to GitHub Release
+        if: needs.detect.outputs.marketing_changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.detect.outputs.marketing_version }}
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+          gh release upload "$TAG" artifacts/* --clobber
