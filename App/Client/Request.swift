@@ -172,6 +172,24 @@ extension Chii {
     return resp
   }
 
+  func getCharacterRelations(_ characterID: Int, limit: Int = 20, offset: Int = 0) async throws
+    -> PagedDTO<CharacterRelationDTO>
+  {
+    if self.mock {
+      return loadFixture(
+        fixture: "character_relations.json", target: PagedDTO<CharacterRelationDTO>.self)
+    }
+    let url = BangumiAPI.priv.build("p1/characters/\(characterID)/relations")
+    let queryItems: [URLQueryItem] = [
+      URLQueryItem(name: "limit", value: String(limit)),
+      URLQueryItem(name: "offset", value: String(offset)),
+    ]
+    let pageURL = url.appending(queryItems: queryItems)
+    let data = try await self.request(url: pageURL, method: "GET")
+    let resp: PagedDTO<CharacterRelationDTO> = try self.decodeResponse(data)
+    return resp
+  }
+
   func getCharacterCollects(_ characterID: Int, limit: Int = 20, offset: Int = 0) async throws
     -> PagedDTO<PersonCollectDTO>
   {
@@ -884,6 +902,23 @@ extension Chii {
     let pageURL = url.appending(queryItems: queryItems)
     let data = try await self.request(url: pageURL, method: "GET")
     let resp: PagedDTO<PersonCastDTO> = try self.decodeResponse(data)
+    return resp
+  }
+
+  func getPersonRelations(_ personID: Int, limit: Int = 20, offset: Int = 0) async throws
+    -> PagedDTO<PersonRelationDTO>
+  {
+    if self.mock {
+      return loadFixture(fixture: "person_relations.json", target: PagedDTO<PersonRelationDTO>.self)
+    }
+    let url = BangumiAPI.priv.build("p1/persons/\(personID)/relations")
+    let queryItems: [URLQueryItem] = [
+      URLQueryItem(name: "limit", value: String(limit)),
+      URLQueryItem(name: "offset", value: String(offset)),
+    ]
+    let pageURL = url.appending(queryItems: queryItems)
+    let data = try await self.request(url: pageURL, method: "GET")
+    let resp: PagedDTO<PersonRelationDTO> = try self.decodeResponse(data)
     return resp
   }
 

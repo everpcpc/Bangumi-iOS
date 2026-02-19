@@ -694,6 +694,60 @@ struct SubjectRelationType: Codable, Identifiable, Hashable {
   var desc: String
 }
 
+struct PersonRelationTypeDTO: Codable, Identifiable, Hashable {
+  var id: Int
+  var cn: String
+  var desc: String
+  var primary: Bool?
+  var skipViceVersa: Bool?
+  var viceVersaTo: Int?
+
+  enum CodingKeys: String, CodingKey {
+    case id
+    case cn
+    case desc
+    case primary
+    case skipViceVersa
+    case viceVersaTo
+  }
+
+  init(from decoder: Decoder) throws {
+    if let container = try? decoder.container(keyedBy: CodingKeys.self) {
+      id = try container.decode(Int.self, forKey: .id)
+      cn = try container.decodeIfPresent(String.self, forKey: .cn) ?? ""
+      desc = try container.decodeIfPresent(String.self, forKey: .desc) ?? ""
+      primary = try container.decodeIfPresent(Bool.self, forKey: .primary)
+      skipViceVersa = try container.decodeIfPresent(Bool.self, forKey: .skipViceVersa)
+      viceVersaTo = try container.decodeIfPresent(Int.self, forKey: .viceVersaTo)
+      return
+    }
+
+    let singleValue = try decoder.singleValueContainer()
+    id = try singleValue.decode(Int.self)
+    cn = ""
+    desc = ""
+    primary = nil
+    skipViceVersa = nil
+    viceVersaTo = nil
+  }
+
+  init(
+    id: Int,
+    cn: String,
+    desc: String,
+    primary: Bool? = nil,
+    skipViceVersa: Bool? = nil,
+    viceVersaTo: Int? = nil
+  ) {
+    self.id = id
+    self.cn = cn
+    self.desc = desc
+    self.primary = primary
+    self.skipViceVersa = skipViceVersa
+    self.viceVersaTo = viceVersaTo
+  }
+}
+
 struct EpisodeCollectionStatus: Codable, Hashable {
   var status: Int
   var updatedAt: Int?
@@ -915,6 +969,82 @@ struct PersonCastDTO: Codable, Identifiable, Hashable {
 
   var id: Int {
     character.id
+  }
+}
+
+struct CharacterRelationDTO: Codable, Identifiable, Hashable {
+  var character: SlimCharacterDTO
+  var relation: PersonRelationTypeDTO
+  var spoiler: Bool
+  var ended: Bool
+  var comment: String
+
+  var id: Int {
+    character.id
+  }
+
+  enum CodingKeys: String, CodingKey {
+    case character
+    case relation
+    case spoiler
+    case ended
+    case comment
+  }
+
+  init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    character = try container.decode(SlimCharacterDTO.self, forKey: .character)
+    relation = try container.decode(PersonRelationTypeDTO.self, forKey: .relation)
+    spoiler = try container.decodeIfPresent(Bool.self, forKey: .spoiler) ?? false
+    ended = try container.decodeIfPresent(Bool.self, forKey: .ended) ?? false
+    comment = try container.decodeIfPresent(String.self, forKey: .comment) ?? ""
+  }
+
+  func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(character, forKey: .character)
+    try container.encode(relation, forKey: .relation)
+    try container.encode(spoiler, forKey: .spoiler)
+    try container.encode(ended, forKey: .ended)
+    try container.encode(comment, forKey: .comment)
+  }
+}
+
+struct PersonRelationDTO: Codable, Identifiable, Hashable {
+  var person: SlimPersonDTO
+  var relation: PersonRelationTypeDTO
+  var spoiler: Bool
+  var ended: Bool
+  var comment: String
+
+  var id: Int {
+    person.id
+  }
+
+  enum CodingKeys: String, CodingKey {
+    case person
+    case relation
+    case spoiler
+    case ended
+    case comment
+  }
+
+  init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    person = try container.decode(SlimPersonDTO.self, forKey: .person)
+    relation = try container.decode(PersonRelationTypeDTO.self, forKey: .relation)
+    spoiler = try container.decodeIfPresent(Bool.self, forKey: .spoiler) ?? false
+    ended = try container.decodeIfPresent(Bool.self, forKey: .ended) ?? false
+    comment = try container.decodeIfPresent(String.self, forKey: .comment) ?? ""
+  }
+
+  func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(person, forKey: .person)
+    try container.encode(relation, forKey: .relation)
+    try container.encode(spoiler, forKey: .spoiler)
+    try container.encode(ended, forKey: .ended)
+    try container.encode(comment, forKey: .comment)
   }
 }
 

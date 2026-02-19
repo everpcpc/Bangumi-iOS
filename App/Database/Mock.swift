@@ -124,6 +124,12 @@ extension Character {
       fixture: "character_casts.json", target: PagedDTO<CharacterCastDTO>.self)
     return items.data
   }
+
+  static var previewRelations: [CharacterRelationDTO] {
+    let items = loadFixture(
+      fixture: "character_relations.json", target: PagedDTO<CharacterRelationDTO>.self)
+    return items.data
+  }
 }
 
 extension Person {
@@ -139,6 +145,12 @@ extension Person {
 
   static var previewCasts: [PersonCastDTO] {
     let items = loadFixture(fixture: "person_casts.json", target: PagedDTO<PersonCastDTO>.self)
+    return items.data
+  }
+
+  static var previewRelations: [PersonRelationDTO] {
+    let items = loadFixture(
+      fixture: "person_relations.json", target: PagedDTO<PersonRelationDTO>.self)
     return items.data
   }
 }
