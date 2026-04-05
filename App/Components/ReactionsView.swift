@@ -1,3 +1,4 @@
+import BBCode
 import Flow
 import SwiftUI
 
@@ -84,10 +85,7 @@ struct ReactionsView: View {
           } label: {
             CardView(padding: 2, cornerRadius: 10, shadow: shadowColor(reaction)) {
               HStack(alignment: .center, spacing: 4) {
-                Image(reaction.icon)
-                  .resizable()
-                  .aspectRatio(contentMode: .fit)
-                  .frame(width: 16, height: 16)
+                SmileyReactionImage(code: reaction.smileyCode, size: 16)
                 Text("\(reaction.users.count)")
                   .font(.callout)
                   .monospacedDigit()
@@ -188,10 +186,7 @@ struct ReactionButton: View {
             Button {
               onClick(value)
             } label: {
-              Image(REACTIONS[value] ?? "bgm125")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 24, height: 24)
+              SmileyReactionImage(code: REACTIONS[value] ?? "bgm125", size: 24)
             }.buttonStyle(.explode)
           }
         }
@@ -207,6 +202,21 @@ struct ReactionButton: View {
       }
     } else {
       EmptyView()
+    }
+  }
+}
+
+private struct SmileyReactionImage: View {
+  let code: String
+  let size: CGFloat
+
+  var body: some View {
+    if let item = SmileyCatalog.item(for: code) {
+      SmileyImageView(item: item, size: size)
+    } else {
+      Text("(\(code))")
+        .font(.caption2)
+        .frame(width: size, height: size)
     }
   }
 }

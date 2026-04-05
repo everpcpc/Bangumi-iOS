@@ -128,8 +128,39 @@ class HTMLTests: XCTestCase {
   func testSmilies() {
     XCTAssertEqual(
       try BBCode().html("表情符号：(bgm38)"),
-      "表情符号：<img src=\"https://lain.bgm.tv/img/smiles/tv/15.gif\" alt=\"(bgm38)\" style=\"width: 16px; height: 16px;\" />"
+      "表情符号：<img src=\"https://lain.bgm.tv/img/smiles/tv/15.gif\" class=\"smile\" alt=\"(bgm38)\" />"
     )
+  }
+
+  func testLegacySmilies() {
+    XCTAssertEqual(
+      try BBCode().html("Legacy smilie: (bgm01)"),
+      "Legacy smilie: <img src=\"https://lain.bgm.tv/img/smiles/bgm/01.png\" class=\"smile\" alt=\"(bgm01)\" />"
+    )
+  }
+
+  func testCharacterSmilies() {
+    let result = try! BBCode().html("Character smilies: (musume_06)(blake_97)")
+    XCTAssertTrue(result.contains("https://lain.bgm.tv/img/smiles/musume/musume_06.gif"))
+    XCTAssertTrue(result.contains("class=\"smile smile-dynamic smile-musume\""))
+    XCTAssertTrue(result.contains("alt=\"(musume_06)\""))
+    XCTAssertTrue(result.contains("https://lain.bgm.tv/img/smiles/blake/blake_97.gif"))
+    XCTAssertTrue(result.contains("class=\"smile smile-dynamic smile-blake\""))
+    XCTAssertTrue(result.contains("alt=\"(blake_97)\""))
+  }
+
+  func testExtendedCharacterSmilies() {
+    let result = try! BBCode().html("Extended smilies: (musume_102)(blake_110)")
+    XCTAssertTrue(result.contains("https://lain.bgm.tv/img/smiles/musume/musume_102.gif"))
+    XCTAssertTrue(result.contains("alt=\"(musume_102)\""))
+    XCTAssertTrue(result.contains("https://lain.bgm.tv/img/smiles/blake/blake_110.gif"))
+    XCTAssertTrue(result.contains("alt=\"(blake_110)\""))
+  }
+
+  func testSpecialWidthSmilies() {
+    let result = try! BBCode().html("Special width: (bgm124)(bgm125)")
+    XCTAssertTrue(result.contains("alt=\"(bgm124)\" width=\"21\""))
+    XCTAssertTrue(result.contains("alt=\"(bgm125)\" width=\"21\""))
   }
 
   func testBmo() {
@@ -198,19 +229,19 @@ class HTMLTests: XCTestCase {
   func testNewEmojiRanges() {
     // Test tv_vs range (200-238) - should use png format
     let tvVsResult = try! BBCode().html("tv_vs表情：(bgm200)")
-    XCTAssertTrue(tvVsResult.contains("bgm200.png"))
+    XCTAssertTrue(tvVsResult.contains("bgm_200.png"))
     XCTAssertTrue(tvVsResult.contains("alt=\"(bgm200)\""))
 
     // Test tv_500 range (500-529) - should try gif first, then png
     let tv500Result = try! BBCode().html("tv_500表情：(bgm500)")
-    XCTAssertTrue(tv500Result.contains("bgm500"))
+    XCTAssertTrue(tv500Result.contains("bgm_500.gif"))
     XCTAssertTrue(tv500Result.contains("alt=\"(bgm500)\""))
 
     // Test mixed ranges
     let mixedResult = try! BBCode().html("混合表情：(bgm38)(bgm200)(bgm500)")
     XCTAssertTrue(mixedResult.contains("bgm38"))
-    XCTAssertTrue(mixedResult.contains("bgm200.png"))
-    XCTAssertTrue(mixedResult.contains("bgm500"))
+    XCTAssertTrue(mixedResult.contains("bgm_200.png"))
+    XCTAssertTrue(mixedResult.contains("bgm_500.gif"))
   }
 
 }

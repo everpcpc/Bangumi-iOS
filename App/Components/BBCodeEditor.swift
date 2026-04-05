@@ -6,7 +6,7 @@ struct BBCodeEditor: View {
 
   private let minHeight: CGFloat = 80
   @State private var height: CGFloat = 120
-  @State private var textSelection: EditorSelection?
+  @StateObject private var textViewBridge = BBCodeTextViewBridge()
   @State private var preview: Bool = false
 
   @State private var inputSize: Int = 14
@@ -25,35 +25,57 @@ struct BBCodeEditor: View {
 
   @State private var keyboardToolbarHostingController: UIHostingController<AnyView>?
 
-  private func newSelection(_ bound: String.Index, _ offset: Int, _ length: Int = 0) {
-    let cursorStartIndex =
-      text.index(bound, offsetBy: offset, limitedBy: text.endIndex) ?? text.endIndex
-    let cursorEndIndex =
-      text.index(cursorStartIndex, offsetBy: length, limitedBy: text.endIndex) ?? text.endIndex
-    textSelection = text.editorSelection(from: cursorStartIndex..<cursorEndIndex)
+  private func currentEditorText() -> String {
+    textViewBridge.currentText ?? text
+  }
+
+  private func currentEditorSelection() -> EditorSelection? {
+    textViewBridge.currentSelection
+  }
+
+  private func applyEditorState(text newText: String, selection: EditorSelection?) {
+    text = newText
+    textViewBridge.apply(text: newText, selection: selection)
   }
 
   private func insertTagToEnd(_ before: String, _ after: String) {
-    let endIndex = text.endIndex
-    text += before + after
-    newSelection(endIndex, before.count)
+    var currentText = currentEditorText()
+    let insertLocation = currentText.utf16.count
+    currentText += before + after
+    applyEditorState(
+      text: currentText,
+      selection: EditorSelection(location: insertLocation + before.count, length: 0)
+    )
   }
 
   private func handleBasicInput(_ tag: BBCodeType) {
+    let currentText = currentEditorText()
+    let currentSelection = currentEditorSelection()
     let tagBefore = "[\(tag.code)]"
     let tagAfter = "[/\(tag.code)]"
-    if let selection = textSelection, let range = selection.range(in: text) {
+    if let selection = currentSelection, let range = selection.range(in: currentText) {
+      var updatedText = currentText
       if range.lowerBound == range.upperBound {
-        text = text.replacingCharacters(in: range, with: tagBefore + tagAfter)
-        newSelection(range.lowerBound, tagBefore.count)
+        updatedText = updatedText.replacingCharacters(in: range, with: tagBefore + tagAfter)
+        applyEditorState(
+          text: updatedText,
+          selection: EditorSelection(location: selection.location + tagBefore.count, length: 0)
+        )
       } else {
-        let newText = "\(tagBefore)\(text[range])\(tagAfter)"
+        let wrappedText = "\(tagBefore)\(currentText[range])\(tagAfter)"
         if tag.isBlock {
-          text.replaceSubrange(range, with: "\n\(newText)\n")
-          newSelection(range.lowerBound, newText.count + 2)
+          let replacement = "\n\(wrappedText)\n"
+          updatedText.replaceSubrange(range, with: replacement)
+          applyEditorState(
+            text: updatedText,
+            selection: EditorSelection(location: selection.location, length: replacement.utf16.count)
+          )
         } else {
-          text.replaceSubrange(range, with: newText)
-          newSelection(range.lowerBound, newText.count)
+          updatedText.replaceSubrange(range, with: wrappedText)
+          applyEditorState(
+            text: updatedText,
+            selection: EditorSelection(location: selection.location, length: wrappedText.utf16.count)
+          )
         }
       }
     } else {
@@ -62,11 +84,18 @@ struct BBCodeEditor: View {
   }
 
   private func handleImageInput() {
+    let currentText = currentEditorText()
+    let currentSelection = currentEditorSelection()
     let tagBefore = "[\(BBCodeType.image.code)]"
     let tagAfter = "[/\(BBCodeType.image.code)]"
-    if let selection = textSelection, let range = selection.range(in: text) {
-      text.replaceSubrange(range, with: "\(tagBefore)\(inputURL)\(tagAfter)")
-      newSelection(range.lowerBound, tagBefore.count + inputURL.count + tagAfter.count)
+    if let selection = currentSelection, let range = selection.range(in: currentText) {
+      var updatedText = currentText
+      let replacement = "\(tagBefore)\(inputURL)\(tagAfter)"
+      updatedText.replaceSubrange(range, with: replacement)
+      applyEditorState(
+        text: updatedText,
+        selection: EditorSelection(location: selection.location + replacement.utf16.count, length: 0)
+      )
     } else {
       insertTagToEnd("\(tagBefore)\(inputURL)\(tagAfter)", "")
     }
@@ -74,40 +103,67 @@ struct BBCodeEditor: View {
   }
 
   private func handleURLInput() {
-    if let selection = textSelection, let range = selection.range(in: text) {
+    let currentText = currentEditorText()
+    let currentSelection = currentEditorSelection()
+    if let selection = currentSelection, let range = selection.range(in: currentText) {
+      var updatedText = currentText
       let tagBefore = "[\(BBCodeType.url.code)=\(inputURL)]"
       let tagAfter = "[/\(BBCodeType.url.code)]"
       if range.lowerBound == range.upperBound {
         let placeholder = "链接描述"
-        text.replaceSubrange(range, with: tagBefore + placeholder + tagAfter)
-        newSelection(range.lowerBound, tagBefore.count, placeholder.count)
+        updatedText.replaceSubrange(range, with: tagBefore + placeholder + tagAfter)
+        applyEditorState(
+          text: updatedText,
+          selection: EditorSelection(
+            location: selection.location + tagBefore.count,
+            length: placeholder.utf16.count
+          )
+        )
       } else {
-        let selectedText = text[range]
-        text.replaceSubrange(range, with: "\(tagBefore)\(selectedText)\(tagAfter)")
-        newSelection(range.lowerBound, tagBefore.count + selectedText.count + tagAfter.count)
+        let selectedText = currentText[range]
+        let replacement = "\(tagBefore)\(selectedText)\(tagAfter)"
+        updatedText.replaceSubrange(range, with: replacement)
+        applyEditorState(
+          text: updatedText,
+          selection: EditorSelection(location: selection.location, length: replacement.utf16.count)
+        )
       }
     } else {
-      let endIndex = text.endIndex
+      let currentText = currentEditorText()
+      let endLocation = currentText.utf16.count
       let tagBefore = "[\(BBCodeType.url.code)=\(inputURL)]"
       let tagAfter = "[/\(BBCodeType.url.code)]"
       let placeholder = "链接描述"
-      text += tagBefore + placeholder + tagAfter
-      newSelection(endIndex, tagBefore.count, placeholder.count)
+      let updatedText = currentText + tagBefore + placeholder + tagAfter
+      applyEditorState(
+        text: updatedText,
+        selection: EditorSelection(location: endLocation + tagBefore.count, length: placeholder.utf16.count)
+      )
     }
     inputURL = ""
   }
 
   private func handleSizeInput() {
+    let currentText = currentEditorText()
+    let currentSelection = currentEditorSelection()
     let tagBefore = "[\(BBCodeType.size.code)=\(inputSize)]"
     let tagAfter = "[/\(BBCodeType.size.code)]"
-    if let selection = textSelection, let range = selection.range(in: text) {
+    if let selection = currentSelection, let range = selection.range(in: currentText) {
+      var updatedText = currentText
       if range.lowerBound == range.upperBound {
-        text.replaceSubrange(range, with: tagBefore + tagAfter)
-        newSelection(range.lowerBound, tagBefore.count)
+        updatedText.replaceSubrange(range, with: tagBefore + tagAfter)
+        applyEditorState(
+          text: updatedText,
+          selection: EditorSelection(location: selection.location + tagBefore.count, length: 0)
+        )
       } else {
-        let selectedText = text[range]
-        text.replaceSubrange(range, with: "\(tagBefore)\(selectedText)\(tagAfter)")
-        newSelection(range.lowerBound, tagBefore.count + selectedText.count + tagAfter.count)
+        let selectedText = currentText[range]
+        let replacement = "\(tagBefore)\(selectedText)\(tagAfter)"
+        updatedText.replaceSubrange(range, with: replacement)
+        applyEditorState(
+          text: updatedText,
+          selection: EditorSelection(location: selection.location, length: replacement.utf16.count)
+        )
       }
     } else {
       insertTagToEnd(tagBefore, tagAfter)
@@ -141,17 +197,27 @@ struct BBCodeEditor: View {
   }
 
   private func handleColorInput() {
+    let currentText = currentEditorText()
+    let currentSelection = currentEditorSelection()
     let hexColor = convertColorToHex(inputColorStart)
     let tagBefore = "[\(BBCodeType.color.code)=\(hexColor)]"
     let tagAfter = "[/\(BBCodeType.color.code)]"
-    if let selection = textSelection, let range = selection.range(in: text) {
+    if let selection = currentSelection, let range = selection.range(in: currentText) {
+      var updatedText = currentText
       if range.lowerBound == range.upperBound {
-        text.replaceSubrange(range, with: tagBefore + tagAfter)
-        newSelection(range.lowerBound, tagBefore.count)
+        updatedText.replaceSubrange(range, with: tagBefore + tagAfter)
+        applyEditorState(
+          text: updatedText,
+          selection: EditorSelection(location: selection.location + tagBefore.count, length: 0)
+        )
       } else {
-        let selectedText = text[range]
-        text.replaceSubrange(range, with: "\(tagBefore)\(selectedText)\(tagAfter)")
-        newSelection(range.lowerBound, tagBefore.count + selectedText.count + tagAfter.count)
+        let selectedText = currentText[range]
+        let replacement = "\(tagBefore)\(selectedText)\(tagAfter)"
+        updatedText.replaceSubrange(range, with: replacement)
+        applyEditorState(
+          text: updatedText,
+          selection: EditorSelection(location: selection.location, length: replacement.utf16.count)
+        )
       }
     } else {
       insertTagToEnd(tagBefore, tagAfter)
@@ -159,11 +225,13 @@ struct BBCodeEditor: View {
   }
 
   private func handleGradientInput() {
-    if let selection = textSelection, let range = selection.range(in: text) {
+    let currentText = currentEditorText()
+    let currentSelection = currentEditorSelection()
+    if let selection = currentSelection, let range = selection.range(in: currentText) {
       if range.lowerBound == range.upperBound {
         return
       }
-      let selectedText = text[range]
+      let selectedText = currentText[range]
       let charCount = selectedText.count
 
       var gradientText = ""
@@ -176,8 +244,12 @@ struct BBCodeEditor: View {
           "[\(BBCodeType.color.code)=\(hexColor)]\(char)[/\(BBCodeType.color.code)]"
       }
 
-      text.replaceSubrange(range, with: gradientText)
-      newSelection(range.lowerBound, gradientText.count)
+      var updatedText = currentText
+      updatedText.replaceSubrange(range, with: gradientText)
+      applyEditorState(
+        text: updatedText,
+        selection: EditorSelection(location: selection.location, length: gradientText.utf16.count)
+      )
     }
   }
 
@@ -205,31 +277,49 @@ struct BBCodeEditor: View {
     return (r, g, b, a)
   }
 
-  private func handleEmojiInput(_ index: Int) {
-    let emoji = "(bgm\(index))"
-    if let selection = textSelection, let range = selection.range(in: text) {
-      text.replaceSubrange(range, with: emoji)
-      newSelection(range.lowerBound, emoji.count)
+  private func handleEmojiInput(_ code: String) {
+    let currentText = currentEditorText()
+    let currentSelection = currentEditorSelection()
+    let emoji = "(\(code))"
+    if let selection = currentSelection, let range = selection.range(in: currentText) {
+      var updatedText = currentText
+      updatedText.replaceSubrange(range, with: emoji)
+      applyEditorState(
+        text: updatedText,
+        selection: EditorSelection(location: selection.location + emoji.utf16.count, length: 0)
+      )
     } else {
-      let endIndex = text.endIndex
-      text += emoji
-      newSelection(endIndex, emoji.count)
+      let insertLocation = currentText.utf16.count
+      let updatedText = currentText + emoji
+      applyEditorState(
+        text: updatedText,
+        selection: EditorSelection(location: insertLocation + emoji.utf16.count, length: 0)
+      )
     }
   }
 
   private func handleClearStyles() {
+    let currentText = currentEditorText()
+    let currentSelection = currentEditorSelection()
     let bbcode = BBCode()
-    if let selection = textSelection, let range = selection.range(in: text) {
+    if let selection = currentSelection, let range = selection.range(in: currentText) {
       if range.lowerBound != range.upperBound {
-        let selectedText = String(text[range])
+        let selectedText = String(currentText[range])
         let strippedText = bbcode.strip(bbcode: selectedText)
-        text.replaceSubrange(range, with: strippedText)
-        newSelection(range.lowerBound, strippedText.count)
+        var updatedText = currentText
+        updatedText.replaceSubrange(range, with: strippedText)
+        applyEditorState(
+          text: updatedText,
+          selection: EditorSelection(location: selection.location, length: strippedText.utf16.count)
+        )
         return
       }
     }
-    text = bbcode.strip(bbcode: text)
-    newSelection(text.startIndex, 0)
+    let strippedText = bbcode.strip(bbcode: currentText)
+    applyEditorState(
+      text: strippedText,
+      selection: EditorSelection(location: 0, length: 0)
+    )
   }
 
   private func setupKeyboardToolbar() {
@@ -276,7 +366,7 @@ struct BBCodeEditor: View {
         BorderView(color: .secondary.opacity(0.2), padding: 0) {
           BBCodeTextView(
             text: $text,
-            selection: $textSelection,
+            bridge: textViewBridge,
             inputAccessoryViewController: keyboardToolbarHostingController
           )
           .frame(height: height)
@@ -359,7 +449,7 @@ struct BBCodeEditor: View {
 private struct BBCodeToolbarContent: View {
   @State private var showingEmojiInput = false
   let onBasicInput: (BBCodeType) -> Void
-  let onEmojiInput: (Int) -> Void
+  let onEmojiInput: (String) -> Void
   let onShowImageInput: () -> Void
   let onShowURLInput: () -> Void
   let onShowSizeInput: () -> Void
@@ -373,23 +463,10 @@ private struct BBCodeToolbarContent: View {
           .frame(width: 12, height: 12)
       }
       .sheet(isPresented: $showingEmojiInput) {
-        ScrollView {
-          LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 8)) {
-            ForEach(24..<126) { index in
-              Button {
-                onEmojiInput(index)
-                showingEmojiInput = false
-              } label: {
-                Image("bgm\(index)")
-                  .resizable()
-                  .aspectRatio(contentMode: .fit)
-                  .frame(width: 24, height: 24)
-              }
-            }
-          }
+        SmileyPicker { code in
+          onEmojiInput(code)
+          showingEmojiInput = false
         }
-        .padding()
-        .presentationDetents([.medium])
       }
       Divider()
       ForEach(BBCodeType.basic) { code in
@@ -441,14 +518,148 @@ private struct BBCodeToolbarContent: View {
   }
 }
 
+private struct SmileyPicker: View {
+  @Environment(\.dismiss) private var dismiss
+  let onSelect: (String) -> Void
+
+  @State private var selectedSectionKey = SmileyCatalog.sections.first?.key ?? ""
+
+  private var selectedSection: SmileySection? {
+    SmileyCatalog.sections.first(where: { $0.key == selectedSectionKey })
+      ?? SmileyCatalog.sections.first
+  }
+
+  private var gridItemSize: CGFloat {
+    guard let selectedSection else {
+      return 30
+    }
+
+    switch selectedSection.key {
+    case "musume", "blake":
+      return 44
+    default:
+      return 30
+    }
+  }
+
+  private var columns: [GridItem] {
+    [GridItem(.adaptive(minimum: gridItemSize + 6, maximum: gridItemSize + 18), spacing: 10)]
+  }
+
+  var body: some View {
+    NavigationStack {
+      ScrollView {
+        VStack(alignment: .leading, spacing: 16) {
+          ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+              ForEach(SmileyCatalog.sections) { section in
+                if section.key == selectedSectionKey {
+                  Button(section.title) {
+                    selectedSectionKey = section.key
+                  }
+                  .buttonStyle(.borderedProminent)
+                } else {
+                  Button(section.title) {
+                    selectedSectionKey = section.key
+                  }
+                  .buttonStyle(.bordered)
+                }
+              }
+            }
+          }
+
+          if let selectedSection {
+            ForEach(selectedSection.groups) { group in
+              VStack(alignment: .leading, spacing: 8) {
+                if selectedSection.groups.count > 1, !group.title.isEmpty {
+                  Text(group.title)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                }
+
+                LazyVGrid(columns: columns, alignment: .leading, spacing: 10) {
+                  ForEach(group.items) { item in
+                    Button {
+                      onSelect(item.code)
+                    } label: {
+                      SmileyGridItem(item: item, size: gridItemSize)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(item.token)
+                  }
+                }
+              }
+            }
+          }
+        }
+        .padding()
+      }
+      .navigationTitle("")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button {
+            dismiss()
+          } label: {
+            Image(systemName: "xmark")
+          }
+        }
+      }
+    }
+    .presentationDetents([.medium, .large])
+  }
+}
+
+private struct SmileyGridItem: View {
+  let item: SmileyItem
+  let size: CGFloat
+
+  var body: some View {
+    Group {
+      if item.resourceURL() != nil {
+        SmileyImageView(item: item, size: size)
+      } else {
+        Text(item.token)
+          .font(.caption2)
+          .lineLimit(1)
+      }
+    }
+    .frame(width: size, height: size)
+  }
+}
+
+@MainActor
+private final class BBCodeTextViewBridge: ObservableObject {
+  weak var textView: UITextView?
+  weak var coordinator: BBCodeTextView.Coordinator?
+
+  var currentText: String? {
+    textView?.text
+  }
+
+  var currentSelection: EditorSelection? {
+    guard let textView else {
+      return nil
+    }
+    return EditorSelection(nsRange: textView.selectedRange)
+  }
+
+  func apply(text: String, selection: EditorSelection?) {
+    guard let textView, let coordinator else {
+      return
+    }
+    coordinator.applyProgrammaticText(text, selection: selection, to: textView)
+  }
+}
+
 /// UIKit-backed text view keeps IME marked text intact inside sheets.
 private struct BBCodeTextView: UIViewRepresentable {
   @Binding var text: String
-  @Binding var selection: EditorSelection?
+  let bridge: BBCodeTextViewBridge
   var inputAccessoryViewController: UIHostingController<AnyView>?
 
   func makeCoordinator() -> Coordinator {
-    Coordinator(text: $text, selection: $selection)
+    Coordinator(text: $text)
   }
 
   func makeUIView(context: Context) -> UITextView {
@@ -474,10 +685,16 @@ private struct BBCodeTextView: UIViewRepresentable {
       hostingController.view.autoresizingMask = [.flexibleWidth]
       textView.inputAccessoryView = hostingController.view
     }
+
+    bridge.textView = textView
+    bridge.coordinator = context.coordinator
     return textView
   }
 
   func updateUIView(_ textView: UITextView, context: Context) {
+    bridge.textView = textView
+    bridge.coordinator = context.coordinator
+
     // Only sync text from binding when it's a genuine external change (like BBCode toolbar)
     // NOT when it's just echoing back user's input
     let currentText = textView.text ?? ""
@@ -486,33 +703,8 @@ private struct BBCodeTextView: UIViewRepresentable {
       currentText != text && isExternalChange && textView.markedTextRange == nil
 
     if shouldUpdateText {
-      let savedRange = textView.selectedRange
-      context.coordinator.updatingText = true
-      context.coordinator.updatingSelection = true
-      textView.text = text
-      context.coordinator.lastPushedText = text
-      // Restore cursor position immediately, clamped to valid range
-      let maxLocation = (textView.text as NSString?)?.length ?? 0
-      let clampedLocation = min(savedRange.location, maxLocation)
-      let clampedLength = min(savedRange.length, maxLocation - clampedLocation)
-      textView.selectedRange = NSRange(location: clampedLocation, length: clampedLength)
-      context.coordinator.updatingText = false
-      context.coordinator.updatingSelection = false
-    }
-
-    // Skip selection sync if we just pushed an update from textViewDidChange
-    // This prevents updateUIView from overwriting the correct cursor position
-    if context.coordinator.suppressUpdateViewSelection {
-      context.coordinator.suppressUpdateViewSelection = false
-    } else if let selection {
-      let nsRange = text.nsRange(from: selection)
-      if textView.selectedRange != nsRange, textView.markedTextRange == nil,
-        !context.coordinator.updatingText
-      {
-        context.coordinator.updatingSelection = true
-        textView.selectedRange = nsRange
-        context.coordinator.updatingSelection = false
-      }
+      let savedSelection = EditorSelection(nsRange: textView.selectedRange)
+      context.coordinator.applyProgrammaticText(text, selection: savedSelection, to: textView)
     }
 
     if let hostingController = inputAccessoryViewController,
@@ -528,44 +720,61 @@ private struct BBCodeTextView: UIViewRepresentable {
 
   class Coordinator: NSObject, UITextViewDelegate {
     var text: Binding<String>
-    var selection: Binding<EditorSelection?>
     var updatingText = false
-    var updatingSelection = false
     /// Tracks the last text value we pushed to the binding, so we can detect external changes
     var lastPushedText: String = ""
-    /// Suppresses the next selection update in textViewDidChangeSelection
-    var suppressNextSelectionUpdate = false
-    /// Suppresses the next selection sync in updateUIView
-    var suppressUpdateViewSelection = false
+    fileprivate var pendingTextUpdate: String?
+    fileprivate var bindingUpdateScheduled = false
 
-    init(text: Binding<String>, selection: Binding<EditorSelection?>) {
+    init(text: Binding<String>) {
       self.text = text
-      self.selection = selection
       self.lastPushedText = text.wrappedValue
     }
 
     func textViewDidChange(_ textView: UITextView) {
       guard !updatingText else { return }
       let newText = textView.text ?? ""
-      let range = textView.selectedRange
-      // Suppress selection updates to prevent cursor position being overwritten
-      suppressNextSelectionUpdate = true
-      suppressUpdateViewSelection = true
-      // Update synchronously to prevent race conditions with updateUIView
       lastPushedText = newText
-      text.wrappedValue = newText
-      selection.wrappedValue = EditorSelection(nsRange: range)
+      scheduleTextUpdate(newText)
     }
 
-    func textViewDidChangeSelection(_ textView: UITextView) {
-      guard !updatingSelection, !updatingText else { return }
-      guard textView.markedTextRange == nil else { return }
-      // Skip if textViewDidChange already updated the selection
-      if suppressNextSelectionUpdate {
-        suppressNextSelectionUpdate = false
+    func applyProgrammaticText(
+      _ newText: String,
+      selection: EditorSelection?,
+      to textView: UITextView
+    ) {
+      pendingTextUpdate = nil
+      updatingText = true
+      textView.text = newText
+      if let selection {
+        textView.selectedRange = newText.nsRange(from: selection)
+      }
+      lastPushedText = newText
+      updatingText = false
+    }
+
+    private func scheduleTextUpdate(_ text: String) {
+      pendingTextUpdate = text
+      guard !bindingUpdateScheduled else {
         return
       }
-      selection.wrappedValue = EditorSelection(nsRange: textView.selectedRange)
+
+      bindingUpdateScheduled = true
+      flushPendingTextUpdateIfNeeded()
+    }
+
+    fileprivate func flushPendingTextUpdateIfNeeded() {
+      DispatchQueue.main.async { [weak self] in
+        guard let self else { return }
+
+        self.bindingUpdateScheduled = false
+        guard let text = self.pendingTextUpdate else {
+          return
+        }
+        self.pendingTextUpdate = nil
+
+        self.text.wrappedValue = text
+      }
     }
   }
 }
@@ -603,11 +812,6 @@ extension String {
       return nil
     }
     return start..<end
-  }
-
-  fileprivate func editorSelection(from range: Range<String.Index>) -> EditorSelection {
-    let nsRange = NSRange(range, in: self)
-    return EditorSelection(location: nsRange.location, length: nsRange.length)
   }
 }
 
