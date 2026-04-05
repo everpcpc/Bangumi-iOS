@@ -1,0 +1,57 @@
+{
+  "data": [
+    {
+      "character": {
+        "id": 167629,
+        "name": "市川未央",
+        "nameCN": "",
+        "role": 1,
+        "comment": 0,
+        "lock": false,
+        "nsfw": false,
+        "images": {
+          "large": "https://lain.bgm.tv/pic/crt/l/d7/ca/167629_crt_6yqKy.jpg",
+          "medium": "https://lain.bgm.tv/pic/crt/m/d7/ca/167629_crt_6yqKy.jpg",
+          "small": "https://lain.bgm.tv/pic/crt/s/d7/ca/167629_crt_6yqKy.jpg",
+          "grid": "https://lain.bgm.tv/pic/crt/g/d7/ca/167629_crt_6yqKy.jpg"
+        }
+      },
+      "relation": {
+        "id": 101,
+        "cn": "同位体",
+        "desc": "同一设定下的不同版本",
+        "primary": true
+      },
+      "spoiler": false,
+      "ended": false,
+      "comment": "同系列中的对应角色"
+    },
+    {
+      "character": {
+        "id": 167162,
+        "name": "잉그리드",
+        "nameCN": "英格丽",
+        "role": 1,
+        "comment": 0,
+        "lock": false,
+        "nsfw": false,
+        "images": {
+          "large": "https://lain.bgm.tv/pic/crt/l/e9/15/167162_crt_Zjzzj.jpg",
+          "medium": "https://lain.bgm.tv/pic/crt/m/e9/15/167162_crt_Zjzzj.jpg",
+          "small": "https://lain.bgm.tv/pic/crt/s/e9/15/167162_crt_Zjzzj.jpg",
+          "grid": "https://lain.bgm.tv/pic/crt/g/e9/15/167162_crt_Zjzzj.jpg"
+        }
+      },
+      "relation": {
+        "id": 2,
+        "cn": "亲属",
+        "desc": "设定中的亲属关系",
+        "skipViceVersa": false
+      },
+      "spoiler": true,
+      "ended": true,
+      "comment": "设定里存在家族线索"
+    }
+  ],
+  "total": 2
+}

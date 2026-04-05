@@ -18,6 +18,7 @@ struct SettingsView: View {
   @AppStorage("replySortOrder") var replySortOrder: ReplySortOrder = .ascending
   @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
   @AppStorage("anonymizeTopicUsers") var anonymizeTopicUsers: Bool = false
+  @AppStorage("showSpoilerRelations") var showSpoilerRelations: Bool = false
 
   @State private var spotlightRefreshing: Bool = false
   @State private var spotlightProgress: CGFloat = 0
@@ -103,6 +104,9 @@ struct SettingsView: View {
           ForEach(ReplySortOrder.allCases, id: \.self) { order in
             Text(order.description).tag(order)
           }
+        }
+        Toggle(isOn: $showSpoilerRelations) {
+          Text("默认显示剧透关联")
         }
       }
 

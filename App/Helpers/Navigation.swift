@@ -52,10 +52,12 @@ enum NavDestination: Hashable, View {
   case episodeList(_ subjectId: Int)
   case character(_ characterId: Int)
   case characterCastList(_ characterId: Int)
+  case characterRelationList(_ characterId: Int)
   case characterIndexList(_ characterId: Int)
   case person(_ personId: Int)
   case personCastList(_ personId: Int)
   case personWorkList(_ personId: Int)
+  case personRelationList(_ personId: Int)
   case personIndexList(_ personId: Int)
 
   case index(_ indexId: Int)
@@ -145,6 +147,8 @@ enum NavDestination: Hashable, View {
       CharacterView(characterId: characterId)
     case .characterCastList(let characterId):
       CharacterCastListView(characterId: characterId)
+    case .characterRelationList(let characterId):
+      CharacterRelationListView(characterId: characterId)
     case .characterIndexList(let characterId):
       CharacterIndexListView(characterId: characterId)
 
@@ -154,6 +158,8 @@ enum NavDestination: Hashable, View {
       PersonCastListView(personId: personId)
     case .personWorkList(let personId):
       PersonWorkListView(personId: personId)
+    case .personRelationList(let personId):
+      PersonRelationListView(personId: personId)
     case .personIndexList(let personId):
       PersonIndexListView(personId: personId)
 

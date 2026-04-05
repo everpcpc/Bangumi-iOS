@@ -872,6 +872,13 @@ extension DatabaseOperator {
     }
   }
 
+  public func saveCharacterRelations(characterId: Int, items: [CharacterRelationDTO]) throws {
+    let character = try self.getCharacter(characterId)
+    if character?.relations != items {
+      character?.relations = items
+    }
+  }
+
   public func saveCharacterIndexes(characterId: Int, items: [SlimIndexDTO]) throws {
     let character = try self.getCharacter(characterId)
     if character?.indexes != items {
@@ -905,6 +912,13 @@ extension DatabaseOperator {
     let person = try self.getPerson(personId)
     if person?.works != items {
       person?.works = items
+    }
+  }
+
+  public func savePersonRelations(personId: Int, items: [PersonRelationDTO]) throws {
+    let person = try self.getPerson(personId)
+    if person?.relations != items {
+      person?.relations = items
     }
   }
 

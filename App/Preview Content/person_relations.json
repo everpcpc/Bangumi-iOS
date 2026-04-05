@@ -1,0 +1,57 @@
+{
+  "data": [
+    {
+      "person": {
+        "id": 39,
+        "name": "CLAMP",
+        "nameCN": "",
+        "type": 3,
+        "comment": 59,
+        "lock": false,
+        "nsfw": false,
+        "images": {
+          "large": "https://lain.bgm.tv/pic/crt/l/d6/7d/39_prsn_anidb.jpg",
+          "medium": "https://lain.bgm.tv/pic/crt/m/d6/7d/39_prsn_anidb.jpg",
+          "small": "https://lain.bgm.tv/pic/crt/s/d6/7d/39_prsn_anidb.jpg",
+          "grid": "https://lain.bgm.tv/pic/crt/g/d6/7d/39_prsn_anidb.jpg"
+        }
+      },
+      "relation": {
+        "id": 1,
+        "cn": "合作",
+        "desc": "长期合作关系",
+        "primary": true
+      },
+      "spoiler": false,
+      "ended": false,
+      "comment": "同一作品线中的合作方"
+    },
+    {
+      "person": {
+        "id": 262,
+        "name": "花田十輝",
+        "nameCN": "花田十辉",
+        "type": 1,
+        "comment": 580,
+        "lock": false,
+        "nsfw": false,
+        "images": {
+          "large": "https://lain.bgm.tv/pic/crt/l/92/18/262_prsn_ZX5aD.jpg?r=1687148390",
+          "medium": "https://lain.bgm.tv/pic/crt/m/92/18/262_prsn_ZX5aD.jpg?r=1687148390",
+          "small": "https://lain.bgm.tv/pic/crt/s/92/18/262_prsn_ZX5aD.jpg?r=1687148390",
+          "grid": "https://lain.bgm.tv/pic/crt/g/92/18/262_prsn_ZX5aD.jpg?r=1687148390"
+        }
+      },
+      "relation": {
+        "id": 6,
+        "cn": "共事",
+        "desc": "参与过同一项目",
+        "viceVersaTo": 6
+      },
+      "spoiler": false,
+      "ended": true,
+      "comment": "在多个企划中有共同参与"
+    }
+  ],
+  "total": 2
+}

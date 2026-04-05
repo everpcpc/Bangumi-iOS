@@ -277,6 +277,11 @@ extension Chii {
         try await db.saveCharacterCasts(characterId: characterId, items: response.data)
         await db.commit()
       },
+      loadDetail(label: "关联角色") {
+        let response = try await self.getCharacterRelations(characterId, limit: 10)
+        try await db.saveCharacterRelations(characterId: characterId, items: response.data)
+        await db.commit()
+      },
       loadDetail(label: "角色目录") {
         let response = try await self.getCharacterIndexes(characterId: characterId, limit: 5)
         try await db.saveCharacterIndexes(characterId: characterId, items: response.data)
@@ -313,6 +318,11 @@ extension Chii {
       loadDetail(label: "人物作品") {
         let response = try await self.getPersonWorks(personId, limit: 5)
         try await db.savePersonWorks(personId: personId, items: response.data)
+        await db.commit()
+      },
+      loadDetail(label: "关联人物") {
+        let response = try await self.getPersonRelations(personId, limit: 10)
+        try await db.savePersonRelations(personId: personId, items: response.data)
         await db.commit()
       },
       loadDetail(label: "人物目录") {
