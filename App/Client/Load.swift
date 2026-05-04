@@ -287,6 +287,11 @@ extension Chii {
         try await db.saveCharacterIndexes(characterId: characterId, items: response.data)
         await db.commit()
       },
+      loadDetail(label: "角色相册") {
+        let response = try await self.getCharacterPhotoPreview(characterId, limit: 6)
+        try await db.saveCharacterPhotos(characterId: characterId, items: response.data)
+        await db.commit()
+      },
     ]
     for task in tasks {
       await task.value
@@ -328,6 +333,11 @@ extension Chii {
       loadDetail(label: "人物目录") {
         let response = try await self.getPersonIndexes(personId: personId, limit: 5)
         try await db.savePersonIndexes(personId: personId, items: response.data)
+        await db.commit()
+      },
+      loadDetail(label: "人物相册") {
+        let response = try await self.getPersonPhotoPreview(personId, limit: 6)
+        try await db.savePersonPhotos(personId: personId, items: response.data)
         await db.commit()
       },
     ]

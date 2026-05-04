@@ -263,6 +263,9 @@ struct PersonDetailView: View {
     /// relations
     PersonRelationsView(personId: person.personId, relations: person.relations)
 
+    /// photos
+    MonoPhotosSectionView(owner: .person(person.personId), photos: person.photos)
+
     /// indexes
     PersonIndexsView(personId: person.personId, indexes: person.indexes)
   }

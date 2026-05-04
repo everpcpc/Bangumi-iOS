@@ -28,6 +28,7 @@ final class CharacterV2: Searchable, Linkable {
   var casts: [CharacterCastDTO] = []
   var relations: [CharacterRelationDTO] = []
   var indexes: [SlimIndexDTO] = []
+  var photos: [MonoPhotoDTO] = []
 
   var roleEnum: CharacterType {
     return CharacterType(role)

@@ -237,6 +237,72 @@ extension Chii {
     return resp
   }
 
+  func getCharacterPhotos(_ characterID: Int, limit: Int = 24, offset: Int = 0) async throws
+    -> PagedDTO<MonoPhotoDTO>
+  {
+    if self.mock {
+      return PagedDTO(data: [], total: 0)
+    }
+    let url = BangumiAPI.priv.build("p1/characters/\(characterID)/photos")
+    let queryItems: [URLQueryItem] = [
+      URLQueryItem(name: "limit", value: String(limit)),
+      URLQueryItem(name: "offset", value: String(offset)),
+    ]
+    let pageURL = url.appending(queryItems: queryItems)
+    let data = try await self.request(url: pageURL, method: "GET")
+    let resp: PagedDTO<MonoPhotoDTO> = try self.decodeResponse(data)
+    return resp
+  }
+
+  func getCharacterPhotoPreview(_ characterID: Int, limit: Int = 6) async throws
+    -> PagedDTO<MonoPhotoDTO>
+  {
+    if self.mock {
+      return PagedDTO(data: [], total: 0)
+    }
+    let url = BangumiAPI.priv.build("p1/characters/\(characterID)/photos/preview")
+    let pageURL = url.appending(queryItems: [
+      URLQueryItem(name: "limit", value: String(limit))
+    ])
+    let data = try await self.request(url: pageURL, method: "GET")
+    let resp: PagedDTO<MonoPhotoDTO> = try self.decodeResponse(data)
+    return resp
+  }
+
+  func getCharacterPhoto(_ characterID: Int, photoID: Int) async throws -> MonoPhotoDTO {
+    if self.mock {
+      throw ChiiError.notFound("photo not found")
+    }
+    let url = BangumiAPI.priv.build("p1/characters/\(characterID)/photos/\(photoID)")
+    let data = try await self.request(url: url, method: "GET")
+    let resp: MonoPhotoDTO = try self.decodeResponse(data)
+    return resp
+  }
+
+  func getCharacterPhotoComments(_ characterID: Int, photoID: Int) async throws -> [CommentDTO] {
+    if self.mock {
+      return []
+    }
+    let url = BangumiAPI.priv.build("p1/characters/\(characterID)/photos/\(photoID)/comments")
+    let data = try await self.request(url: url, method: "GET")
+    let resp: [CommentDTO] = try self.decodeResponse(data)
+    return resp
+  }
+
+  func createCharacterPhotoComment(
+    characterId: Int, photoId: Int, content: String, replyTo: Int?, token: String
+  ) async throws {
+    let url = BangumiAPI.priv.build("p1/characters/\(characterId)/photos/\(photoId)/comments")
+    var body: [String: Any] = [
+      "content": content,
+      "turnstileToken": token,
+    ]
+    if let replyTo = replyTo {
+      body["replyTo"] = replyTo
+    }
+    _ = try await self.request(url: url, method: "POST", body: body, auth: .required)
+  }
+
   func createCharacterComment(characterId: Int, content: String, replyTo: Int?, token: String)
     async throws
   {
@@ -965,6 +1031,72 @@ extension Chii {
     let data = try await self.request(url: url, method: "GET")
     let resp: [CommentDTO] = try self.decodeResponse(data)
     return resp
+  }
+
+  func getPersonPhotos(_ personID: Int, limit: Int = 24, offset: Int = 0) async throws
+    -> PagedDTO<MonoPhotoDTO>
+  {
+    if self.mock {
+      return PagedDTO(data: [], total: 0)
+    }
+    let url = BangumiAPI.priv.build("p1/persons/\(personID)/photos")
+    let queryItems: [URLQueryItem] = [
+      URLQueryItem(name: "limit", value: String(limit)),
+      URLQueryItem(name: "offset", value: String(offset)),
+    ]
+    let pageURL = url.appending(queryItems: queryItems)
+    let data = try await self.request(url: pageURL, method: "GET")
+    let resp: PagedDTO<MonoPhotoDTO> = try self.decodeResponse(data)
+    return resp
+  }
+
+  func getPersonPhotoPreview(_ personID: Int, limit: Int = 6) async throws
+    -> PagedDTO<MonoPhotoDTO>
+  {
+    if self.mock {
+      return PagedDTO(data: [], total: 0)
+    }
+    let url = BangumiAPI.priv.build("p1/persons/\(personID)/photos/preview")
+    let pageURL = url.appending(queryItems: [
+      URLQueryItem(name: "limit", value: String(limit))
+    ])
+    let data = try await self.request(url: pageURL, method: "GET")
+    let resp: PagedDTO<MonoPhotoDTO> = try self.decodeResponse(data)
+    return resp
+  }
+
+  func getPersonPhoto(_ personID: Int, photoID: Int) async throws -> MonoPhotoDTO {
+    if self.mock {
+      throw ChiiError.notFound("photo not found")
+    }
+    let url = BangumiAPI.priv.build("p1/persons/\(personID)/photos/\(photoID)")
+    let data = try await self.request(url: url, method: "GET")
+    let resp: MonoPhotoDTO = try self.decodeResponse(data)
+    return resp
+  }
+
+  func getPersonPhotoComments(_ personID: Int, photoID: Int) async throws -> [CommentDTO] {
+    if self.mock {
+      return []
+    }
+    let url = BangumiAPI.priv.build("p1/persons/\(personID)/photos/\(photoID)/comments")
+    let data = try await self.request(url: url, method: "GET")
+    let resp: [CommentDTO] = try self.decodeResponse(data)
+    return resp
+  }
+
+  func createPersonPhotoComment(
+    personId: Int, photoId: Int, content: String, replyTo: Int?, token: String
+  ) async throws {
+    let url = BangumiAPI.priv.build("p1/persons/\(personId)/photos/\(photoId)/comments")
+    var body: [String: Any] = [
+      "content": content,
+      "turnstileToken": token,
+    ]
+    if let replyTo = replyTo {
+      body["replyTo"] = replyTo
+    }
+    _ = try await self.request(url: url, method: "POST", body: body, auth: .required)
   }
 
   func createPersonComment(personId: Int, content: String, replyTo: Int?, token: String)
@@ -1763,7 +1895,11 @@ extension Chii {
       url = BangumiAPI.priv.build("p1/blogs/-/comments/\(commentId)")
     case .character:
       url = BangumiAPI.priv.build("p1/characters/-/comments/\(commentId)")
+    case .characterPhoto:
+      url = BangumiAPI.priv.build("p1/characters/-/comments/\(commentId)")
     case .person:
+      url = BangumiAPI.priv.build("p1/persons/-/comments/\(commentId)")
+    case .personPhoto:
       url = BangumiAPI.priv.build("p1/persons/-/comments/\(commentId)")
     case .episode:
       url = BangumiAPI.priv.build("p1/episodes/-/comments/\(commentId)")
@@ -1783,7 +1919,11 @@ extension Chii {
       url = BangumiAPI.priv.build("p1/blogs/-/comments/\(commentId)")
     case .character:
       url = BangumiAPI.priv.build("p1/characters/-/comments/\(commentId)")
+    case .characterPhoto:
+      url = BangumiAPI.priv.build("p1/characters/-/comments/\(commentId)")
     case .person:
+      url = BangumiAPI.priv.build("p1/persons/-/comments/\(commentId)")
+    case .personPhoto:
       url = BangumiAPI.priv.build("p1/persons/-/comments/\(commentId)")
     case .episode:
       url = BangumiAPI.priv.build("p1/episodes/-/comments/\(commentId)")

@@ -30,6 +30,7 @@ final class PersonV2: Searchable, Linkable {
   var works: [PersonWorkDTO] = []
   var relations: [PersonRelationDTO] = []
   var indexes: [SlimIndexDTO] = []
+  var photos: [MonoPhotoDTO] = []
 
   var typeEnum: PersonType {
     return PersonType(type)
