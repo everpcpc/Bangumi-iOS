@@ -248,6 +248,9 @@ struct CharacterDetailView: View {
     /// relations
     CharacterRelationsView(characterId: character.characterId, relations: character.relations)
 
+    /// photos
+    MonoPhotosSectionView(owner: .character(character.characterId), photos: character.photos)
+
     /// indexes
     CharacterIndexsView(characterId: character.characterId, indexes: character.indexes)
   }

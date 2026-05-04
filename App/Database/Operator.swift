@@ -885,6 +885,13 @@ extension DatabaseOperator {
       character?.indexes = items
     }
   }
+
+  public func saveCharacterPhotos(characterId: Int, items: [MonoPhotoDTO]) throws {
+    let character = try self.getCharacter(characterId)
+    if character?.photos != items {
+      character?.photos = items
+    }
+  }
 }
 
 // MARK: - save person
@@ -926,6 +933,13 @@ extension DatabaseOperator {
     let person = try self.getPerson(personId)
     if person?.indexes != items {
       person?.indexes = items
+    }
+  }
+
+  public func savePersonPhotos(personId: Int, items: [MonoPhotoDTO]) throws {
+    let person = try self.getPerson(personId)
+    if person?.photos != items {
+      person?.photos = items
     }
   }
 }
