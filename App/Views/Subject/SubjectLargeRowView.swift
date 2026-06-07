@@ -10,15 +10,16 @@ struct SubjectLargeRowView: View {
   var body: some View {
     HStack {
       ImageView(img: subject.images?.resize(.r200))
+        .imageCollectionStatus(ctype: subject.ctypeEnum)
         .imageStyle(width: 90, height: subject.typeEnum.coverHeight(for: 90))
         .imageType(.subject)
         .imageNSFW(subject.nsfw)
         .imageNavLink(subject.link)
-      VStack(alignment: .leading) {
+      VStack(alignment: .leading, spacing: 4) {
         // title
-        HStack {
+        HStack(spacing: 4) {
           VStack(alignment: .leading) {
-            HStack {
+            HStack(spacing: 4) {
               if subject.typeEnum != .none {
                 Image(systemName: subject.typeEnum.icon)
                   .foregroundStyle(.secondary)
@@ -29,7 +30,7 @@ struct SubjectLargeRowView: View {
                 .lineLimit(1)
             }
           }
-          Spacer()
+          Spacer(minLength: 0)
           if subject.rating.rank > 0 {
             Label(String(subject.rating.rank), systemImage: "chart.bar.xaxis")
               .foregroundStyle(.accent)
@@ -44,11 +45,8 @@ struct SubjectLargeRowView: View {
             .lineLimit(1)
         }
 
-        Spacer()
-
         // meta
         if !subject.info.isEmpty {
-          Spacer()
           Text(subject.info)
             .font(.footnote)
             .foregroundStyle(.secondary)
@@ -93,14 +91,7 @@ struct SubjectLargeRowView: View {
             Text("(少于10人评分)")
               .foregroundStyle(.secondary)
           }
-          Spacer()
-          if let interest = subject.interest {
-            Label(
-              interest.type.description(subject.typeEnum),
-              systemImage: interest.type.icon
-            )
-            .foregroundStyle(.accent)
-          }
+          Spacer(minLength: 0)
         }
         .font(.footnote)
       }.padding(.leading, 2)
@@ -132,6 +123,11 @@ struct SubjectItemView: View {
     CardView {
       if let subject = subject {
         SubjectLargeRowView(subject: subject)
+          .subjectCollectionStatusOverlay(
+            subjectId: subject.subjectId,
+            subjectType: subject.typeEnum,
+            collectionType: subject.ctypeEnum
+          )
       }
     }
   }
