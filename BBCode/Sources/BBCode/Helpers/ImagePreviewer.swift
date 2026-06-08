@@ -1,4 +1,5 @@
 import Foundation
+import LinkPresentation
 import SDWebImage
 import SDWebImageSwiftUI
 import SwiftUI
@@ -13,6 +14,7 @@ public struct ImagePreviewer: View {
   @State private var showControls = true
   @State private var reloadID = UUID()
   @State private var shouldRefresh = false
+  @State private var loadedImage: UIImage?
 
   @Environment(\.dismiss) private var dismiss
 
@@ -41,10 +43,11 @@ public struct ImagePreviewer: View {
               shouldRefresh = false
             }
           },
-          onSuccess: {
+          onSuccess: { image in
             DispatchQueue.main.async {
               failed = false
               shouldRefresh = false
+              loadedImage = image
             }
           },
           onSingleTap: {
@@ -73,22 +76,25 @@ public struct ImagePreviewer: View {
             Button(action: {
               dismiss()
             }) {
-              controlLabel(systemName: "xmark")
+              Image(systemName: "xmark")
+                .contentShape(Circle())
             }
+            .buttonBorderShape(.circle)
+            .controlSize(.large)
+            .adaptiveButtonStyle(.borderless)
 
             Spacer()
 
-            ShareLink(item: url) {
-              controlLabel(systemName: "square.and.arrow.up")
+            Button {
+              presentShareSheet()
+            } label: {
+              Image(systemName: "square.and.arrow.up")
+                .contentShape(Circle())
             }
-
-            Button(action: {
-              saveImage()
-            }) {
-              controlLabel(systemName: "square.and.arrow.down")
-            }
+            .buttonBorderShape(.circle)
+            .controlSize(.large)
+            .adaptiveButtonStyle(.borderless)
           }
-          .buttonStyle(.plain)
           .padding(.horizontal, 16)
           .padding(.vertical, 10)
           Spacer()
@@ -105,14 +111,6 @@ public struct ImagePreviewer: View {
     .navigationTransitionZoomIfAvailable(sourceID: zoomID, in: zoomNamespace)
   }
 
-  private func saveImage() {
-    Task {
-      guard let data = try? await URLSession.shared.data(from: url).0 else { return }
-      guard let img = UIImage(data: data) else { return }
-      UIImageWriteToSavedPhotosAlbum(img, nil, nil, nil)
-    }
-  }
-
   private var imageOptions: SDWebImageOptions {
     var options: SDWebImageOptions = [.retryFailed]
     if shouldRefresh {
@@ -127,18 +125,60 @@ public struct ImagePreviewer: View {
     reloadID = UUID()
   }
 
-  @ViewBuilder
-  private func controlLabel(systemName: String) -> some View {
-    Image(systemName: systemName)
-      .font(.system(size: 14, weight: .semibold))
-      .foregroundColor(.white)
-      .frame(width: 34, height: 34)
-      .background {
-        Circle()
-          .fill(.ultraThinMaterial)
-          .glassEffectIfAvailable(tint: .white.opacity(0.15), shape: Circle())
-      }
-      .contentShape(Circle())
+  private func presentShareSheet() {
+    guard let presenter = UIViewController.activeTopMostPresentedViewController else {
+      return
+    }
+
+    let activityItem = ImagePreviewActivityItemSource(image: loadedImage, url: url)
+    let controller = UIActivityViewController(
+      activityItems: [activityItem],
+      applicationActivities: nil
+    )
+    controller.popoverPresentationController?.sourceView = presenter.view
+    controller.popoverPresentationController?.sourceRect = CGRect(
+      x: presenter.view.bounds.maxX - 44,
+      y: presenter.view.safeAreaInsets.top + 44,
+      width: 1,
+      height: 1
+    )
+    presenter.present(controller, animated: true)
+  }
+}
+
+private final class ImagePreviewActivityItemSource: NSObject, UIActivityItemSource {
+  private let image: UIImage?
+  private let url: URL
+
+  init(image: UIImage?, url: URL) {
+    self.image = image
+    self.url = url
+  }
+
+  func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController)
+    -> Any
+  {
+    image ?? url
+  }
+
+  func activityViewController(
+    _ activityViewController: UIActivityViewController,
+    itemForActivityType activityType: UIActivity.ActivityType?
+  ) -> Any? {
+    image ?? url
+  }
+
+  func activityViewControllerLinkMetadata(_ activityViewController: UIActivityViewController)
+    -> LPLinkMetadata?
+  {
+    let metadata = LPLinkMetadata()
+    metadata.originalURL = url
+    metadata.url = url
+    metadata.title = url.lastPathComponent.isEmpty ? url.host : url.lastPathComponent
+    if let image {
+      metadata.imageProvider = NSItemProvider(object: image)
+    }
+    return metadata
   }
 }
 
@@ -149,7 +189,7 @@ private struct ZoomableImageScrollView: UIViewRepresentable {
   let maxScale: CGFloat
   let doubleTapScale: CGFloat
   let onFailure: () -> Void
-  let onSuccess: () -> Void
+  let onSuccess: (UIImage) -> Void
   let onSingleTap: () -> Void
 
   func makeCoordinator() -> ZoomableImageScrollCoordinator {
@@ -227,7 +267,7 @@ private final class ZoomableImageScrollCoordinator: NSObject, UIScrollViewDelega
       DispatchQueue.main.async {
         if let image {
           self.updateImage(image)
-          self.parent.onSuccess()
+          self.parent.onSuccess(image)
         } else {
           self.parent.onFailure()
         }
@@ -317,5 +357,19 @@ private final class ZoomableImageScrollCoordinator: NSObject, UIScrollViewDelega
     let originX = center.x - (width / 2)
     let originY = center.y - (height / 2)
     return CGRect(x: originX, y: originY, width: width, height: height)
+  }
+}
+
+extension UIViewController {
+  fileprivate static var activeTopMostPresentedViewController: UIViewController? {
+    let activeScene = UIApplication.shared.connectedScenes
+      .compactMap { $0 as? UIWindowScene }
+      .first { $0.activationState == .foregroundActive }
+    let rootViewController = activeScene?.windows.first { $0.isKeyWindow }?.rootViewController
+    return rootViewController?.topMostPresentedViewController
+  }
+
+  fileprivate var topMostPresentedViewController: UIViewController {
+    presentedViewController?.topMostPresentedViewController ?? self
   }
 }
