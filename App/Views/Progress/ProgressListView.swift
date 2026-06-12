@@ -1,17 +1,18 @@
-import SwiftData
 import SwiftUI
 
 struct ProgressListView: View {
   let subjectIds: [Int]
+  let reloadToken: Int
 
   var body: some View {
     LazyVStack(alignment: .leading) {
       ForEach(subjectIds, id: \.self) { subjectId in
-        ProgressSubjectContainerView(subjectId: subjectId) { subject, episodes in
+        ProgressSubjectContainerView(subjectId: subjectId, reloadToken: reloadToken) { item, reload in
           CardView {
             ProgressListItemContentView(
-              subject: subject,
-              episodes: episodes
+              subject: item.subject,
+              episodes: item.episodes,
+              reload: reload
             )
           }
           .transition(.opacity)
@@ -23,13 +24,14 @@ struct ProgressListView: View {
 }
 
 struct ProgressListItemContentView: View {
-  @Bindable var subject: Subject
-  let episodes: [Episode]
+  let subject: SubjectDTO
+  let episodes: [EpisodeDTO]
+  let reload: () async -> Void
 
   @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   var body: some View {
-    let subjectId = subject.subjectId
+    let subjectId = subject.id
     VStack(alignment: .leading, spacing: 4) {
       HStack {
         ImageView(img: subject.images?.resize(.r200))
@@ -51,17 +53,17 @@ struct ProgressListItemContentView: View {
 
           Spacer()
 
-          switch subject.typeEnum {
+          switch subject.type {
           case .anime, .real:
-            EpisodeRecentView(subject: subject, mode: .list, episodes: episodes)
+            EpisodeRecentView(subject: subject, mode: .list, episodes: episodes, reload: reload)
 
           case .book:
-            SubjectBookChaptersView(subject: subject, mode: .row)
+            SubjectBookChaptersView(subject: subject, mode: .row, reload: reload)
 
           default:
             Label(
-              subject.typeEnum.description,
-              systemImage: subject.typeEnum.icon
+              subject.type.description,
+              systemImage: subject.type.icon
             )
             .foregroundStyle(.accent)
             .font(.callout)
@@ -70,7 +72,7 @@ struct ProgressListItemContentView: View {
       }
 
       Section {
-        switch subject.typeEnum {
+        switch subject.type {
         case .book:
           VStack(spacing: 1) {
             ProgressView(
@@ -109,7 +111,11 @@ struct ProgressListItemContentView: View {
 
   return ScrollView {
     LazyVStack(alignment: .leading) {
-      ProgressListView(subjectIds: [subject.subjectId])
+      ProgressListItemContentView(
+        subject: SubjectDTO(subject),
+        episodes: episodes.map(EpisodeDTO.init),
+        reload: {}
+      )
         .modelContainer(container)
     }.padding()
   }

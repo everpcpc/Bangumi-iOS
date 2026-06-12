@@ -1,5 +1,4 @@
 import OSLog
-import SwiftData
 import SwiftUI
 
 struct SearchSubjectView: View {
@@ -18,7 +17,7 @@ struct SearchSubjectView: View {
       for item in resp.data {
         try await db.saveSubject(item)
       }
-      await db.commit()
+      try await db.commit()
       return resp
     } catch {
       Notifier.shared.alert(error: error)
@@ -40,21 +39,18 @@ struct SearchSubjectLocalView: View {
   let text: String
   let subjectType: SubjectType
 
-  @Query private var subjects: [Subject]
+  @State private var subjects: [SubjectDTO] = []
 
-  init(text: String, subjectType: SubjectType) {
-    self.text = text.gb
-    self.subjectType = subjectType
-
-    let stype = subjectType.rawValue
-    var desc = FetchDescriptor<Subject>(
-      predicate: #Predicate<Subject> {
-        return (stype == 0 || stype == $0.type)
-          && ($0.name.localizedStandardContains(text)
-            || $0.alias.localizedStandardContains(text))
-      })
-    desc.fetchLimit = 20
-    _subjects = Query(desc)
+  private func load() async {
+    do {
+      let db = try await AppContext.shared.getDB()
+      subjects = try await db.fetchLocalSubjects(
+        search: text.gb,
+        subjectType: subjectType
+      )
+    } catch {
+      Notifier.shared.alert(error: error)
+    }
   }
 
   var body: some View {
@@ -63,12 +59,16 @@ struct SearchSubjectLocalView: View {
         CardView {
           SubjectLargeRowView(subject: subject)
             .subjectCollectionStatusOverlay(
-              subjectId: subject.subjectId,
-              subjectType: subject.typeEnum,
-              collectionType: subject.ctypeEnum
+              subjectId: subject.id,
+              subjectType: subject.type,
+              collectionType: subject.ctypeEnum,
+              reload: load
             )
         }
       }
+    }
+    .task(id: "\(text)-\(subjectType.rawValue)") {
+      await load()
     }
   }
 }

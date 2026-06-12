@@ -1,5 +1,4 @@
 import OSLog
-import SwiftData
 import SwiftUI
 
 struct ChiiProgressView: View {
@@ -13,10 +12,12 @@ struct ChiiProgressView: View {
   @State private var refreshing: Bool = true
   @State private var refreshProgress: CGFloat = 0
   @State private var showRefreshAll: Bool = false
+  @State private var didInitialLoad: Bool = false
 
   @State private var search: String = ""
   @State private var subjectIds: [Int] = []
   @State private var counts: [SubjectType: Int] = [:]
+  @State private var progressReloadToken = 0
 
   private func loadCounts() async {
     do {
@@ -48,6 +49,12 @@ struct ChiiProgressView: View {
     }
   }
 
+  private func loadLocalProgress() async {
+    await updateSubjectIds()
+    await loadCounts()
+    progressReloadToken += 1
+  }
+
   func refresh(force: Bool = false, showProgress: Bool = true) async {
     let now = Date()
     if force {
@@ -61,11 +68,10 @@ struct ChiiProgressView: View {
       let count = try await refreshCollections(since: collectionsUpdatedAt)
       if count > 0 {
         Notifier.shared.notify(message: "更新了 \(count) 条收藏")
-        await updateSubjectIds()
-        await loadCounts()
       } else {
         Notifier.shared.notify(message: "没有收藏更新")
       }
+      await loadLocalProgress()
       collectionsUpdatedAt = Int(now.timeIntervalSince1970)
     } catch {
       Notifier.shared.notify(message: "更新失败: \(error)")
@@ -93,14 +99,14 @@ struct ChiiProgressView: View {
         loaded[item.id] = item.type
         refreshProgress = CGFloat(count) / CGFloat(resp.total)
       }
-      await db.commit()
+      try await db.commit()
       await SearchIndexing.index(resp.data.map { $0.searchable() })
       offset += limit
       if offset >= resp.total {
         break
       }
     }
-    await db.commit()
+    try await db.commit()
     if since > 0 {
       checkLoadEpisodes(loaded)
     }
@@ -147,9 +153,9 @@ struct ChiiProgressView: View {
             if !subjectIds.isEmpty {
               switch progressViewMode {
               case .list:
-                ProgressListView(subjectIds: subjectIds)
+                ProgressListView(subjectIds: subjectIds, reloadToken: progressReloadToken)
               case .tile:
-                ProgressTileView(subjectIds: subjectIds)
+                ProgressTileView(subjectIds: subjectIds, reloadToken: progressReloadToken)
               }
             } else if collectionsUpdatedAt > 0 {
               if refreshing {
@@ -184,12 +190,12 @@ struct ChiiProgressView: View {
         await refresh(showProgress: false)
       }
       .task {
-        guard subjectIds.isEmpty else { return }
+        guard !didInitialLoad else { return }
+        didInitialLoad = true
         refreshing = true
-        await updateSubjectIds()
-        await loadCounts()
-        await refresh()
+        await loadLocalProgress()
         refreshing = false
+        await refresh(showProgress: false)
       }
       .searchable(
         text: $search,

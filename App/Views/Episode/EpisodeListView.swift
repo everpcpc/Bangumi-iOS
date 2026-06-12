@@ -1,13 +1,11 @@
 import OSLog
-import SwiftData
 import SwiftUI
 
 struct EpisodeListView: View {
   let subjectId: Int
 
-  @Environment(\.modelContext) var modelContext
-
   @State private var refreshed: Bool = false
+  @State private var reloadToken = 0
   @State private var countMain: Int = 0
   @State private var countOther: Int = 0
 
@@ -16,21 +14,11 @@ struct EpisodeListView: View {
   @State private var sortDesc: Bool = false
 
   func loadCounts() async {
-    let mainType = EpisodeType.main.rawValue
     do {
-      let mainDesc = FetchDescriptor<Episode>(
-        predicate: #Predicate<Episode> {
-          $0.subjectId == subjectId && $0.type == mainType
-        })
-      let countMain = try modelContext.fetchCount(mainDesc)
-      self.countMain = countMain
-
-      let otherDesc = FetchDescriptor<Episode>(
-        predicate: #Predicate<Episode> {
-          $0.subjectId == subjectId && $0.type != mainType
-        })
-      let countOther = try modelContext.fetchCount(otherDesc)
-      self.countOther = countOther
+      let db = try await AppContext.shared.getDB()
+      let counts = try await db.fetchEpisodeCounts(subjectId: subjectId)
+      countMain = counts.main
+      countOther = counts.other
     } catch {
       Notifier.shared.alert(error: error)
     }
@@ -42,6 +30,7 @@ struct EpisodeListView: View {
 
     do {
       try await EpisodeRepository.loadEpisodes(subjectId)
+      reloadToken += 1
     } catch {
       Notifier.shared.alert(error: error)
     }
@@ -73,7 +62,8 @@ struct EpisodeListView: View {
     }.padding(.horizontal, 8)
     EpisodeListDetailView(
       subjectId: subjectId, sortDesc: sortDesc,
-      main: main, filterCollection: filterCollection
+      main: main, filterCollection: filterCollection,
+      reloadToken: reloadToken
     )
     .navigationTitle("章节列表")
     .navigationBarTitleDisplayMode(.inline)
@@ -92,51 +82,38 @@ struct EpisodeListDetailView: View {
   let sortDesc: Bool
   let main: Bool
   let filterCollection: Bool
+  let reloadToken: Int
 
-  @Query private var episodes: [Episode]
+  @State private var episodes: [EpisodeDTO] = []
 
-  init(subjectId: Int, sortDesc: Bool, main: Bool, filterCollection: Bool) {
-    self.subjectId = subjectId
-    self.sortDesc = sortDesc
-    self.main = main
-    self.filterCollection = filterCollection
-
-    let sortBy =
-      sortDesc ? SortDescriptor<Episode>(\.sort, order: .reverse) : SortDescriptor<Episode>(\.sort)
-    let mainType = EpisodeType.main.rawValue
-
-    // 将复杂的条件从 #Predicate 中移出，按分支选择简单谓词，避免类型检查开销
-    let predicate: Predicate<Episode>
-    if main && filterCollection {
-      predicate = #Predicate<Episode> {
-        $0.subjectId == subjectId && $0.type == mainType && $0.status == 0
-      }
-    } else if main {
-      predicate = #Predicate<Episode> {
-        $0.subjectId == subjectId && $0.type == mainType
-      }
-    } else if filterCollection {
-      predicate = #Predicate<Episode> {
-        $0.subjectId == subjectId && $0.type != mainType && $0.status == 0
-      }
-    } else {
-      predicate = #Predicate<Episode> {
-        $0.subjectId == subjectId && $0.type != mainType
-      }
+  private func load() async {
+    do {
+      let db = try await AppContext.shared.getDB()
+      episodes = try await db.fetchEpisodes(
+        subjectId: subjectId,
+        main: main,
+        uncollectedOnly: filterCollection,
+        sortDesc: sortDesc
+      )
+    } catch {
+      Notifier.shared.alert(error: error)
     }
-
-    let descriptor = FetchDescriptor<Episode>(predicate: predicate, sortBy: [sortBy])
-    _episodes = Query(descriptor)
   }
 
   var body: some View {
     ScrollView {
       LazyVStack(spacing: 10) {
         ForEach(episodes) { item in
-          EpisodeRowView(episode: item)
+          EpisodeRowView(episode: item) {
+            await load()
+          }
         }
       }.padding(.horizontal, 8)
-    }.animation(.default, value: episodes)
+    }
+    .animation(.default, value: episodes)
+    .task(id: "\(subjectId)-\(sortDesc)-\(main)-\(filterCollection)-\(reloadToken)") {
+      await load()
+    }
   }
 }
 
