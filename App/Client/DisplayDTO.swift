@@ -51,12 +51,87 @@ struct DraftDTO: Identifiable, Hashable {
   var updatedAt: Int
 }
 
-struct ProgressSubjectDTO: Identifiable, Hashable {
+struct ProgressSubjectDTO: Codable, Identifiable, Hashable, Sendable {
   var subject: SubjectDTO
   var episodes: [EpisodeDTO]
 
   var id: Int {
     subject.id
+  }
+}
+
+enum ProgressSubjectInvalidation {
+  static let notificationName = Notification.Name("ProgressSubjectInvalidated")
+
+  private static let subjectIdKey = "subjectId"
+  private static let mayChangeProgressMembershipKey = "mayChangeProgressMembership"
+
+  @MainActor
+  static func post(
+    subjectId: Int,
+    mayChangeProgressMembership: Bool = false
+  ) async {
+    await ProgressSubjectInvalidationStore.shared.insert(
+      subjectId,
+      mayChangeProgressMembership: mayChangeProgressMembership
+    )
+    NotificationCenter.default.post(
+      name: notificationName,
+      object: nil,
+      userInfo: [
+        subjectIdKey: subjectId,
+        mayChangeProgressMembershipKey: mayChangeProgressMembership,
+      ]
+    )
+  }
+
+  static func subjectId(from notification: Notification) -> Int? {
+    notification.userInfo?[subjectIdKey] as? Int
+  }
+
+  static func mayChangeProgressMembership(from notification: Notification) -> Bool {
+    notification.userInfo?[mayChangeProgressMembershipKey] as? Bool ?? false
+  }
+}
+
+struct PendingProgressSubjectInvalidation: Sendable {
+  let subjectId: Int
+  let mayChangeProgressMembership: Bool
+}
+
+actor ProgressSubjectInvalidationStore {
+  static let shared = ProgressSubjectInvalidationStore()
+
+  private var subjectIds: Set<Int> = []
+  private var membershipChangingSubjectIds: Set<Int> = []
+
+  func insert(_ subjectId: Int, mayChangeProgressMembership: Bool) {
+    subjectIds.insert(subjectId)
+    if mayChangeProgressMembership {
+      membershipChangingSubjectIds.insert(subjectId)
+    }
+  }
+
+  func takeSubjectId(_ subjectId: Int) {
+    subjectIds.remove(subjectId)
+    membershipChangingSubjectIds.remove(subjectId)
+  }
+
+  func takePendingInvalidations(
+    loadedSubjectIds: Set<Int>
+  ) -> [PendingProgressSubjectInvalidation] {
+    let membershipChangingSubjectIdsSnapshot = membershipChangingSubjectIds
+    let matchedSubjectIds = subjectIds
+      .intersection(loadedSubjectIds)
+      .union(membershipChangingSubjectIdsSnapshot)
+    subjectIds.subtract(matchedSubjectIds)
+    self.membershipChangingSubjectIds.subtract(matchedSubjectIds)
+    return matchedSubjectIds.map { subjectId in
+      PendingProgressSubjectInvalidation(
+        subjectId: subjectId,
+        mayChangeProgressMembership: membershipChangingSubjectIdsSnapshot.contains(subjectId)
+      )
+    }
   }
 }
 

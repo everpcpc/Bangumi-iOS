@@ -396,11 +396,34 @@ extension DatabaseOperator {
       return nil
     }
 
+    return try makeProgressSubject(subject, episodeWindowSize: episodeWindowSize)
+  }
+
+  public func fetchProgressSubject(
+    subjectId: Int,
+    progressTab: SubjectType,
+    search: String,
+    episodeWindowSize: Int = 7
+  ) throws -> ProgressSubjectDTO? {
+    guard let subject = try getSubject(subjectId) else {
+      return nil
+    }
+    guard matchesProgressFilters(subject, progressTab: progressTab, search: search) else {
+      return nil
+    }
+
+    return try makeProgressSubject(subject, episodeWindowSize: episodeWindowSize)
+  }
+
+  private func makeProgressSubject(
+    _ subject: Subject,
+    episodeWindowSize: Int
+  ) throws -> ProgressSubjectDTO {
     let episodes: [EpisodeDTO]
     switch subject.typeEnum {
     case .anime, .real:
       episodes = try fetchProgressEpisodes(
-        subjectId: subjectId,
+        subjectId: subject.subjectId,
         windowSize: episodeWindowSize
       )
     default:
@@ -411,6 +434,40 @@ extension DatabaseOperator {
       subject: SubjectDTO(subject),
       episodes: episodes
     )
+  }
+
+  private func matchesProgressFilters(
+    _ subject: Subject,
+    progressTab: SubjectType,
+    search: String
+  ) -> Bool {
+    let stype = progressTab.rawValue
+    let doingType = CollectionType.doing.rawValue
+    guard (stype == 0 || subject.type == stype) && subject.ctype == doingType else {
+      return false
+    }
+    return search.isEmpty || subject.name.localizedStandardContains(search)
+      || subject.alias.localizedStandardContains(search)
+  }
+
+  public func fetchProgressSubjects(
+    progressTab: SubjectType,
+    progressSortMode: ProgressSortMode,
+    search: String,
+    episodeWindowSize: Int,
+    limit: Int,
+    offset: Int
+  ) throws -> PagedDTO<ProgressSubjectDTO> {
+    let subjectIds = try fetchProgressSubjectIds(
+      progressTab: progressTab,
+      progressSortMode: progressSortMode,
+      search: search
+    )
+    let pageIds = subjectIds.dropFirst(offset).prefix(limit)
+    let items = try pageIds.compactMap {
+      try fetchProgressSubject(subjectId: $0, episodeWindowSize: episodeWindowSize)
+    }
+    return PagedDTO(data: items, total: subjectIds.count)
   }
 
   private func fetchProgressEpisodes(subjectId: Int, windowSize: Int) throws -> [EpisodeDTO] {
@@ -795,9 +852,10 @@ extension DatabaseOperator {
     subject.collectedAt = now - 1
   }
 
+  @discardableResult
   public func updateEpisodeCollection(
     episodeId: Int, type: EpisodeCollectionType, batch: Bool = false
-  ) throws {
+  ) throws -> Int? {
     let now = Int(Date().timeIntervalSince1970)
     let episode = try self.fetchOne(
       predicate: #Predicate<Episode> {
@@ -805,10 +863,10 @@ extension DatabaseOperator {
       }
     )
     guard let episode = episode else {
-      return
+      return nil
     }
+    let subjectId = episode.subjectId
     if batch {
-      let subjectId = episode.subjectId
       let sort = episode.sort
       let descriptor = FetchDescriptor<Episode>(
         predicate: #Predicate<Episode> {
@@ -828,6 +886,7 @@ extension DatabaseOperator {
     }
     episode.subject?.interest?.updatedAt = now - 1
     episode.subject?.collectedAt = now - 1
+    return subjectId
   }
 
   public func updateCharacterCollection(characterId: Int, collectedAt: Int) throws {

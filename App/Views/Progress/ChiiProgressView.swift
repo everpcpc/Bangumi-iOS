@@ -15,9 +15,64 @@ struct ChiiProgressView: View {
   @State private var didInitialLoad: Bool = false
 
   @State private var search: String = ""
-  @State private var subjectIds: [Int] = []
+  @State private var progressSubjects: [ProgressSubjectDTO] = []
   @State private var counts: [SubjectType: Int] = [:]
-  @State private var progressReloadToken = 0
+  @State private var progressTotal: Int = 0
+  @State private var progressOffset: Int = 0
+  @State private var progressPageLoading: Bool = false
+  @State private var progressLoadGeneration: Int = 0
+
+  private let progressPageLimit = 20
+
+  private var progressEpisodeWindowSize: Int {
+    switch progressViewMode {
+    case .list:
+      7
+    case .tile:
+      5
+    }
+  }
+
+  private var hasMoreProgress: Bool {
+    progressOffset < progressTotal
+  }
+
+  private func applyProgressSubjects(_ updatedSubjects: [ProgressSubjectDTO], total: Int) {
+    if progressSubjects != updatedSubjects {
+      withAnimation {
+        progressSubjects = updatedSubjects
+      }
+    }
+    progressTotal = total
+    progressOffset = min(updatedSubjects.count, total)
+  }
+
+  private func removeProgressSubject(_ subjectId: Int) {
+    let updatedSubjects = progressSubjects.filter { $0.id != subjectId }
+    let removedCount = progressSubjects.count - updatedSubjects.count
+    guard removedCount > 0 else {
+      return
+    }
+
+    let updatedTotal = max(updatedSubjects.count, progressTotal - removedCount)
+    withAnimation {
+      progressSubjects = updatedSubjects
+      progressTotal = updatedTotal
+      progressOffset = min(updatedSubjects.count, updatedTotal)
+    }
+  }
+
+  private func mergeProgressSubject(_ item: ProgressSubjectDTO) {
+    let updatedSubjects = progressSubjects.mergedById(with: [item])
+    guard progressSubjects != updatedSubjects else {
+      return
+    }
+
+    withAnimation {
+      progressSubjects = updatedSubjects
+      progressOffset = min(updatedSubjects.count, progressTotal)
+    }
+  }
 
   private func loadCounts() async {
     do {
@@ -31,28 +86,198 @@ struct ChiiProgressView: View {
     }
   }
 
-  private func updateSubjectIds() async {
+  private func loadProgressPage(reset: Bool, generation: Int) async {
+    if !reset {
+      guard !progressPageLoading, hasMoreProgress else {
+        return
+      }
+    }
+    progressPageLoading = true
     do {
       let db = try await AppContext.shared.getDB()
-      let result = try await db.fetchProgressSubjectIds(
+      let result = try await db.fetchProgressSubjects(
         progressTab: progressTab,
         progressSortMode: progressSortMode,
-        search: search
+        search: search,
+        episodeWindowSize: progressEpisodeWindowSize,
+        limit: progressPageLimit,
+        offset: reset ? 0 : progressOffset
       )
-      if subjectIds != result {
-        withAnimation {
-          subjectIds = result
-        }
+      guard generation == progressLoadGeneration else {
+        return
+      }
+      if reset {
+        applyProgressSubjects(result.data, total: result.total)
+      } else {
+        let updatedSubjects = progressSubjects.mergedById(with: result.data)
+        applyProgressSubjects(updatedSubjects, total: result.total)
       }
     } catch {
-      Logger.app.error("Failed to update subject IDs: \(error)")
+      Logger.app.error("Failed to load progress page: \(error)")
+      Notifier.shared.alert(error: error)
+    }
+    guard generation == progressLoadGeneration else {
+      return
+    }
+    progressPageLoading = false
+  }
+
+  private func reloadProgressPages() async {
+    progressLoadGeneration += 1
+    let generation = progressLoadGeneration
+    await loadProgressPage(reset: true, generation: generation)
+  }
+
+  private func loadNextProgressPage() async {
+    await loadProgressPage(reset: false, generation: progressLoadGeneration)
+  }
+
+  private func reloadLoadedProgressWindow(
+    generation: Int,
+    progressTab: SubjectType,
+    progressSortMode: ProgressSortMode,
+    progressViewMode: ProgressViewMode,
+    search: String,
+    episodeWindowSize: Int,
+    limit: Int
+  ) async throws {
+    let db = try await AppContext.shared.getDB()
+    let result = try await db.fetchProgressSubjects(
+      progressTab: progressTab,
+      progressSortMode: progressSortMode,
+      search: search,
+      episodeWindowSize: episodeWindowSize,
+      limit: max(limit, progressPageLimit),
+      offset: 0
+    )
+    guard generation == progressLoadGeneration,
+      progressTab == self.progressTab,
+      progressSortMode == self.progressSortMode,
+      progressViewMode == self.progressViewMode,
+      search == self.search
+    else {
+      return
+    }
+    applyProgressSubjects(result.data, total: result.total)
+  }
+
+  private func reloadProgressSubject(
+    _ subjectId: Int,
+    mayChangeProgressMembership: Bool = false
+  ) async {
+    let generation = progressLoadGeneration
+    let progressTabSnapshot = progressTab
+    let progressSortModeSnapshot = progressSortMode
+    let progressViewModeSnapshot = progressViewMode
+    let searchSnapshot = search
+    let episodeWindowSizeSnapshot = progressEpisodeWindowSize
+
+    do {
+      let db = try await AppContext.shared.getDB()
+      let item = try await db.fetchProgressSubject(
+        subjectId: subjectId,
+        progressTab: progressTabSnapshot,
+        search: searchSnapshot,
+        episodeWindowSize: episodeWindowSizeSnapshot
+      )
+      guard generation == progressLoadGeneration,
+        progressTabSnapshot == progressTab,
+        progressSortModeSnapshot == progressSortMode,
+        progressViewModeSnapshot == progressViewMode,
+        searchSnapshot == search
+      else {
+        return
+      }
+      let isLoaded = progressSubjects.contains(where: { $0.id == subjectId })
+      guard isLoaded || mayChangeProgressMembership else {
+        return
+      }
+
+      guard isLoaded else {
+        try await reloadLoadedProgressWindow(
+          generation: generation,
+          progressTab: progressTabSnapshot,
+          progressSortMode: progressSortModeSnapshot,
+          progressViewMode: progressViewModeSnapshot,
+          search: searchSnapshot,
+          episodeWindowSize: episodeWindowSizeSnapshot,
+          limit: progressSubjects.count
+        )
+        await loadCounts()
+        return
+      }
+
+      guard let item else {
+        removeProgressSubject(subjectId)
+        if mayChangeProgressMembership {
+          await loadCounts()
+        }
+        return
+      }
+      if progressSortModeSnapshot == .airTime {
+        try await reloadLoadedProgressWindow(
+          generation: generation,
+          progressTab: progressTabSnapshot,
+          progressSortMode: progressSortModeSnapshot,
+          progressViewMode: progressViewModeSnapshot,
+          search: searchSnapshot,
+          episodeWindowSize: episodeWindowSizeSnapshot,
+          limit: progressSubjects.count
+        )
+        if mayChangeProgressMembership {
+          await loadCounts()
+        }
+        return
+      }
+      mergeProgressSubject(item)
+      if mayChangeProgressMembership {
+        await loadCounts()
+      }
+    } catch {
+      Logger.app.error("Failed to reload progress subject: \(error)")
+      Notifier.shared.alert(error: error)
+    }
+  }
+
+  private func reloadLoadedProgressSubject(_ subjectId: Int) async {
+    await reloadProgressSubject(subjectId)
+  }
+
+  private func handleProgressSubjectInvalidation(_ notification: Notification) {
+    guard let subjectId = ProgressSubjectInvalidation.subjectId(from: notification) else {
+      return
+    }
+    let mayChangeProgressMembership =
+      ProgressSubjectInvalidation.mayChangeProgressMembership(from: notification)
+    guard mayChangeProgressMembership || progressSubjects.contains(where: { $0.id == subjectId })
+    else {
+      return
+    }
+    Task {
+      await ProgressSubjectInvalidationStore.shared.takeSubjectId(subjectId)
+      await reloadProgressSubject(
+        subjectId,
+        mayChangeProgressMembership: mayChangeProgressMembership
+      )
+    }
+  }
+
+  private func reloadPendingProgressSubjects() async {
+    let loadedSubjectIds = Set(progressSubjects.map(\.id))
+    let invalidations = await ProgressSubjectInvalidationStore.shared.takePendingInvalidations(
+      loadedSubjectIds: loadedSubjectIds
+    )
+    for invalidation in invalidations {
+      await reloadProgressSubject(
+        invalidation.subjectId,
+        mayChangeProgressMembership: invalidation.mayChangeProgressMembership
+      )
     }
   }
 
   private func loadLocalProgress() async {
-    await updateSubjectIds()
+    await reloadProgressPages()
     await loadCounts()
-    progressReloadToken += 1
   }
 
   func refresh(force: Bool = false, showProgress: Bool = true) async {
@@ -137,54 +362,118 @@ struct ChiiProgressView: View {
     }
   }
 
-  var body: some View {
-    if isAuthenticated {
-      ScrollView {
-        VStack {
-          Picker("SubjectType", selection: $progressTab) {
-            ForEach(SubjectType.progressTypes) { type in
-              Text(typeDesc(stype: type)).tag(type)
-            }
-          }
-          .padding(.horizontal, 8)
-          .pickerStyle(.segmented)
-
-          Group {
-            if !subjectIds.isEmpty {
-              switch progressViewMode {
-              case .list:
-                ProgressListView(subjectIds: subjectIds, reloadToken: progressReloadToken)
-              case .tile:
-                ProgressTileView(subjectIds: subjectIds, reloadToken: progressReloadToken)
-              }
-            } else if collectionsUpdatedAt > 0 {
-              if refreshing {
-                ProgressView()
-                  .padding()
-              } else {
-                ContentUnavailableView {
-                  Label("没有条目", systemImage: "tray")
-                } description: {
-                  Text("当前列表为空，或是搜索无结果")
-                }
-              }
-            } else {
-              if refreshing {
-                HStack {
-                  ProgressView(value: refreshProgress)
-                    .progressViewStyle(.linear)
-                }.padding()
-              } else {
-                ContentUnavailableView {
-                  Label("没有收藏数据", systemImage: "tray")
-                } description: {
-                  Text("下拉刷新以获取正在观看的条目")
-                }
-              }
-            }
-          }
+  @ViewBuilder
+  private var progressSubjectsView: some View {
+    if !progressSubjects.isEmpty {
+      switch progressViewMode {
+      case .list:
+        ProgressListView(
+          items: progressSubjects,
+          isLoadingPage: progressPageLoading,
+          hasMore: hasMoreProgress,
+          loadNextPage: loadNextProgressPage,
+          reloadSubject: reloadLoadedProgressSubject
+        )
+      case .tile:
+        ProgressTileView(
+          items: progressSubjects,
+          isLoadingPage: progressPageLoading,
+          hasMore: hasMoreProgress,
+          loadNextPage: loadNextProgressPage,
+          reloadSubject: reloadLoadedProgressSubject
+        )
+      }
+    } else if collectionsUpdatedAt > 0 {
+      if refreshing || progressPageLoading {
+        ProgressView()
+          .padding()
+      } else {
+        ContentUnavailableView {
+          Label("没有条目", systemImage: "tray")
+        } description: {
+          Text("当前列表为空，或是搜索无结果")
         }
       }
+    } else {
+      if refreshing {
+        HStack {
+          ProgressView(value: refreshProgress)
+            .progressViewStyle(.linear)
+        }.padding()
+      } else {
+        ContentUnavailableView {
+          Label("没有收藏数据", systemImage: "tray")
+        } description: {
+          Text("下拉刷新以获取正在观看的条目")
+        }
+      }
+    }
+  }
+
+  private var progressTypePicker: some View {
+    Picker("SubjectType", selection: $progressTab) {
+      ForEach(SubjectType.progressTypes) { type in
+        Text(typeDesc(stype: type)).tag(type)
+      }
+    }
+    .padding(.horizontal, 8)
+    .pickerStyle(.segmented)
+  }
+
+  private var progressOptionsMenu: some View {
+    Menu {
+      Picker("显示模式", selection: $progressViewMode) {
+        ForEach(ProgressViewMode.allCases, id: \.self) { mode in
+          Label(mode.desc, systemImage: mode.icon).tag(mode)
+        }
+      }
+
+      Picker("排序方式", selection: $progressSortMode) {
+        ForEach(ProgressSortMode.allCases, id: \.self) { mode in
+          Text(mode.desc).tag(mode)
+        }
+      }
+
+      Picker("副标题内容", selection: $secondLineMode) {
+        ForEach(ProgressSecondLineMode.allCases, id: \.self) { mode in
+          Label(mode.desc, systemImage: mode.icon).tag(mode)
+        }
+      }
+
+      Divider()
+
+      Button("刷新所有收藏", role: .destructive) {
+        showRefreshAll = true
+      }
+    } label: {
+      Image(systemName: "ellipsis")
+    }
+    .pickerStyle(.menu)
+  }
+
+  @ViewBuilder
+  private var progressToolbarContent: some View {
+    if refreshing {
+      ProgressView()
+    } else {
+      progressOptionsMenu
+    }
+  }
+
+  @ToolbarContentBuilder
+  private var progressToolbar: some ToolbarContent {
+    ToolbarItem(placement: .topBarTrailing) {
+      progressToolbarContent
+    }
+  }
+
+  private var authenticatedBody: some View {
+    ScrollView {
+      VStack {
+        progressTypePicker
+        progressSubjectsView
+      }
+    }
       .refreshable {
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         await refresh(showProgress: false)
@@ -204,44 +493,20 @@ struct ChiiProgressView: View {
       )
       .navigationTitle("进度管理")
       .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem(placement: .topBarTrailing) {
-          if refreshing {
-            ProgressView()
-          } else {
-            Menu {
-              Picker("显示模式", selection: $progressViewMode) {
-                ForEach(ProgressViewMode.allCases, id: \.self) { mode in
-                  Label(mode.desc, systemImage: mode.icon).tag(mode)
-                }
-              }
-
-              Picker("排序方式", selection: $progressSortMode) {
-                ForEach(ProgressSortMode.allCases, id: \.self) { mode in
-                  Text(mode.desc).tag(mode)
-                }
-              }
-
-              Picker("副标题内容", selection: $secondLineMode) {
-                ForEach(ProgressSecondLineMode.allCases, id: \.self) { mode in
-                  Label(mode.desc, systemImage: mode.icon).tag(mode)
-                }
-              }
-
-              Divider()
-
-              Button("刷新所有收藏", role: .destructive) {
-                showRefreshAll = true
-              }
-            } label: {
-              Image(systemName: "ellipsis")
-            }.pickerStyle(.menu)
-          }
+      .toolbar { progressToolbar }
+      .onChange(of: progressTab) { Task { await reloadProgressPages() } }
+      .onChange(of: search) { Task { await reloadProgressPages() } }
+      .onChange(of: progressSortMode) { Task { await reloadProgressPages() } }
+      .onChange(of: progressViewMode) { Task { await reloadProgressPages() } }
+      .onReceive(
+        NotificationCenter.default.publisher(for: ProgressSubjectInvalidation.notificationName),
+        perform: handleProgressSubjectInvalidation
+      )
+      .onAppear {
+        Task {
+          await reloadPendingProgressSubjects()
         }
       }
-      .onChange(of: progressTab) { Task { await updateSubjectIds() } }
-      .onChange(of: search) { Task { await updateSubjectIds() } }
-      .onChange(of: progressSortMode) { Task { await updateSubjectIds() } }
       .alert("刷新所有收藏", isPresented: $showRefreshAll) {
         Button("取消", role: .cancel) {}
         Button("确定", role: .destructive) {
@@ -250,10 +515,19 @@ struct ChiiProgressView: View {
       } message: {
         Text("将从服务器重新下载所有收藏数据，可能需要较长时间")
       }
+  }
+
+  private var unauthenticatedBody: some View {
+    AuthView(slogan: "使用 Bangumi 管理观看进度")
+      .navigationTitle("进度管理")
+      .navigationBarTitleDisplayMode(.inline)
+  }
+
+  var body: some View {
+    if isAuthenticated {
+      authenticatedBody
     } else {
-      AuthView(slogan: "使用 Bangumi 管理观看进度")
-        .navigationTitle("进度管理")
-        .navigationBarTitleDisplayMode(.inline)
+      unauthenticatedBody
     }
   }
 }
