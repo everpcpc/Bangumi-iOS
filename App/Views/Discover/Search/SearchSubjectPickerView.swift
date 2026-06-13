@@ -81,7 +81,7 @@ struct SearchSubjectPickerRemoteView: View {
   @Environment(\.dismiss) var dismiss
   @State private var reloader = false
 
-  private func fetch(limit: Int, offset: Int) async -> PagedDTO<SlimSubjectDTO>? {
+  private func fetch(limit: Int, offset: Int) async -> PagedDTO<SubjectListItemDTO>? {
     do {
       guard let db = await AppContext.shared.databaseIfAvailable() else {
         throw ChiiError.uninitialized
@@ -92,7 +92,7 @@ struct SearchSubjectPickerRemoteView: View {
         try await db.saveSubject(item)
       }
       try await db.commit()
-      return resp
+      return PagedDTO(data: try await db.makeSubjectListItems(resp.data), total: resp.total)
     } catch {
       Notifier.shared.alert(error: error)
     }
@@ -100,8 +100,11 @@ struct SearchSubjectPickerRemoteView: View {
   }
 
   var body: some View {
-    PageView<SlimSubjectDTO, _>(reloader: reloader, nextPageFunc: fetch) { item in
-      SearchSubjectPickerItemView(subjectId: item.id) { selectedId in
+    PageView<SubjectListItemDTO, _>(reloader: reloader, nextPageFunc: fetch) { item in
+      SearchSubjectPickerItemView(
+        subject: item.subject,
+        collectionType: item.collectionType
+      ) { selectedId in
         onSelect(selectedId)
         dismiss()
       }
@@ -148,31 +151,26 @@ struct SearchSubjectPickerLocalView: View {
 }
 
 struct SearchSubjectPickerItemView: View {
-  let subjectId: Int
+  let subject: SlimSubjectDTO
+  let collectionType: CollectionType
   let onSelect: (Int) -> Void
 
-  @State private var subject: SubjectDTO?
-
-  private func load() async {
-    do {
-      let db = try await AppContext.shared.getDB()
-      subject = try await db.getSubjectDTO(subjectId)
-    } catch {
-      Notifier.shared.alert(error: error)
-    }
+  init(
+    subject: SlimSubjectDTO,
+    collectionType: CollectionType,
+    onSelect: @escaping (Int) -> Void
+  ) {
+    self.subject = subject
+    self.collectionType = collectionType
+    self.onSelect = onSelect
   }
 
   var body: some View {
     CardView {
-      if let subject = subject {
-        SubjectLargeRowView(subject: subject)
-      }
+      SubjectSlimRowView(subject: subject, collectionType: collectionType)
     }
     .onTapGesture {
-      onSelect(subjectId)
-    }
-    .task(id: subjectId) {
-      await load()
+      onSelect(subject.id)
     }
   }
 }
