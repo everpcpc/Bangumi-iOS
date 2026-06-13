@@ -151,14 +151,39 @@ extension Int {
     return self.date.formatted(date: .numeric, time: .shortened)
   }
 
-  var relativeText: Text {
-    // < 7 days
-    let relative = -self.date.timeIntervalSinceNow
-    if relative < 604800 {
-      return Text("\(self.date, style: .relative)前").monospacedDigit()
-    } else {
-      return Text(self.date.formatted(date: .numeric, time: .shortened))
+  var relativeDisplay: String {
+    let elapsed = relativeElapsedSeconds
+    if elapsed < 604800 {
+      return formatRelativeAge(elapsed: elapsed)
     }
+    return self.datetimeDisplay
+  }
+
+  var relativeAgeDisplay: String {
+    return formatRelativeAge(elapsed: relativeElapsedSeconds)
+  }
+
+  private var relativeElapsedSeconds: Int {
+    Swift.max(0, Int(-self.date.timeIntervalSinceNow))
+  }
+
+  private func formatRelativeAge(elapsed: Int) -> String {
+    if elapsed < 60 {
+      return "刚刚"
+    }
+    if elapsed < 3600 {
+      return "\(elapsed / 60)分钟前"
+    }
+    if elapsed < 86400 {
+      return "\(elapsed / 3600)小时前"
+    }
+    if elapsed < 2_592_000 {
+      return "\(elapsed / 86400)天前"
+    }
+    if elapsed < 31_536_000 {
+      return "\(elapsed / 2_592_000)个月前"
+    }
+    return "\(elapsed / 31_536_000)年前"
   }
 }
 
