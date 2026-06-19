@@ -74,6 +74,39 @@ struct ProgressSubjectDTO: Codable, Identifiable, Sendable {
   }
 }
 
+enum MonoCollectionInvalidation {
+  static let notificationName = Notification.Name("MonoCollectionInvalidated")
+
+  private static let characterIdKey = "characterId"
+  private static let personIdKey = "personId"
+
+  @MainActor
+  static func postCharacter(characterId: Int) async {
+    NotificationCenter.default.post(
+      name: notificationName,
+      object: nil,
+      userInfo: [characterIdKey: characterId]
+    )
+  }
+
+  @MainActor
+  static func postPerson(personId: Int) async {
+    NotificationCenter.default.post(
+      name: notificationName,
+      object: nil,
+      userInfo: [personIdKey: personId]
+    )
+  }
+
+  static func characterId(from notification: Notification) -> Int? {
+    notification.userInfo?[characterIdKey] as? Int
+  }
+
+  static func personId(from notification: Notification) -> Int? {
+    notification.userInfo?[personIdKey] as? Int
+  }
+}
+
 enum ProgressSubjectInvalidation {
   static let notificationName = Notification.Name("ProgressSubjectInvalidated")
 
