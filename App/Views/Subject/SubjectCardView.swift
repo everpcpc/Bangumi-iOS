@@ -92,7 +92,9 @@ struct SubjectCollectionTileView: View {
   @AppStorage("titlePreference") var titlePreference: TitlePreference = .original
 
   let subject: SlimSubjectDTO
-  let imageWidth: CGFloat = 60
+  var collectionType: CollectionType? = nil
+  var onCollectionSaved: (() async -> Void)? = nil
+  let imageWidth: CGFloat = 80
 
   var imageHeight: CGFloat {
     subject.type.coverHeight(for: imageWidth)
@@ -104,7 +106,11 @@ struct SubjectCollectionTileView: View {
         .imageStyle(width: imageWidth, height: imageHeight)
         .imageType(.subject)
         .imageNavLink(subject.link)
-        .subjectPreview(subject)
+        .subjectPreview(
+          subject,
+          collectionType: collectionType,
+          onCollectionSaved: onCollectionSaved
+        )
         .shadow(radius: 2)
       Text(subject.title(with: titlePreference))
         .font(.caption2)
@@ -177,6 +183,8 @@ struct SubjectCollectionSectionView: View {
   @Binding var selection: CollectionType
   let subjects: [SlimSubjectDTO]
   let refreshing: Bool
+  var collectionType: CollectionType? = nil
+  var onCollectionSaved: (() async -> Void)? = nil
 
   var body: some View {
     VStack(alignment: .leading, spacing: 2) {
@@ -205,7 +213,11 @@ struct SubjectCollectionSectionView: View {
         ScrollView(.horizontal, showsIndicators: false) {
           LazyHStack(alignment: .top) {
             ForEach(subjects) { subject in
-              SubjectCollectionTileView(subject: subject)
+              SubjectCollectionTileView(
+                subject: subject,
+                collectionType: collectionType,
+                onCollectionSaved: onCollectionSaved
+              )
                 .transition(.opacity.combined(with: .scale(scale: 0.98)))
             }
           }
@@ -222,16 +234,33 @@ struct SubjectCollectionRowContentView: View {
 
   let subject: SlimSubjectDTO
   let isPrivate: Bool
+  let showsCollectionEditButton: Bool
+  var onCollectionSaved: (() async -> Void)?
 
-  init(subject: SlimSubjectDTO, isPrivate: Bool = false) {
+  @State private var showCollectionBox = false
+
+  private let imageWidth: CGFloat = 60
+
+  private var imageHeight: CGFloat {
+    subject.type.coverHeight(for: imageWidth)
+  }
+
+  init(
+    subject: SlimSubjectDTO,
+    isPrivate: Bool = false,
+    showsCollectionEditButton: Bool = false,
+    onCollectionSaved: (() async -> Void)? = nil
+  ) {
     self.subject = subject
     self.isPrivate = isPrivate
+    self.showsCollectionEditButton = showsCollectionEditButton
+    self.onCollectionSaved = onCollectionSaved
   }
 
   var body: some View {
-    HStack(alignment: .top) {
+    HStack(alignment: .top, spacing: 8) {
       ImageView(img: subject.images?.resize(.r200))
-        .imageStyle(width: 60, height: subject.type.coverHeight(for: 60))
+        .imageStyle(width: imageWidth, height: imageHeight)
         .imageType(.subject)
         .imageNavLink(subject.link)
       VStack(alignment: .leading) {
@@ -273,11 +302,27 @@ struct SubjectCollectionRowContentView: View {
           }
         }
       }
+      .frame(maxWidth: .infinity, alignment: .leading)
+
+      if showsCollectionEditButton {
+        Button {
+          showCollectionBox = true
+        } label: {
+          Image(systemName: "pencil")
+        }
+        .buttonStyle(.bordered)
+        .controlSize(.small)
+        .accessibilityLabel("编辑收藏")
+      }
     }
     .buttonStyle(.navigation)
     .frame(minHeight: 60)
     .padding(2)
     .clipShape(RoundedRectangle(cornerRadius: 10))
+    .sheet(isPresented: $showCollectionBox) {
+      SubjectCollectionBoxView(subjectId: subject.id, onSaved: onCollectionSaved)
+        .presentationDragIndicator(.visible)
+    }
   }
 }
 
