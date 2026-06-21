@@ -2,21 +2,42 @@ import SwiftUI
 
 struct NoticeView: View {
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
-  @AppStorage("hasUnreadNotice") var hasUnreadNotice: Bool = false
 
   @State private var fetched: Bool = false
   @State private var updating: Bool = false
   @State private var notices: [NoticeDTO] = []
   @State private var unreadCount: Int = 0
 
-  func loadNotice() async throws {
-    let resp = try await AccountService.listNotice(limit: 20)
-    let nextUnreadCount = resp.data.count(where: { $0.unread })
+  func applyNoticeSnapshot(
+    _ snapshot: NoticeRepository.NoticeSnapshot,
+    fetched nextFetched: Bool = true
+  ) {
     withAnimation(.default) {
-      notices = resp.data
-      unreadCount = nextUnreadCount
-      hasUnreadNotice = nextUnreadCount > 0
+      notices = snapshot.notices
+      unreadCount = snapshot.unreadCount
+      fetched = nextFetched
     }
+  }
+
+  func applyReadNoticeIDs(_ ids: [Int]) {
+    let idSet = Set(ids)
+    var clearedUnreadCount = 0
+    withAnimation(.default) {
+      for index in notices.indices where idSet.contains(notices[index].id) {
+        if notices[index].unread {
+          clearedUnreadCount += 1
+        }
+        notices[index].unread = false
+      }
+      unreadCount = max(0, unreadCount - clearedUnreadCount)
+    }
+  }
+
+  func loadNotice() async {
+    if let cachedSnapshot = await NoticeRepository.loadCachedNotices() {
+      applyNoticeSnapshot(cachedSnapshot)
+    }
+    await refreshNotice()
   }
 
   func refreshNotice() async {
@@ -24,7 +45,8 @@ struct NoticeView: View {
       updating = true
     }
     do {
-      try await loadNotice()
+      let remoteSnapshot = try await NoticeRepository.refreshNotices()
+      applyNoticeSnapshot(remoteSnapshot)
     } catch {
       Notifier.shared.alert(error: error)
     }
@@ -36,10 +58,11 @@ struct NoticeView: View {
 
   func clearNotice() {
     if updating { return }
+    let ids = notices.filter { $0.unread }.map { $0.id }
+    guard !ids.isEmpty else { return }
     withAnimation(.default) {
       updating = true
     }
-    let ids = notices.map { $0.id }
     Task {
       defer {
         withAnimation(.default) {
@@ -47,22 +70,16 @@ struct NoticeView: View {
         }
       }
       do {
-        try await AccountService.clearNotice(ids: ids)
-        try await loadNotice()
+        try await NoticeRepository.markNoticesAsRead(ids: ids)
+        applyReadNoticeIDs(ids)
       } catch {
         Notifier.shared.alert(error: error)
-      }
-      withAnimation(.default) {
-        for i in 0..<notices.count {
-          notices[i].unread = false
-        }
-        unreadCount = 0
-        hasUnreadNotice = false
       }
     }
   }
 
   func markAsRead(id: Int) {
+    if updating { return }
     withAnimation(.default) {
       updating = true
     }
@@ -73,14 +90,8 @@ struct NoticeView: View {
         }
       }
       do {
-        try await AccountService.clearNotice(ids: [id])
-        if let index = notices.firstIndex(where: { $0.id == id }) {
-          withAnimation(.default) {
-            notices[index].unread = false
-            unreadCount = notices.count(where: { $0.unread })
-            hasUnreadNotice = unreadCount > 0
-          }
-        }
+        try await NoticeRepository.markNoticesAsRead(ids: [id])
+        applyReadNoticeIDs([id])
       } catch {
         Notifier.shared.alert(error: error)
       }
@@ -132,7 +143,7 @@ struct NoticeView: View {
         }
       }
       .task {
-        await refreshNotice()
+        await loadNotice()
       }
     } else {
       AuthView(slogan: "请登录 Bangumi 以查看通知")

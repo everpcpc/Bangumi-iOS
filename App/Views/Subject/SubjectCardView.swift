@@ -114,7 +114,7 @@ struct SubjectCollectionTileView: View {
         .shadow(radius: 2)
       Text(subject.title(with: titlePreference))
         .font(.caption2)
-        .lineLimit(2)
+        .lineLimit(2, reservesSpace: true)
         .multilineTextAlignment(.leading)
     }
     .frame(width: imageWidth + 4)
@@ -186,45 +186,63 @@ struct SubjectCollectionSectionView: View {
   var collectionType: CollectionType? = nil
   var onCollectionSaved: (() async -> Void)? = nil
 
+  private let tileSpacing: CGFloat = 8
+  private let headerDividerSpacing: CGFloat = 2
+  private let contentInset: CGFloat = 2
+
   var body: some View {
-    VStack(alignment: .leading, spacing: 2) {
-      HStack(alignment: .bottom, spacing: 2) {
-        NavigationLink(value: destination) {
-          Text(title).font(.title3)
-        }
-        .buttonStyle(.navigation)
-        .padding(.horizontal, 4)
+    VStack(alignment: .leading, spacing: tileSpacing) {
+      headerAndDivider
+      content
+    }
+  }
 
-        CollectionTypeChipsView(subjectType: subjectType, counts: counts, selection: $selection)
-
-        Spacer(minLength: 0)
-      }
-      .padding(.top, 8)
-
+  private var headerAndDivider: some View {
+    VStack(alignment: .leading, spacing: headerDividerSpacing) {
+      header
+        .padding(.top, 8)
       Divider()
+    }
+  }
 
-      if refreshing {
-        HStack {
-          Spacer()
-          ProgressView().padding()
-          Spacer()
-        }
-      } else {
-        ScrollView(.horizontal, showsIndicators: false) {
-          LazyHStack(alignment: .top) {
-            ForEach(subjects) { subject in
-              SubjectCollectionTileView(
-                subject: subject,
-                collectionType: collectionType,
-                onCollectionSaved: onCollectionSaved
-              )
-                .transition(.opacity.combined(with: .scale(scale: 0.98)))
-            }
-          }
-          .padding(2)
-        }
-        .scrollClipDisabled()
+  private var header: some View {
+    HStack(alignment: .bottom, spacing: 2) {
+      NavigationLink(value: destination) {
+        Text(title).font(.title3)
       }
+      .buttonStyle(.navigation)
+      .padding(.horizontal, 4)
+
+      CollectionTypeChipsView(subjectType: subjectType, counts: counts, selection: $selection)
+
+      Spacer(minLength: 0)
+    }
+  }
+
+  @ViewBuilder
+  private var content: some View {
+    if refreshing {
+      HStack {
+        Spacer()
+        ProgressView().padding()
+        Spacer()
+      }
+    } else {
+      ScrollView(.horizontal, showsIndicators: false) {
+        LazyHStack(alignment: .top, spacing: tileSpacing) {
+          ForEach(subjects) { subject in
+            SubjectCollectionTileView(
+              subject: subject,
+              collectionType: collectionType,
+              onCollectionSaved: onCollectionSaved
+            )
+            .transition(.opacity.combined(with: .scale(scale: 0.98)))
+          }
+        }
+        .padding(.horizontal, contentInset)
+        .padding(.bottom, contentInset)
+      }
+      .scrollClipDisabled()
     }
   }
 }
