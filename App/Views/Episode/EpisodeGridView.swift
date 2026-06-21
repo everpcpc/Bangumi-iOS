@@ -4,6 +4,7 @@ import SwiftUI
 
 struct EpisodeGridView: View {
   let subjectId: Int
+  let subjectCollectionType: CollectionType
 
   @AppStorage("isolationMode") var isolationMode: Bool = false
   @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
@@ -63,7 +64,11 @@ struct EpisodeGridView: View {
     }.padding(.top, 5)
     HFlow(alignment: .center, spacing: 2) {
       ForEach(episodeMains) { episode in
-        EpisodeItemView(episode: episode, interactionMode: episodeGridInteractionMode) {
+        EpisodeItemView(
+          episode: episode,
+          interactionMode: episodeGridInteractionMode,
+          subjectCollectionType: subjectCollectionType
+        ) {
           await loadCached()
         }
       }
@@ -82,7 +87,11 @@ struct EpisodeGridView: View {
           .padding(2)
           .bold()
         ForEach(episodeSps) { episode in
-          EpisodeItemView(episode: episode, interactionMode: episodeGridInteractionMode) {
+          EpisodeItemView(
+            episode: episode,
+            interactionMode: episodeGridInteractionMode,
+            subjectCollectionType: subjectCollectionType
+          ) {
             await loadCached()
           }
         }
