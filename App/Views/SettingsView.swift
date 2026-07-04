@@ -6,6 +6,7 @@ struct SettingsView: View {
   @AppStorage("appearance") var appearance: AppearanceType = .system
   @AppStorage("shareDomain") var shareDomain: ShareDomain = .chii
   @AppStorage("authDomain") var authDomain: AuthDomain = .next
+  @AppStorage("mirrorRootDomain") var mirrorRootDomain: String = ""
   @AppStorage("subjectImageQuality") var subjectImageQuality: ImageQuality = .high
   @AppStorage("isolationMode") var isolationMode: Bool = false
   @AppStorage("showNSFWBadge") var showNSFWBadge: Bool = true
@@ -26,12 +27,33 @@ struct SettingsView: View {
   @State private var logoutConfirm: Bool = false
   @State private var clearDraftsConfirm: Bool = false
   @State private var showEULA: Bool = false
+  @State private var showMirrorDomainSettings: Bool = false
   @State private var appIconController = AppIconController()
 
   private var privacyPolicyURL: String {
     let langCode = Locale.current.language.languageCode?.identifier ?? "zh"
     let lang = langCode.hasPrefix("zh") ? "zh" : "en"
     return "https://bangumi.github.io/Bangumi-iOS/privacy/\(lang)/"
+  }
+
+  private var hasMirrorRootDomain: Bool {
+    BangumiURL.normalizedMirrorRootDomain(mirrorRootDomain) != nil
+  }
+
+  private var mirrorStatusDescription: String {
+    if hasMirrorRootDomain {
+      "当前主站：\(BangumiURL.domains.main)"
+    } else {
+      "留空时使用官方域名"
+    }
+  }
+
+  private var shareDomainDescription: String {
+    "当前：\(BangumiURL.shareHost(for: shareDomain))"
+  }
+
+  private var authDomainDescription: String {
+    "当前：\(BangumiURL.authHost(for: authDomain))"
   }
 
   func reindex() {
@@ -203,19 +225,33 @@ struct SettingsView: View {
       Section {
         Picker(selection: $shareDomain) {
           ForEach(ShareDomain.allCases, id: \.self) { domain in
-            Text(domain.rawValue).tag(domain)
+            Text(domain.title).tag(domain)
           }
         } label: {
-          SettingLabel("分享域名", description: "分享链接时使用的域名")
+          SettingLabel("分享域名", description: "\(shareDomainDescription)")
         }
 
         Picker(selection: $authDomain) {
           ForEach(AuthDomain.allCases, id: \.self) { domain in
-            Text(domain.rawValue).tag(domain)
+            Text(domain.title).tag(domain)
           }
         } label: {
-          SettingLabel("认证域名", description: "OAuth 认证服务器域名")
+          SettingLabel("认证域名", description: "\(authDomainDescription)")
         }
+
+        Button {
+          showMirrorDomainSettings = true
+        } label: {
+          HStack {
+            SettingLabel("镜像站", description: "\(mirrorStatusDescription)")
+            Spacer()
+            Image(systemName: "chevron.right")
+              .font(.caption)
+              .foregroundStyle(.tertiary)
+          }
+          .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
       } header: {
         Text("网络")
       }
@@ -324,6 +360,9 @@ struct SettingsView: View {
     .sheet(isPresented: $showEULA) {
       EULAView(isPresented: $showEULA, showLoginButton: false)
     }
+    .sheet(isPresented: $showMirrorDomainSettings) {
+      MirrorDomainSettingsView(mirrorRootDomain: $mirrorRootDomain)
+    }
     .alert("清空草稿箱", isPresented: $clearDraftsConfirm) {
       Button("确定", role: .destructive) {
         clearDrafts()
@@ -339,6 +378,135 @@ struct SettingsView: View {
       }
     } message: {
       Text("确定要退出登录吗？")
+    }
+  }
+}
+
+private struct MirrorDomainSettingsView: View {
+  @Environment(\.dismiss) private var dismiss
+
+  @Binding private var mirrorRootDomain: String
+  @State private var draftRootDomain: String
+  @FocusState private var isDomainFieldFocused: Bool
+
+  init(mirrorRootDomain: Binding<String>) {
+    self._mirrorRootDomain = mirrorRootDomain
+    self._draftRootDomain = State(initialValue: mirrorRootDomain.wrappedValue)
+  }
+
+  private var trimmedDraftRootDomain: String {
+    draftRootDomain.trimmingCharacters(in: .whitespacesAndNewlines)
+  }
+
+  private var normalizedDraftRootDomain: String? {
+    BangumiURL.normalizedMirrorRootDomain(trimmedDraftRootDomain)
+  }
+
+  private var savedMirrorRootDomain: String? {
+    BangumiURL.normalizedMirrorRootDomain(mirrorRootDomain)
+  }
+
+  private var isDraftEmpty: Bool {
+    trimmedDraftRootDomain.isEmpty
+  }
+
+  private var isDraftValid: Bool {
+    isDraftEmpty || normalizedDraftRootDomain != nil
+  }
+
+  private var previewMainHost: String {
+    BangumiURL.domains(mirrorRootDomain: normalizedDraftRootDomain).main
+  }
+
+  private var previewImageHost: String {
+    BangumiURL.domains(mirrorRootDomain: normalizedDraftRootDomain).image
+  }
+
+  private var previewNextHost: String {
+    BangumiURL.domains(mirrorRootDomain: normalizedDraftRootDomain).next
+  }
+
+  var body: some View {
+    NavigationStack {
+      Form {
+        Section {
+          TextField("根域名", text: $draftRootDomain, prompt: Text("example.com"))
+            .keyboardType(.URL)
+            .textInputAutocapitalization(.never)
+            .autocorrectionDisabled()
+            .focused($isDomainFieldFocused)
+
+          if !isDraftValid {
+            Text("请输入有效域名，例如 example.com。")
+              .font(.caption)
+              .foregroundStyle(.red)
+          }
+        } footer: {
+          Text("仅在你信任该镜像站时填写。登录、请求、图片、BBCode 生成链接和镜像分享链接会发送到该站点；使用风险自负。")
+        }
+
+        if isDraftValid {
+          Section {
+            MirrorDomainPreviewRow(title: "主站", host: previewMainHost)
+            MirrorDomainPreviewRow(title: "Next/API", host: previewNextHost)
+            MirrorDomainPreviewRow(title: "图片", host: previewImageHost)
+            MirrorDomainPreviewRow(title: "分享镜像", host: previewMainHost)
+          } header: {
+            Text("生效域名")
+          } footer: {
+            Text("分享链接仅在分享域名选择「镜像站」时使用该域名。")
+          }
+        }
+
+        if savedMirrorRootDomain != nil {
+          Section {
+            Button("停用镜像站", role: .destructive) {
+              mirrorRootDomain = ""
+              dismiss()
+            }
+          }
+        }
+      }
+      .navigationTitle("镜像站")
+      .navigationBarTitleDisplayMode(.inline)
+      .scrollDismissesKeyboard(.interactively)
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button("取消") {
+            dismiss()
+          }
+        }
+
+        ToolbarItem(placement: .confirmationAction) {
+          Button("保存") {
+            save()
+          }
+          .disabled(!isDraftValid)
+        }
+      }
+      .onAppear {
+        isDomainFieldFocused = true
+      }
+    }
+  }
+
+  private func save() {
+    mirrorRootDomain = normalizedDraftRootDomain ?? ""
+    dismiss()
+  }
+}
+
+private struct MirrorDomainPreviewRow: View {
+  let title: String
+  let host: String
+
+  var body: some View {
+    HStack {
+      Text(title)
+      Spacer()
+      Text(host)
+        .foregroundStyle(.secondary)
+        .multilineTextAlignment(.trailing)
     }
   }
 }
