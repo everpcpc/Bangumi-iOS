@@ -365,6 +365,7 @@ enum ChiiViewTab: String {
   case progress = "progress"
   case rakuen = "rakuen"
   case discover = "discover"
+  case search = "search"
 
   init(_ label: String? = nil) {
     switch label {
@@ -376,6 +377,8 @@ enum ChiiViewTab: String {
       self = .rakuen
     case "discover":
       self = .discover
+    case "search":
+      self = .search
     default:
       self = .timeline
     }
@@ -384,26 +387,40 @@ enum ChiiViewTab: String {
   var title: String {
     switch self {
     case .timeline:
-      "时间线"
+      "时空管理局"
     case .progress:
       "进度管理"
     case .rakuen:
       "超展开"
     case .discover:
       "发现"
+    case .search:
+      "搜索"
     }
   }
 
   var icon: String {
     switch self {
     case .timeline:
-      "list.bullet.rectangle"
+      "building.columns"
     case .progress:
       "square.grid.2x2"
     case .rakuen:
       "rectangle.3.group.bubble"
     case .discover:
+      "safari"
+    case .search:
       "magnifyingglass"
+    }
+  }
+
+  /// Tab restored on cold start. Search never persists as the startup tab.
+  var startupTab: ChiiViewTab {
+    switch self {
+    case .search:
+      .timeline
+    default:
+      self
     }
   }
 }
