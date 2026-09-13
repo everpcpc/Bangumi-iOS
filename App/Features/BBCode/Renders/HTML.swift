@@ -186,6 +186,13 @@ var bbcodeHTMLRenderers: [BBCodeTagType: BBCodeHTMLRender] {
       html.append("</blockquote></div>")
       return html
     },
+    .indent: { (n: BBCodeNode, args: [String: Any]?) in
+      var html: String
+      html = "<blockquote class=\"clearit\">"
+      html.append(n.renderInnerHTML(args))
+      html.append("</blockquote>")
+      return html
+    },
     .subject: { (n: BBCodeNode, args: [String: Any]?) in
       let domains = bangumiDomains(from: args)
       let host = args?["host"] as? String
@@ -269,6 +276,11 @@ var bbcodeHTMLRenderers: [BBCodeTagType: BBCodeHTMLRender] {
         }
       }
       return html
+    },
+    .email: { (n: BBCodeNode, args: [String: Any]?) in
+      let inner = n.renderInnerHTML(args)
+      let address = n.attr.isEmpty ? inner : n.escapedAttr
+      return "<a href=\"mailto:\(address)\">\(inner)</a>"
     },
     .image: { (n: BBCodeNode, args: [String: Any]?) in
       let host = args?["host"] as? String

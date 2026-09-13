@@ -73,6 +73,9 @@ var bbcodePlainRenderers: [BBCodeTagType: BBCodePlainRender] {
     .quote: { (n: BBCodeNode, args: [String: Any]?) in
       return ""
     },
+    .indent: { (n: BBCodeNode, args: [String: Any]?) in
+      return n.renderInnerPlain(args)
+    },
     .subject: { (n: BBCodeNode, args: [String: Any]?) in
       return ""
     },
@@ -80,6 +83,9 @@ var bbcodePlainRenderers: [BBCodeTagType: BBCodePlainRender] {
       return ""
     },
     .url: { (n: BBCodeNode, args: [String: Any]?) in
+      return ""
+    },
+    .email: { (n: BBCodeNode, args: [String: Any]?) in
       return ""
     },
     .image: { (n: BBCodeNode, args: [String: Any]?) in
